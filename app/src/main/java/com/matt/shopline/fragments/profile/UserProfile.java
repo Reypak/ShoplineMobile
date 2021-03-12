@@ -1,0 +1,604 @@
+package com.matt.shopline.fragments.profile;
+
+import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.net.Uri;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.provider.MediaStore;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.viewpager.widget.ViewPager;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+import com.matt.shopline.R;
+import com.matt.shopline.adapters.TabAdapter;
+import com.matt.shopline.screens.LandingPage;
+import com.squareup.picasso.Picasso;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import static android.app.Activity.RESULT_OK;
+
+public class UserProfile extends Fragment {
+    int Image_Request_Code = 7;
+    private ImageView profileImage;
+    private TextView tvUsername, tvLocation, tvBio, tvEmail, tvPhone, tvOccupation, tvWebsite, tvFollowers, tvCatalog;
+    private String phone, location, bio, email, username, occupation, website;
+    private FirebaseUser user;
+    private View downArrow, expandedView, viewFollow;
+    private Button btnEdit, btnFollow;
+    private EditText etUsername, etBio, etPhone, etLocation, etOccupation, etWebsite;
+    private Uri FilePathUri;
+    private DrawerLayout drawer;
+    private NavigationView navView;
+    private FirebaseFirestore db;
+    private StorageReference storageReference;
+    private String profileUrl;
+    private String profileUri;
+    private ViewGroup rootView;
+    private Bundle bundle;
+    private String userID;
+    private TabLayout tabLayout;
+    private ViewPager viewPager;
+    private TabAdapter adapter;
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        rootView = (ViewGroup) inflater.inflate(R.layout.activity_drawer, container, false);
+
+        Toolbar toolbar = rootView.findViewById(R.id.toolbar1);
+        ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.title_profile);
+
+        setHasOptionsMenu(true);
+
+        drawer = rootView.findViewById(R.id.drawer_layout);
+        navView = rootView.findViewById(R.id.nav_view);
+
+        tabLayout = rootView.findViewById(R.id.tabLayout);
+        viewPager = rootView.findViewById(R.id.viewPager);
+
+        profileImage = rootView.findViewById(R.id.profile_image);
+        tvUsername = rootView.findViewById(R.id.Username);
+        tvLocation = rootView.findViewById(R.id.tvLocation);
+        tvBio = rootView.findViewById(R.id.tvBio);
+        tvEmail = rootView.findViewById(R.id.tvEmail);
+        tvPhone = rootView.findViewById(R.id.tvPhone);
+        tvWebsite = rootView.findViewById(R.id.tvWebsite);
+        tvFollowers = rootView.findViewById(R.id.tvFollowers);
+        tvCatalog = rootView.findViewById(R.id.tvCatalog);
+        tvOccupation = rootView.findViewById(R.id.tvOccupation);
+        tvOccupation.setVisibility(View.GONE);
+        btnEdit = rootView.findViewById(R.id.btnEdit);
+        btnFollow = rootView.findViewById(R.id.btnFollow);
+        viewFollow = rootView.findViewById(R.id.viewFollow);
+        downArrow = rootView.findViewById(R.id.downArrow);
+        expandedView = rootView.findViewById(R.id.expandedView);
+        expandedView.setVisibility(View.GONE);
+
+        user = FirebaseAuth.getInstance().getCurrentUser();
+        db = FirebaseFirestore.getInstance();
+
+
+        getUserData();
+        getProfileImage();
+
+        if (bundle != null) {
+            // for other user
+            getTabs(getString(R.string.catalog), getString(R.string.offers), userID, false);
+        } else {
+            // for currentUser
+            getTabs("Posts", "Wishlist", user.getUid(), true);
+        }
+
+        btnEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                EditProfile();
+            }
+        });
+
+        downArrow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (expandedView.getVisibility() != View.VISIBLE) {
+                    expandedView.setVisibility(View.VISIBLE);
+                } else {
+                    expandedView.setVisibility(View.GONE);
+                }
+                downArrow.animate().rotationBy(180);
+            }
+        });
+
+        navView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+
+                switch (menuItem.getItemId()) {
+                    case R.id.logout:
+                        //sign out
+                        FirebaseAuth.getInstance().signOut();
+                        Toast.makeText(getActivity(), "Logged Out", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(getActivity(), LandingPage.class);
+                        startActivity(intent);
+                        getActivity().finish();
+                        break;
+                }
+                drawer.closeDrawer(GravityCompat.END);
+                return false;
+            }
+        });
+
+        return rootView;
+    }
+
+    private void getUserData() {
+        DocumentReference userRef;
+
+        bundle = getArguments();
+        if (bundle != null) {
+            // other User
+            userID = bundle.getString("userID");
+            userRef = db.collection("users").document(userID);
+
+            getFollowers(userID);
+            getCatalog(userID);
+
+        } else {
+            // Current User
+            // get username from AuthInstance
+            username = user.getDisplayName();
+            tvUsername.setText(username);
+
+            userRef = db.collection("users").document(user.getUid());
+
+            getFollowers(user.getUid());
+            getCatalog(user.getUid());
+
+        }
+
+        userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                // in case username is empty
+                if (tvUsername.getText().toString().isEmpty()) {
+                    String username = task.getResult().get("username").toString();
+                    tvUsername.setText(username);
+                    ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(username);
+                }
+
+                location = task.getResult().get("location").toString();
+                bio = task.getResult().get("bio").toString();
+                email = task.getResult().get("email").toString();
+                phone = task.getResult().get("phone").toString();
+                profileUri = task.getResult().get("profileUrl").toString();
+
+                getProfileImage();
+
+                if (task.getResult().get("occupation") != null && !task.getResult().get("occupation").toString().isEmpty()) {
+                    occupation = task.getResult().get("occupation").toString();
+                    tvOccupation.setText(occupation);
+                    tvOccupation.setVisibility(View.VISIBLE);
+                }
+
+                if (task.getResult().get("website") != null && !task.getResult().get("website").toString().isEmpty()) {
+                    website = task.getResult().get("website").toString();
+                    tvWebsite.setText(website);
+//                    tvOccupation.setVisibility(View.VISIBLE);
+                }
+
+                tvLocation.setText(location);
+                tvBio.setText(bio);
+                tvEmail.setText(email);
+                tvPhone.setText(phone);
+
+            }
+        });
+    }
+
+    private void getCatalog(String userID) {
+        // user catalog count number of docs
+        CollectionReference userCatalog = db.collection("users").document(userID)
+                .collection("catalog");
+        userCatalog.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull final Task<QuerySnapshot> task) {
+                // number of documents
+                int catalog = task.getResult().size();
+                tvCatalog.setText(String.valueOf(catalog));
+            }
+        });
+    }
+
+    private void getTabs(String Tab1, String Tab3, String userID, boolean b) {
+        tabLayout.addTab(tabLayout.newTab().setText(Tab1));
+        tabLayout.addTab(tabLayout.newTab().setText("Reviews"));
+        tabLayout.addTab(tabLayout.newTab().setText(Tab3));
+
+        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
+
+        // pass userID to constructor for Catalog tab
+        adapter = new TabAdapter(getActivity(), getFragmentManager(), tabLayout.getTabCount(), userID, b);
+        viewPager.setAdapter(adapter);
+
+        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                viewPager.setCurrentItem(tab.getPosition());
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+    }
+
+    private void getFollowers(final String userID) {
+        /**
+         * run this method first to allow following
+         * if current user is already following then =>
+         * second click method ensures delete of document
+         */
+        btnFollow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                followUser(userID);
+                getFollowers(userID);
+            }
+        });
+
+        // check user Followers Ref
+        final CollectionReference userFollowers = db.collection("users").document(userID)
+                .collection("followers");
+        userFollowers.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull final Task<QuerySnapshot> task) {
+                // number of documents
+                int followers = task.getResult().size();
+                tvFollowers.setText(String.valueOf(followers));
+
+                // check to see if currentUser is following viewed User
+                for (final DocumentSnapshot documentSnapshot : task.getResult()) {
+                    // getting users ID's
+                    final String data = documentSnapshot.getId();
+                    // if currentUserID exists
+                    if (data.equals(user.getUid())) {
+
+                        // following state
+                        btnFollow.setText("Following");
+                        btnFollow.setBackgroundColor(Color.parseColor("#265458F7"));
+                        btnFollow.setTextColor(Color.parseColor("#5458F7"));
+
+                        btnFollow.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                // Deleting the document from Followers collection
+                                userFollowers.document(data).delete()
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                // original state
+                                                btnFollow.setText(getString(R.string.follow));
+                                                btnFollow.setBackgroundColor(Color.parseColor("#5458F7"));
+                                                btnFollow.setTextColor(Color.WHITE);
+
+                                                getFollowers(userID); // refresh followers
+                                            }
+                                        });
+
+                                CollectionReference userFollowing = db.collection("users")
+                                        .document(user.getUid())
+                                        .collection("following");
+
+                                //  Deleting the document from current users Following collection
+                                userFollowing.document(userID).delete();
+
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    }
+
+    private void followUser(String userID) {
+        // followed User ref
+        CollectionReference userFollowers = db.collection("users")
+                .document(userID)
+                .collection("followers");
+
+        // current user Following Ref
+        CollectionReference userFollowing = db.collection("users")
+                .document(user.getUid())
+                .collection("following");
+
+        Map<String, Object> userdata = new HashMap<>();
+        userdata.put("exists", true);
+
+        // send currentUserID to followed user collection
+        userFollowers.document(user.getUid()).set(userdata);
+
+        // send followed userID to current user Following collection
+        userFollowing.document(userID).set(userdata);
+    }
+
+    private void getProfileImage() {
+        // get profile from default user
+        if (bundle == null) {
+            profileUri = user.getPhotoUrl().toString();
+        }
+        Picasso.with(getActivity()).load(profileUri)
+                .fit()
+                .placeholder(R.drawable.ic_launcher_foreground)
+                .centerCrop()
+                .into(profileImage);
+    }
+
+    private void EditProfile() {
+        final Dialog d = new Dialog(getActivity(), R.style.AppTheme);
+        d.setContentView(R.layout.edit_profile);
+//        d.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+        View btnSave, btnClose;
+        etUsername = d.findViewById(R.id.etUsername);
+        etBio = d.findViewById(R.id.etBio);
+        etLocation = d.findViewById(R.id.etLocation);
+        etPhone = d.findViewById(R.id.etPhone);
+        etOccupation = d.findViewById(R.id.etOccupation);
+        etWebsite = d.findViewById(R.id.etWebsite);
+        btnSave = d.findViewById(R.id.btnSave);
+        btnClose = d.findViewById(R.id.btnClose);
+        profileImage = d.findViewById(R.id.profile_image);
+
+        // getting profile image in dialog
+        getProfileImage();
+
+        etUsername.setText(username);
+        etBio.setText(bio);
+        etLocation.setText(location);
+        etPhone.setText(phone);
+        etOccupation.setText(occupation);
+        etWebsite.setText(website);
+
+        btnSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final ProgressDialog dialog = ProgressDialog.show(getActivity(), "",
+                        "Updating your profile...", true);
+                dialog.setCancelable(true);
+
+                if (FilePathUri != null) {
+                    setProfileImage();
+                }
+
+                username = etUsername.getText().toString().trim();
+
+                // Create a new user data
+                Map<String, Object> userdata = new HashMap<>();
+                userdata.put("occupation", etOccupation.getText().toString().trim());
+                userdata.put("website", etWebsite.getText().toString().trim());
+                userdata.put("username", username);
+                userdata.put("phone", etPhone.getText().toString().trim());
+                userdata.put("location", etLocation.getText().toString().trim());
+                userdata.put("bio", etBio.getText().toString().trim());
+
+                if (username != null) {
+                    UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                            .setDisplayName(username)
+                            .build();
+                    user.updateProfile(profileUpdates).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            tvUsername.setText(username);
+                        }
+                    });
+                }
+
+
+                // Add a new document with user ID
+                db.collection(getString(R.string.users)).document(user.getUid())
+                        .update(userdata).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+
+                        // save to SharedPrefs
+                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                        sharedPreferences.edit()
+                                .putString(getString(R.string.location).toLowerCase(), etLocation.getText().toString().trim())
+                                .apply();
+
+                        d.dismiss();
+                        dialog.dismiss();
+                        Toast.makeText(getActivity(), getString(R.string.title_profile) + " Updated", Toast.LENGTH_SHORT).show();
+                        getUserData(); // refresh data
+                    }
+                });
+            }
+        });
+
+        btnClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                d.dismiss();
+            }
+        });
+
+        profileImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent, "Select Image"), Image_Request_Code);
+            }
+        });
+
+        d.show();
+    }
+
+    private void setProfileImage() {
+
+        storageReference = FirebaseStorage.getInstance().getReference("Images").child(user.getUid());
+        StorageReference fileReference = storageReference.child("profile.jpg");
+
+        // compression
+        Bitmap bitmap = null;
+        try {
+            Bitmap b = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), FilePathUri);
+            bitmap = Bitmap.createScaledBitmap(b, (int) (b.getWidth() * 0.5), (int) (b.getHeight() * 0.5), false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 20, outputStream);
+        byte[] compressedData = outputStream.toByteArray();
+        bitmap.recycle(); // free up memory
+        FilePathUri = null; // clear FilePathUrl to refresh
+
+        fileReference.putBytes(compressedData).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                // this method captures the download link for the uploaded image
+                Task<Uri> result = taskSnapshot.getMetadata().getReference().getDownloadUrl();
+                result.addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        profileUrl = uri.toString();
+
+                        // sending the uploaded image url to database
+                        db.collection("users").document(user.getUid())
+                                .update("profileUrl", profileUrl);
+
+                        // update user profile data
+                        UserProfileChangeRequest profileUpdates = null;
+                        if (profileUrl != null) {
+                            profileUpdates = new UserProfileChangeRequest.Builder()
+                                    .setPhotoUri(Uri.parse(profileUrl))
+                                    .build();
+                        }
+                        user.updateProfile(profileUpdates).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                Toast.makeText(getActivity(), "Photo Changed", Toast.LENGTH_SHORT).show();
+
+                                profileImage = rootView.findViewById(R.id.profile_image);
+                                getProfileImage();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        // get userID Stored data from Activity
+        bundle = getArguments();
+        if (bundle != null) {
+//            userID = bundle.getString("userID");
+            btnEdit.setVisibility(View.GONE);
+            viewFollow.setVisibility(View.VISIBLE);
+//            btnFollow.setVisibility(View.VISIBLE);
+            // lock the drawer
+            drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+            ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Image_Request_Code && resultCode == RESULT_OK && data != null && data.getData() != null) {
+
+            FilePathUri = data.getData();
+//            Compression(FilePathUri);
+
+            // puts file into image view
+            Picasso.with(getActivity()).load(FilePathUri)
+                    .fit()
+                    .centerCrop()
+                    .into(profileImage);
+        }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        if (bundle != null) {
+            menu.add(Menu.NONE, 1, Menu.NONE, R.string.share);
+            menu.add(Menu.NONE, 2, Menu.NONE, "Report");
+        } else {
+            menu.add(Menu.NONE, 0, Menu.NONE, null)
+                    .setIcon(R.drawable.ic_alt_icon)
+                    .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        }
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == 0) {
+            // closes drawer if its open
+            if (drawer.isDrawerOpen(GravityCompat.END)) {
+                drawer.closeDrawer(GravityCompat.END);
+            } else {
+                drawer.openDrawer(GravityCompat.END);
+            }
+        } else if (item.getItemId() == android.R.id.home) {
+            getActivity().finish();
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+}

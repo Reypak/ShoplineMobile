@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@drawable/app_bar"
+        android:clipToPadding="true"
+        android:elevation="5dp">
+
+        <FrameLayout
+            android:id="@+id/btnClose"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center|start"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/ic_arrow_down"
+            android:backgroundTint="@color/colorTextOverlay"
+            android:rotation="90" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center|start"
+            android:layout_marginStart="55dp"
+            android:text="@string/edit_profile"
+            android:textColor="@color/colorTextOverlay"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/btnSave"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center|end"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_check"
+            android:tooltipText="Save" />
+    </FrameLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="10dp"
+        android:background="@drawable/card_background"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="10dp">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="130dp"
+                    android:layout_height="130dp"
+                    android:layout_gravity="center"
+                    android:layout_marginVertical="20dp"
+                    app:cardBackgroundColor="@color/bottom_bar_item_color"
+                    app:cardCornerRadius="65dp"
+                    app:cardElevation="0dp">
+
+
+                    <ImageView
+                        android:id="@+id/profile_image"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:foreground="?attr/selectableItemBackground" />
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@color/common_google_signin_btn_text_dark_disabled"
+                        android:backgroundTint="@color/colorPrimary" />
+                </androidx.cardview.widget.CardView>
+
+                <FrameLayout
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/ic_camera_plus"
+                    android:backgroundTint="@android:color/white" />
+
+            </FrameLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:paddingStart="5dp"
+                android:text="@string/name"
+                android:textColor="@color/colorPrimary" />
+
+            <EditText
+                android:id="@+id/etUsername"
+                style="@style/TextBoxRound"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints="username"
+                android:inputType="textCapWords" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="10dp"
+                android:paddingStart="5dp"
+                android:text="@string/bio"
+                android:textColor="@color/colorPrimary" />
+
+
+            <EditText
+                android:id="@+id/etBio"
+                style="@style/TextBoxRound"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapSentences|textMultiLine"
+                android:maxLines="2" />
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="10dp"
+                android:paddingStart="5dp"
+                android:text="@string/location"
+                android:textColor="@color/colorPrimary" />
+
+
+            <EditText
+                android:id="@+id/etLocation"
+                style="@style/TextBoxRound"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapWords" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:paddingStart="5dp"
+                android:text="@string/phone"
+                android:textColor="@color/colorPrimary" />
+
+            <EditText
+                android:id="@+id/etPhone"
+                style="@style/TextBoxRound"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="10dp"
+                android:inputType="number" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="10dp"
+                android:paddingStart="5dp"
+                android:text="Occupation"
+                android:textColor="@color/colorPrimary" />
+
+
+            <EditText
+                android:id="@+id/etOccupation"
+                style="@style/TextBoxRound"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapWords" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="10dp"
+                android:paddingStart="5dp"
+                android:text="Website"
+                android:textColor="@color/colorPrimary" />
+
+
+            <EditText
+                android:id="@+id/etWebsite"
+                style="@style/TextBoxRound"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textUri" />
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

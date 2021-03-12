@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "242685962535",
+    "project_id": "shopline-15b78",
+    "storage_bucket": "shopline-15b78.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:242685962535:android:2481305559640a0e6f6102",
+        "android_client_info": {
+          "package_name": "com.matt.shopline"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "242685962535-t27eg9n9g6hedtkel3grah6ogdqpfqvl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.matt.shopline",
+            "certificate_hash": "ef710778c85c169c6e1bf717d28060a7634b7e75"
+          }
+        },
+        {
+          "client_id": "242685962535-p78m1dm9qfp5t8lcnosntbiabbdg247f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7AhNY9QJ9KleBUhkMMAAxr-ucDksFDbY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "242685962535-p78m1dm9qfp5t8lcnosntbiabbdg247f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,57 @@
+<resources>
+    <string name="app_name">Shopline</string>
+
+    <string name="title_home">Home</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="title_profile">Profile</string>
+    <string name="title_search">Search</string>
+    <string name="title_analytics">Analytics</string>
+    <string name="title_upload">Upload</string>
+    <string name="title_orders">Orders</string>
+
+    <string name="name">Name</string>
+    <string name="price">Price</string>
+    <string name="offers">Offers</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="phone">Phone Number</string>
+    <string name="location">Location</string>
+    <string name="bio">Bio</string>
+    <string name="login">Login</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="follow">Follow</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="followers">Followers</string>
+    <string name="catalog">Catalog</string>
+    <string name="load">…</string>
+    <string name="add_wishlist">Add to Wishlist</string>
+    <string name="customers">From Customers</string>
+    <string name="you">You</string>
+    <string name="no_location">No registered location</string>
+    <string name="timestamp">timestamp</string>
+    <string name="users">users</string>
+    <string name="share">Share</string>
+    <string name="yes">Yes</string>
+    <string name="wishlist">wishlist</string>
+    <string name="delete">Delete</string>
+    <string name="comments">Comments</string>
+
+    <string-array name="category">
+        <item>-- Select --</item>
+        <item>Agriculture</item>
+        <item>Art &amp; Design</item>
+        <item>Beauty &amp; Lifestyle</item>
+        <item>Education</item>
+        <item>Energy</item>
+        <item>Entertainment</item>
+        <item>Health &amp; Wellness</item>
+        <item>Lifestyle</item>
+        <item>Real estate</item>
+        <item>Technology</item>
+        <item>Tourism &amp; Hospitality</item>
+        <item>Trade</item>
+        <item>Transport</item>
+    </string-array>
+
+</resources>
+

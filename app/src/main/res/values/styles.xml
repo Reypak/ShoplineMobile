@@ -1,0 +1,109 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:fontFamily">@font/montserrat_regular</item>
+        <item name="actionBarStyle">@style/MyActionBar</item>
+        <item name="android:windowSoftInputMode">adjustResize</item>
+        <item name="android:actionOverflowButtonStyle">@style/ActionButtonTheme</item>
+        <item name="android:colorBackground">@color/colorBackground</item>
+        <item name="android:textColorPrimary">@color/colorTextOverlay</item>
+        <item name="android:dialogCornerRadius" tools:targetApi="p">20dp</item>
+        <item name="android:itemBackground">@android:color/white</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:fontFamily">@font/montserrat_regular</item>
+        <item name="android:colorBackground">@color/colorBackground</item>
+        <item name="colorControlNormal">@color/colorTextOverlay</item>
+        <item name="android:popupMenuStyle">@style/PopupMenu</item>
+        <item name="android:dialogCornerRadius" tools:targetApi="p">20dp</item>
+    </style>
+
+    <style name="MyActionBar" parent="Widget.AppCompat.Light.ActionBar.Solid">
+        <item name="background">@drawable/app_bar</item>
+        <item name="titleTextStyle">@style/TextTitle</item>
+    </style>
+
+    <style name="ButtonMain" parent="Widget.AppCompat.Button.Borderless">
+        <item name="rippleColor">?attr/colorControlHighlight</item>
+        <item name="cornerRadius">50dp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="textAllCaps">false</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:elevation">8dp</item>
+        <item name="android:height">60dp</item>
+    </style>
+
+    <style name="ButtonBorderless" parent="ButtonMain">
+        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:backgroundTint">#4DFFFFFF</item>
+        <item name="rippleColor">@color/colorPrimary</item>
+        <item name="android:elevation">0dp</item>
+    </style>
+
+    <style name="Button3" parent="ButtonMain">
+        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:backgroundTint">#265458F7</item>
+        <item name="rippleColor">@color/colorTextSecondary</item>
+        <item name="android:elevation">0dp</item>
+    </style>
+
+    <style name="TextBoxRound">
+        <item name="android:background">@drawable/edit_text_rounded</item>
+        <item name="android:paddingStart">15dp</item>
+        <item name="android:padding">14dp</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="TextTitle">
+        <item name="android:textColor">@color/colorTextOverlay</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">19sp</item>
+    </style>
+
+    <style name="TextTitle2">
+        <item name="android:textColor">@color/colorTextPrimary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="ActionButtonTheme" parent="Widget.AppCompat.ActionButton.Overflow">
+        <item name="android:tint">@color/colorHighlight</item>
+    </style>
+
+    <style name="AppTheme.AppBarOverlay">
+        <item name="android:background">@drawable/app_bar</item>
+        <item name="titleTextAppearance">@style/TextTitle</item>
+    </style>
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="PopupMenu" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:popupBackground">@drawable/card_background</item>
+        <item name="android:popupElevation">10dp</item>
+    </style>
+
+    <style name="BottomSheetDialog" parent="Theme.MaterialComponents.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/bottomSheetStyle</item>
+        <item name="colorAccent">@color/colorPrimary</item>
+    </style>
+
+    <style name="bottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+
+    <style name="textViewOrder">
+        <item name="android:textSize">16sp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:padding">9dp</item>
+        <item name="android:text">@string/load</item>
+        <item name="android:textColor">@color/colorTextSecondary</item>
+    </style>
+</resources>
