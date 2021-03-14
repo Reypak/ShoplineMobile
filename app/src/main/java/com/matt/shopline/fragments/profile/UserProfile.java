@@ -42,8 +42,9 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -239,14 +240,15 @@ public class UserProfile extends Fragment {
 
     private void getCatalog(String userID) {
         // user catalog count number of docs
-        CollectionReference userCatalog = db.collection("users").document(userID)
-                .collection("catalog");
-        userCatalog.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        DocumentReference userCatalog = db.collection("users").document(userID)
+                .collection("data").document("catalog");
+        userCatalog.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
-            public void onComplete(@NonNull final Task<QuerySnapshot> task) {
-                // number of documents
-                int catalog = task.getResult().size();
-                tvCatalog.setText(String.valueOf(catalog));
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                if (documentSnapshot.exists()) {
+                    String catalog = documentSnapshot.get("catalog").toString();
+                    tvCatalog.setText(catalog);
+                }
             }
         });
     }
@@ -296,7 +298,66 @@ public class UserProfile extends Fragment {
             }
         });
 
-        // check user Followers Ref
+        // reference to selected user's follower count data
+        DocumentReference followersCount = db.collection("users")
+                .document(userID)
+                .collection("data")
+                .document(getString(R.string.followers).toLowerCase());
+        followersCount.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                if (value.exists()) {
+                    String followers = value.get("followers").toString();
+                    tvFollowers.setText(followers);
+                }
+            }
+        });
+
+        // check user Followers Ref for current userID
+        DocumentReference userFollowers = db.collection(getString(R.string.users))
+                .document(userID)
+                .collection(getString(R.string.followers).toLowerCase())
+                .document(user.getUid());
+        userFollowers.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(final DocumentSnapshot documentSnapshot) {
+                if (documentSnapshot.exists()) {
+                    // following state
+                    btnFollow.setText("Following");
+                    btnFollow.setBackgroundColor(Color.parseColor("#265458F7"));
+                    btnFollow.setTextColor(Color.parseColor("#5458F7"));
+
+                    btnFollow.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            // Deleting the document from Followers collection
+                            documentSnapshot.getReference().delete()
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            // original state
+                                            btnFollow.setText(getString(R.string.follow));
+                                            btnFollow.setBackgroundColor(Color.parseColor("#5458F7"));
+                                            btnFollow.setTextColor(Color.WHITE);
+
+                                            getFollowers(userID); // refresh followers
+                                        }
+                                    });
+
+                            CollectionReference userFollowing = db.collection(getString(R.string.users))
+                                    .document(user.getUid())
+                                    .collection("following");
+
+                            //  Deleting the document from current users Following collection
+                            userFollowing.document(userID).delete();
+
+                        }
+                    });
+                }
+            }
+        });
+
+       /* // check user Followers Ref
         final CollectionReference userFollowers = db.collection("users").document(userID)
                 .collection("followers");
         userFollowers.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -347,7 +408,7 @@ public class UserProfile extends Fragment {
                     }
                 }
             }
-        });
+        });*/
     }
 
     private void followUser(String userID) {

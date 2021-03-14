@@ -113,7 +113,7 @@ public class OrdersList extends Fragment {
                 postRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
+                        if (task.getResult().exists()) {
                             product = task.getResult().get("product").toString();
                             price = task.getResult().get("price").toString();
                             imageUrl = task.getResult().get("imageUrl").toString();

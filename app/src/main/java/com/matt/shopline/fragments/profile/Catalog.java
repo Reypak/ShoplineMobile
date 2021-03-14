@@ -51,7 +51,6 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.matt.shopline.R;
@@ -221,58 +220,81 @@ public class Catalog extends Fragment {
 
                 postID = getItem(position).getId();
                 postRef = db.collection("posts").document(postID);
+//                Toast.makeText(getActivity(), postID, Toast.LENGTH_SHORT).show();
                 postRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull final Task<DocumentSnapshot> task) {
                         if (task.isSuccessful()) {
-                            product = task.getResult().get("product").toString();
-                            price = task.getResult().get("price").toString();
-                            String description = task.getResult().get("description").toString();
-                            imageUrl = task.getResult().get("imageUrl").toString();
-                            duserID = task.getResult().get("userID").toString();
-                            String timestamp = task.getResult().get(getString(R.string.timestamp)).toString();
+                            if (task.getResult().exists()) {
+                                product = task.getResult().get("product").toString();
+                                price = task.getResult().get("price").toString();
+                                String description = task.getResult().get("description").toString();
+                                imageUrl = task.getResult().get("imageUrl").toString();
+                                duserID = task.getResult().get("userID").toString();
+                                String timestamp = task.getResult().get(getString(R.string.timestamp)).toString();
 
-                            // check if offers field exists
-                            offers = null; // set offers value to null
-                            if (task.getResult().get("offers") != null) {
-                                offers = task.getResult().get("offers").toString();
-                                View btnOffers = holder.mView.findViewById(R.id.btnOffers);
-                                btnOffers.setVisibility(View.VISIBLE); // visible offers button
-                                btnOffers.setOnClickListener(new View.OnClickListener() {
+                                // check if offers field exists
+                                offers = null; // set offers value to null
+                                if (task.getResult().get("offers") != null) {
+                                    offers = task.getResult().get("offers").toString();
+                                    View btnOffers = holder.mView.findViewById(R.id.btnOffers);
+                                    btnOffers.setVisibility(View.VISIBLE); // visible offers button
+                                    btnOffers.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+                                            offers = task.getResult().get("offers").toString();
+                                            String product = task.getResult().get("product").toString();
+                                            // create dialog message
+                                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                                            builder.setTitle(product);
+                                            builder.setIcon(R.drawable.ic_gift);
+                                            builder.setMessage(offers);
+                                            builder.show();
+                                        }
+                                    });
+                                }
+
+                                // get comments from counter
+                                if (task.getResult().get("comments") != null) {
+                                    String comments = task.getResult().get("comments").toString();
+                                    TextView tvComments = holder.mView.findViewById(R.id.tvComments);
+                                    tvComments.setText(comments);
+                                }
+
+                                holder.setData(product, price, description, timestamp);
+                                holder.setImageURL(getActivity(), imageUrl);
+
+                                DocumentReference userRef = db.collection(getString(R.string.users)).document(duserID);
+                                userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                                     @Override
-                                    public void onClick(View view) {
-                                        offers = task.getResult().get("offers").toString();
-                                        String product = task.getResult().get("product").toString();
-                                        // create dialog message
-                                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                                        builder.setTitle(product);
-                                        builder.setIcon(R.drawable.ic_gift);
-                                        builder.setMessage(offers);
-                                        builder.show();
+                                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                        username = task.getResult().get("username").toString();
+                                        String occupation = task.getResult().get("occupation").toString();
+                                        String profileUrl = task.getResult().get("profileUrl").toString();
+                                        holder.setUserData(username, occupation, getActivity(), profileUrl);
                                     }
                                 });
                             }
+                        }
+                    }
+                });
 
-                            holder.setData(product, price, description, timestamp);
-                            holder.setImageURL(getActivity(), imageUrl);
-
-                            DocumentReference userRef = db.collection(getString(R.string.users)).document(duserID);
-                            userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                @Override
-                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                    username = task.getResult().get("username").toString();
-                                    String occupation = task.getResult().get("occupation").toString();
-                                    String profileUrl = task.getResult().get("profileUrl").toString();
-                                    holder.setUserData(username, occupation, getActivity(), profileUrl);
-                                }
-                            });
+                // get post likes
+                postRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                        if (error == null) {
+                            if (value.get("likes") != null) {
+                                String likes = value.get("likes").toString();
+                                tvLikes.setText(likes);
+                            }
                         }
                     }
                 });
 
                 // get post likes
                 final CollectionReference likeRef = postRef.collection("likes");
-                likeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+               /* likeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                         if (error == null) {
@@ -282,8 +304,7 @@ public class Catalog extends Fragment {
                         }
 
                     }
-                });
-
+                });*/
 
                 // check if current userID exists
                 likeRef.document(user.getUid()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
@@ -578,34 +599,31 @@ public class Catalog extends Fragment {
         FirebaseStorage mStorage = FirebaseStorage.getInstance();
         StorageReference imageRef = mStorage.getReferenceFromUrl(imageUrl);
         // delete from Storage Ref
-        imageRef.delete()
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
+        imageRef.delete();
+
+        // deleting record from FireStore post Reference
+        postRef.delete()
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
-                    public void onSuccess(Void aVoid) {
-                        // deleting record from FireStore post Reference
-                        postRef.delete()
+                    public void onComplete(@NonNull Task<Void> task) {
+                        // delete from user Catalog Ref
+                        CollectionReference userCatalog = db.collection(getString(R.string.users))
+                                .document(userID)
+                                .collection(getString(R.string.catalog).toLowerCase());
+                        userCatalog.document(postID).delete()
                                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
-                                        // delete from user Catalog Ref
-                                        CollectionReference userCatalog = db.collection(getString(R.string.users))
-                                                .document(userID)
-                                                .collection(getString(R.string.catalog).toLowerCase());
-                                        userCatalog.document(postID).delete()
-                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<Void> task) {
-                                                        Toast.makeText(getActivity(), getString(R.string.delete) + "d" + product, Toast.LENGTH_SHORT).show();
-                                                        dialog.dismiss();
+                                        Toast.makeText(getActivity(), getString(R.string.delete) + "d " + product, Toast.LENGTH_SHORT).show();
+                                        dialog.dismiss();
 
-                                                        // inform adapter of deleted item
-                                                        adapter.refresh();
-                                                    }
-                                                });
+                                        // inform adapter of deleted item
+                                        adapter.refresh();
                                     }
                                 });
                     }
                 });
+
 
     }
 
