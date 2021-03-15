@@ -83,7 +83,7 @@ public class OrdersList extends Fragment {
 
     private void getOrders() {
         PagedList.Config config = new PagedList.Config.Builder()
-                .setEnablePlaceholders(true)
+                .setEnablePlaceholders(false)
                 .setPrefetchDistance(1)
                 .setPageSize(1)
                 .build();
@@ -189,7 +189,7 @@ public class OrdersList extends Fragment {
         orders.update("orders", 0);
     }
 
-    @Override
+   /* @Override
     public void onStart() {
         super.onStart();
         adapter.startListening();
@@ -199,7 +199,7 @@ public class OrdersList extends Fragment {
     public void onStop() {
         super.onStop();
         adapter.stopListening();
-    }
+    }*/
 
     public static class BlogViewHolder extends RecyclerView.ViewHolder {
         View mView;

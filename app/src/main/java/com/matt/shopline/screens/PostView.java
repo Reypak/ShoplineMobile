@@ -96,9 +96,9 @@ public class PostView extends AppCompatActivity {
 
     private void getComments() {
         PagedList.Config config = new PagedList.Config.Builder()
-                .setEnablePlaceholders(true)
+                .setEnablePlaceholders(false)
                 .setPrefetchDistance(1)
-                .setPageSize(1)
+                .setPageSize(3)
                 .build();
 
         FirestorePagingOptions<Comment> options = new FirestorePagingOptions.Builder<Comment>()

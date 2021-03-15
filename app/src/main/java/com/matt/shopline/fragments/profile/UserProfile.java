@@ -204,7 +204,7 @@ public class UserProfile extends Fragment {
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 // in case username is empty
                 if (tvUsername.getText().toString().isEmpty()) {
-                    String username = task.getResult().get("username").toString();
+                    username = task.getResult().get("username").toString();
                     tvUsername.setText(username);
                     ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(username);
                 }
@@ -306,9 +306,11 @@ public class UserProfile extends Fragment {
         followersCount.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
-                if (value.exists()) {
-                    String followers = value.get("followers").toString();
-                    tvFollowers.setText(followers);
+                if (error == null) {
+                    if (value.exists()) {
+                        String followers = value.get("followers").toString();
+                        tvFollowers.setText(followers);
+                    }
                 }
             }
         });
@@ -606,14 +608,15 @@ public class UserProfile extends Fragment {
         // get userID Stored data from Activity
         bundle = getArguments();
         if (bundle != null) {
-//            userID = bundle.getString("userID");
-            btnEdit.setVisibility(View.GONE);
-            viewFollow.setVisibility(View.VISIBLE);
-//            btnFollow.setVisibility(View.VISIBLE);
-            // lock the drawer
-            drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+            userID = bundle.getString("userID");
+            if (!userID.equals(user.getUid())) {
+                btnEdit.setVisibility(View.GONE);
+                viewFollow.setVisibility(View.VISIBLE);
+                // lock the drawer
+                drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+            }
+            // back button
             ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
         }
     }
 
@@ -635,13 +638,16 @@ public class UserProfile extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        menu.add(Menu.NONE, 0, Menu.NONE, null)
+                .setIcon(R.drawable.ic_alt_icon)
+                .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+
         if (bundle != null) {
-            menu.add(Menu.NONE, 1, Menu.NONE, R.string.share);
-            menu.add(Menu.NONE, 2, Menu.NONE, "Report");
-        } else {
-            menu.add(Menu.NONE, 0, Menu.NONE, null)
-                    .setIcon(R.drawable.ic_alt_icon)
-                    .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+            if (!userID.equals(user.getUid())) {
+                menu.removeItem(0);
+                menu.add(Menu.NONE, 1, Menu.NONE, R.string.share);
+                menu.add(Menu.NONE, 2, Menu.NONE, "Report");
+            }
         }
         super.onCreateOptionsMenu(menu, inflater);
     }

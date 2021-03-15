@@ -637,6 +637,9 @@ public class Catalog extends Fragment {
             super(itemView);
             mView = itemView;
             img = mView.findViewById(R.id.imageView);
+            // re-post button
+            ImageButton btnRepost = mView.findViewById(R.id.btnRepost);
+            btnRepost.setColorFilter(getResources().getColor(R.color.colorHighlight));
         }
 
         public void setComments(final String postID) {
