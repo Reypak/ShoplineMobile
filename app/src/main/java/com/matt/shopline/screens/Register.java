@@ -26,7 +26,9 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -170,6 +172,7 @@ public class Register extends FragmentActivity implements OnDataPass {
                                 public void onSuccess(Void aVoid) {
                                     dialog.dismiss();
                                     openMain();
+                                    setToken(user.getUid());
                                 }
                             });
 
@@ -192,6 +195,14 @@ public class Register extends FragmentActivity implements OnDataPass {
             Toast.makeText(Register.this, "Fill in details.", Toast.LENGTH_SHORT).show();
         }
 
+    }
+
+    public void setToken(String userID) {
+        String device_token = FirebaseInstanceId.getInstance().getToken();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference userRef = db.collection("users")
+                .document(userID);
+        userRef.update("token", device_token);
     }
 
     private void setProfileImage() {

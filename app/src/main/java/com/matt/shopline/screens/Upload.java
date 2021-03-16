@@ -20,6 +20,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
@@ -33,6 +34,7 @@ import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -148,7 +150,8 @@ public class Upload extends AppCompatActivity {
                 String postID = task.getResult().getId();
 
                 Map<String, Object> data = new HashMap<>();
-                data.put("timestamp", -System.currentTimeMillis());
+                // server timestamp
+                data.put("timestamp", new Timestamp(new Date()));
 
                 userCatalog.document(postID).set(data);
 

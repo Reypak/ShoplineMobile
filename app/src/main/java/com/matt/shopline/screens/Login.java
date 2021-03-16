@@ -7,7 +7,6 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -25,7 +24,7 @@ public class Login extends AppCompatActivity {
     private EditText etEmail;
     private EditText etPwrd;
     private Button btnLogin;
-    private ProgressBar progressBar;
+//    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +56,8 @@ public class Login extends AppCompatActivity {
                             if (task.isSuccessful()) {
                                 // Sign in success, update UI with the signed-in user's information
                                 openMain();
+                                Register register = new Register();
+                                register.setToken(mAuth.getCurrentUser().getUid());
 
                                 // send broadcast to Landing page
                                 Intent intent = new Intent("finish");

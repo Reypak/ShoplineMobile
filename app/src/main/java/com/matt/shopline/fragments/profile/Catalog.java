@@ -159,15 +159,14 @@ public class Catalog extends Fragment {
         if (userID != null) {
             userCatalog = db.collection(getString(R.string.users))
                     .document(userID)
-                    .collection(getString(R.string.catalog).toLowerCase()).orderBy(getString(R.string.timestamp));
-//                    .limit(3);
+                    .collection(getString(R.string.catalog).toLowerCase()).orderBy(getString(R.string.timestamp), Query.Direction.DESCENDING);
         } else {
             // view user WishList
             userID = user.getUid();
             userCatalog = db.collection(getString(R.string.users))
                     .document(userID)
                     .collection(getString(R.string.wishlist))
-                    .orderBy(getString(R.string.timestamp));
+                    .orderBy(getString(R.string.timestamp), Query.Direction.DESCENDING);
             // negative value arrangement
         }
 
@@ -272,6 +271,15 @@ public class Catalog extends Fragment {
                                         String occupation = task.getResult().get("occupation").toString();
                                         String profileUrl = task.getResult().get("profileUrl").toString();
                                         holder.setUserData(username, occupation, getActivity(), profileUrl);
+                                    }
+                                });
+                            } else {
+                                // if post does not exist
+                                getItem(position).getReference().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        adapter.refresh();
+                                        Toast.makeText(getActivity(), "Removed Deleted Post", Toast.LENGTH_SHORT).show();
                                     }
                                 });
                             }
@@ -580,7 +588,7 @@ public class Catalog extends Fragment {
 
         Map<String, Object> data = new HashMap<>();
         // add timestamp for arrangement
-        data.put(getString(R.string.timestamp), -System.currentTimeMillis());
+        data.put(getString(R.string.timestamp), System.currentTimeMillis());
 
         userWishList.document(postID).set(data).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override

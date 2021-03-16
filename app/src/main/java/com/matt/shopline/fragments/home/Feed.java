@@ -41,11 +41,13 @@ public class Feed extends Fragment {
         // view user Feed
         userFeed = db.collection(getString(R.string.users))
                 .document(userID)
-                .collection("timeline")
+                .collection("feed")
                 .orderBy(getString(R.string.timestamp), Query.Direction.DESCENDING);
 
         mFeedList = rootView.findViewById(R.id.recView);
         refreshLayout = rootView.findViewById(R.id.swipeRefresh);
+        // todo: re enable
+        refreshLayout.setEnabled(false);
         mFeedList.setHasFixedSize(true);
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mFeedList.setLayoutManager(mLayoutManager);

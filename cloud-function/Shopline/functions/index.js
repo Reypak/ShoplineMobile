@@ -24,7 +24,7 @@ const db = admin.firestore();
 						const id = doc.id;
 
 						// delete document from followers timelines
-						const userTimeline = db.doc(`users/${id}/timeline/${postID}`)
+						const userFeed = db.doc(`users/${id}/feed/${postID}`)
 						.delete();
 
 						// console.log(doc.id);
@@ -41,8 +41,8 @@ const db = admin.firestore();
 				const snapshot = followersRef.get().then(snapshot => {
 					snapshot.forEach(doc => {
 						const id = doc.id;
-
-						const userTimeline = db.doc(`users/${id}/timeline/${postID}`)
+						// add to timeline
+						const userFeed = db.doc(`users/${id}/feed/${postID}`)
 						.set({
 							timestamp : admin.firestore.FieldValue.serverTimestamp()
 						});
@@ -166,5 +166,52 @@ const db = admin.firestore();
 			// console.log('New follower :' , followerID);
 			
 		}
+		return null;
+	});
+
+	// add posts to timeline
+	exports.addFeedPosts = functions.firestore.document('users/{userID}/suggestions/{followingID}')
+	.onWrite((change, context) => {
+		const followingID = context.params.followingID;
+		const userID = context.params.userID;
+
+		// snap users timeline posts
+		const feedRef = db.collection(`users/${userID}/feed`).get().then(snap => {
+			size = snap.size
+			// console.log('Posts :' , size);
+			
+			if (size < 15) {
+				// console.log('Size is < 15');
+
+				// get all users following
+				const followingRef = db.collection(`users/${userID}/following`).get().then(snap => {
+					
+					// each user
+					snap.forEach(doc => {
+					const id = doc.id;
+
+						// get most recent posts (2) from users catalog
+						const catalogRef = db.collection(`users/${id}/catalog`).orderBy('timestamp', 'desc').limit(5);
+						
+						catalogRef.get().then(snapshot => {
+							
+							// for each post
+							snapshot.forEach(doc => {
+								const postID = doc.id;
+								const timestamp = doc.data().timestamp;
+
+								// set post id to user timeline
+								const userFeed = db.doc(`users/${userID}/feed/${postID}`)
+								.set({
+									timestamp : `${timestamp}`
+								});
+
+								// console.log('Added: ', postID);
+							});
+						});
+					});
+				});
+			}
+		});
 		return null;
 	});

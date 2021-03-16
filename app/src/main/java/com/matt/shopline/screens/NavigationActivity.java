@@ -2,6 +2,7 @@ package com.matt.shopline.screens;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -16,7 +17,6 @@ import com.matt.shopline.R;
 import com.matt.shopline.fragments.Home;
 import com.matt.shopline.fragments.Notifications;
 import com.matt.shopline.fragments.Search;
-import com.matt.shopline.fragments.home.Feed;
 import com.matt.shopline.fragments.home.Suggestions;
 import com.matt.shopline.fragments.profile.UserProfile;
 
@@ -29,7 +29,7 @@ public class NavigationActivity extends AppCompatActivity implements BottomNavig
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
 
-      /*  new Handler().postDelayed(new Runnable() {
+        new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (user != null) {
@@ -38,10 +38,6 @@ public class NavigationActivity extends AppCompatActivity implements BottomNavig
                 }
             }
         }, 100);
-*/
-
-        // load Home Fragment
-        loadFragment(new Home());
 
         //getting bottom navigation view and attaching the listener
         navigation = findViewById(R.id.navigation);

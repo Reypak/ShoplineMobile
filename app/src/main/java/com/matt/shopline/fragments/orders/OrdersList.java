@@ -147,6 +147,15 @@ public class OrdersList extends Fragment {
                                     }
                                 });
                             }
+                        } else {
+                            // if post does not exist
+                            getItem(position).getReference().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    adapter.refresh();
+                                    Toast.makeText(getActivity(), "Removed Deleted Post", Toast.LENGTH_SHORT).show();
+                                }
+                            });
                         }
                     }
                 });
@@ -188,18 +197,6 @@ public class OrdersList extends Fragment {
                 .document(getString(R.string.title_orders).toLowerCase());
         orders.update("orders", 0);
     }
-
-   /* @Override
-    public void onStart() {
-        super.onStart();
-        adapter.startListening();
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        adapter.stopListening();
-    }*/
 
     public static class BlogViewHolder extends RecyclerView.ViewHolder {
         View mView;
