@@ -53,7 +53,7 @@ public class Upload extends AppCompatActivity {
         setContentView(R.layout.activity_upload);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
+//        getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setTitle(R.string.title_upload);
 
         viewOffers = findViewById(R.id.viewOffers);
@@ -151,7 +151,7 @@ public class Upload extends AppCompatActivity {
 
                 Map<String, Object> data = new HashMap<>();
                 // server timestamp
-                data.put("timestamp", new Timestamp(new Date()));
+                data.put(getString(R.string.timestamp), new Timestamp(new Date()));
 
                 userCatalog.document(postID).set(data);
 

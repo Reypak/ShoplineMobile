@@ -1,13 +1,14 @@
-package com.matt.shopline;
+package com.matt.shopline.objects;
 
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
-public class MyFirebaseMessagingService extends FirebaseMessagingService {
+public class FMService extends FirebaseMessagingService {
     private static final String TAG = "MESSAGE";
 
     @Override

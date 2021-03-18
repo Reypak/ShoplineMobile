@@ -267,9 +267,11 @@ public class Catalog extends Fragment {
                                 userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                                     @Override
                                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                        username = task.getResult().get("username").toString();
-                                        String occupation = task.getResult().get("occupation").toString();
-                                        String profileUrl = task.getResult().get("profileUrl").toString();
+                                        User user;
+                                        user = task.getResult().toObject(User.class); // cast result to object
+                                        username = user.getUsername();
+                                        String occupation = user.getOccupation();
+                                        String profileUrl = user.getProfileUrl();
                                         holder.setUserData(username, occupation, getActivity(), profileUrl);
                                     }
                                 });

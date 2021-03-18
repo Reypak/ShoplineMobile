@@ -12,13 +12,22 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/colorAccent" />
+
         <service
-            android:name=".MyFirebaseMessagingService"
+            android:name=".objects.FMService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
+        <activity android:name=".screens.follow.FollowView" />
         <activity android:name=".screens.PostView" />
         <activity android:name=".screens.Orders" />
         <activity

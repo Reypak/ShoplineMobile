@@ -45,12 +45,14 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.matt.shopline.R;
 import com.matt.shopline.adapters.TabAdapter;
 import com.matt.shopline.screens.LandingPage;
+import com.matt.shopline.screens.follow.FollowView;
 import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
@@ -66,7 +68,7 @@ public class UserProfile extends Fragment {
     private TextView tvUsername, tvLocation, tvBio, tvEmail, tvPhone, tvOccupation, tvWebsite, tvFollowers, tvCatalog;
     private String phone, location, bio, email, username, occupation, website;
     private FirebaseUser user;
-    private View downArrow, expandedView, viewFollow;
+    private View downArrow, expandedView, viewFollow, viewFollowers;
     private Button btnEdit, btnFollow;
     private EditText etUsername, etBio, etPhone, etLocation, etOccupation, etWebsite;
     private Uri FilePathUri;
@@ -115,6 +117,7 @@ public class UserProfile extends Fragment {
         btnFollow = rootView.findViewById(R.id.btnFollow);
         viewFollow = rootView.findViewById(R.id.viewFollow);
         downArrow = rootView.findViewById(R.id.downArrow);
+        viewFollowers = rootView.findViewById(R.id.btnFollowers);
         expandedView = rootView.findViewById(R.id.expandedView);
         expandedView.setVisibility(View.GONE);
 
@@ -168,6 +171,21 @@ public class UserProfile extends Fragment {
                 }
                 drawer.closeDrawer(GravityCompat.END);
                 return false;
+            }
+        });
+
+        viewFollowers.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getActivity(), FollowView.class);
+                if (userID != null) {
+                    // selected user
+                    intent.putExtra("userID", userID);
+                } else {
+                    // view current user
+                    intent.putExtra("userID", user.getUid());
+                }
+                startActivity(intent);
             }
         });
 
@@ -353,6 +371,8 @@ public class UserProfile extends Fragment {
                             //  Deleting the document from current users Following collection
                             userFollowing.document(userID).delete();
 
+                            // unsubscribe user
+                            FirebaseMessaging.getInstance().unsubscribeFromTopic(userID);
                         }
                     });
                 }
@@ -413,7 +433,7 @@ public class UserProfile extends Fragment {
         });*/
     }
 
-    private void followUser(String userID) {
+    private void followUser(final String userID) {
         // followed User ref
         CollectionReference userFollowers = db.collection("users")
                 .document(userID)
@@ -432,6 +452,9 @@ public class UserProfile extends Fragment {
 
         // send followed userID to current user Following collection
         userFollowing.document(userID).set(userdata);
+
+        // subscribe to user
+        FirebaseMessaging.getInstance().subscribeToTopic(userID);
     }
 
     private void getProfileImage() {

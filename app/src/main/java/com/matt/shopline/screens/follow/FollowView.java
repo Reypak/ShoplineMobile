@@ -1,4 +1,4 @@
-package com.matt.shopline.screens;
+package com.matt.shopline.screens.follow;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,48 +10,39 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
 import com.matt.shopline.R;
-import com.matt.shopline.adapters.OrdersTabAdapter;
+import com.matt.shopline.adapters.FollowTabAdapter;
 
 
-public class Orders extends AppCompatActivity {
+public class FollowView extends AppCompatActivity {
     private TabLayout tabLayout;
     private ViewPager viewPager;
-    private OrdersTabAdapter adapter;
+    private FollowTabAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_orders);
+        setContentView(R.layout.activity_follow_view);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-//        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setTitle(R.string.title_orders);
+        getSupportActionBar().setTitle(R.string.followers);
 
         tabLayout = findViewById(R.id.tabLayout);
         viewPager = findViewById(R.id.viewPager);
-        getTabs();
 
         Intent intent = getIntent();
-        Bundle bundle = intent.getExtras();
-        if (bundle != null) {
-            // select second tab after 1.5s
-            tabLayout.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    tabLayout.getTabAt(1).select();
-                }
-            }, 1500);
-        }
+        String userID = intent.getStringExtra("userID");
+
+        getTabs(userID);
 
     }
 
-    private void getTabs() {
-        tabLayout.addTab(tabLayout.newTab().setText(R.string.customers));
-        tabLayout.addTab(tabLayout.newTab().setText(R.string.you));
+    private void getTabs(String userID) {
+        tabLayout.addTab(tabLayout.newTab().setText(R.string.followers));
+        tabLayout.addTab(tabLayout.newTab().setText(R.string.following));
 
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
-        adapter = new OrdersTabAdapter(this, getSupportFragmentManager(), tabLayout.getTabCount());
+        adapter = new FollowTabAdapter(this, getSupportFragmentManager(), tabLayout.getTabCount(), userID);
         viewPager.setAdapter(adapter);
 
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));

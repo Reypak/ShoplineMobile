@@ -1,9 +1,19 @@
+const nodemailer = require('nodemailer');
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 admin.initializeApp(functions.config().firebase);
 
 const db = admin.firestore();
 // const now = admin.firestore.Timestamp.now();
+const APP_NAME = 'Shopline';
+var transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'shoplineuganda@gmail.com',
+        pass: 'Shopline12?'
+    }
+});
+
 
 	// send postID to all followers
 	exports.sendPostID = functions.firestore.document('users/{userID}/catalog/{postID}')
@@ -37,11 +47,33 @@ const db = admin.firestore();
 			});
 
 		} else {
+				// get username
+				const userRef = db.doc(`users/${userID}`).get().then(doc => {
+					username = doc.data().username;
+					
+					// send notification to subscribers (Followers)
+					var topic = userID; // set topic 
+					var message = {
+						notification: {
+							title: `${APP_NAME}`,
+							body: `${username} posted a new product.`,
+						},
+						data: {
+							postID: postID
+						},
+						topic: topic
+					};
+					admin.messaging().send(message);
+
+					/*.then(response => {
+						console.log('Successful');
+					});*/
+				});
 
 				const snapshot = followersRef.get().then(snapshot => {
 					snapshot.forEach(doc => {
 						const id = doc.id;
-						// add to timeline
+						// add to follower feed
 						const userFeed = db.doc(`users/${id}/feed/${postID}`)
 						.set({
 							timestamp : admin.firestore.FieldValue.serverTimestamp()
@@ -50,7 +82,7 @@ const db = admin.firestore();
 						// console.log(doc.id);
 					});
 				});
-
+				// add increment to user catalog
 				catalogRef.get().then((docSnapshot) => {
 					 if (docSnapshot.exists) {
 						catalogRef.update({
@@ -61,7 +93,7 @@ const db = admin.firestore();
 							catalog : admin.firestore.FieldValue.increment(1)
 						});
 					 }
-				});
+				});		
 		}
 
 		/*
@@ -162,7 +194,6 @@ const db = admin.firestore();
 				 }
 			});
 			
-			
 			// console.log('New follower :' , followerID);
 			
 		}
@@ -203,7 +234,7 @@ const db = admin.firestore();
 								// set post id to user timeline
 								const userFeed = db.doc(`users/${userID}/feed/${postID}`)
 								.set({
-									timestamp : `${timestamp}`
+									timestamp : timestamp
 								});
 
 								// console.log('Added: ', postID);
@@ -213,5 +244,80 @@ const db = admin.firestore();
 				});
 			}
 		});
+		return null;
+	});
+
+	// send emails of order to buyer and seller
+	exports.sendEmail = functions.firestore.document('users/{userID}/orders_customer/{orderId}')
+    .onCreate((snap, context) => {
+    	const userID = context.params.userID;
+    	const postID = snap.data().postID;
+    	const customerID = snap.data().userID;
+    	// get post product name
+    	const postRef = db.doc(`posts/${postID}`).get().then(doc => {
+    		product = doc.data().product;
+    		// get customer's name and email
+    		const customerRef = db.doc(`users/${customerID}`).get().then(doc => {
+    			customerName = doc.data().username;
+    			customerEmail = doc.data().email;
+    			// get buyer's name and email
+		    	const userRef = db.doc(`users/${userID}`);
+		    	return userRef.get().then(doc => {
+		    		email = doc.data().email;
+		    		username = doc.data().username;
+			    	// create email
+					const mailSeller = {
+					    from: `${APP_NAME} <noreply@firebase.com>`,
+					    to: email,
+					    subject: `${username}, You have a New Order!`,
+					    html: `<h1>${APP_NAME}</h1>
+						    
+						    <p>Hi ${username}, You have a new order from a customer. Here are the details.</p>
+						    
+						    <h2>Order Details</h2>
+						    <p> <b>Product: </b>${product} </p>
+						    <p> <b>Quantity: </b>${snap.data().quantity} </p>
+						    <br>
+						    <h2>Customer Details</h2>
+						    <p> <b>Username: </b>${customerName} </p>
+						    <p> <b>Email: </b>${customerEmail} </p>
+						    <p> <b>Deliever to: </b>${snap.data().location} </p>
+						    <br>
+						    <p> Thank you for using <b>${APP_NAME}.</b></p>`
+					};
+				
+					const mailBuyer = {
+					    from: `${APP_NAME} <noreply@firebase.com>`,
+					    to: customerEmail,
+					    subject: `${customerName}, You have placed an Order!`,
+					    html: `<h1>${APP_NAME}</h1>
+						    
+						    <p>Hi ${customerName}, You have placed a new order. Here are the details.</p>
+						    
+						    <h2>Order Details</h2>
+						    <p> <b>Product: </b>${product} </p>
+						    <p> <b>Quantity: </b>${snap.data().quantity} </p>
+						    <p> <b>Deliever to: </b>${snap.data().location} </p>
+						    <p> <b>Seller's Email: </b>${email} </p>
+						    <br>
+						    <p> Thank you for using <b>${APP_NAME}.</b></p>`
+					};
+					// send to seller
+					return transporter.sendMail(mailSeller, (error, data) => {
+					    if (error) {
+					        console.log(error)
+					        return
+					    }
+					    // console.log("Sent!")
+					    // send email to buyer
+						return transporter.sendMail(mailBuyer);
+					});
+				
+			    	
+		    	});
+    		});
+
+    	});
+    	
 		return null;
 	});

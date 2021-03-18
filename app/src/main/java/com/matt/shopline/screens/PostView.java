@@ -32,6 +32,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.matt.shopline.R;
 import com.matt.shopline.objects.Comment;
+import com.matt.shopline.objects.User;
 import com.squareup.picasso.Picasso;
 
 import java.text.ParseException;
@@ -127,9 +128,10 @@ public class PostView extends AppCompatActivity {
                     userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            String profileUrl = task.getResult().get("profileUrl").toString();
-                            String username = task.getResult().get("username").toString();
-                            String occupation = task.getResult().get("occupation").toString();
+                            User user = task.getResult().toObject(User.class);
+                            String profileUrl = user.getProfileUrl();
+                            String username = user.getUsername();
+                            String occupation = user.getOccupation();
 
                             holder.setUserData(username, occupation, getApplicationContext(), profileUrl, model.getUserID());
 

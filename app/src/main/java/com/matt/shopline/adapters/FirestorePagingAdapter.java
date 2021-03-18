@@ -2,10 +2,16 @@ package com.matt.shopline.adapters;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -22,23 +28,28 @@ import com.firebase.ui.firestore.paging.LoadingState;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.matt.shopline.R;
 import com.matt.shopline.objects.User;
+import com.matt.shopline.screens.Orders;
 import com.squareup.picasso.Picasso;
 
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.FirestorePagingAdapter<User, com.matt.shopline.adapters.FirestorePagingAdapter.BlogViewHolder> {
 
@@ -186,6 +197,28 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
             }
         });
 
+        btnOrder.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBindViewHolder(holder, position, model);
+
+                // delay to allow data collection
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        // post is for another user load order Window
+                        if (!duserID.equals(user.getUid())) {
+                            holder.setOrderData(offers, duserID, postID);
+                        } else {
+                            // open orders
+                            loadActivity(Orders.class, null, null);
+
+                        }
+                    }
+                }, 100);
+
+            }
+        });
 
         // post comments
         holder.setComments(getItem(position).getId());
@@ -198,7 +231,7 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
         return new BlogViewHolder(view);
     }
 
-    @Override
+/*    @Override
     protected void onLoadingStateChanged(@NonNull LoadingState state) {
         switch (state) {
             case LOADING_INITIAL:
@@ -220,7 +253,7 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
             case FINISHED:
 //                refreshLayout.setRefreshing(false);
         }
-    }
+    }*/
 
     public class BlogViewHolder extends RecyclerView.ViewHolder {
         View mView;
@@ -240,6 +273,94 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
         public void setComments(final String postID) {
             ImageButton btnComment = mView.findViewById(R.id.btnComment);
 
+        }
+
+        public void setOrderData(String offers, final String userID, final String postID) {
+            final BottomSheetDialog dialog = new BottomSheetDialog(mView.getContext(), R.style.BottomSheetDialog);
+            dialog.setContentView(R.layout.bottom_sheet);
+
+            TextView tvProduct = dialog.findViewById(R.id.tvProduct);
+            TextView tvPrice = dialog.findViewById(R.id.tvPrice);
+            TextView tvOffers = dialog.findViewById(R.id.tvOffers);
+            TextView tvLocation = dialog.findViewById(R.id.tvLocation);
+            final EditText etQty = dialog.findViewById(R.id.etQuantity);
+            TextView btnWish = dialog.findViewById(R.id.btnWishlist);
+            TextView btnOrder = dialog.findViewById(R.id.btnOrder);
+            TextView btnAdd = dialog.findViewById(R.id.btnAdd);
+            TextView btnMin = dialog.findViewById(R.id.btnMin);
+
+            tvProduct.setText(textView.getText().toString());
+            tvPrice.setText(textView2.getText().toString());
+
+            // get shared prefs
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+            final String location = sharedPreferences.getString(context.getString(R.string.location).toLowerCase(), null);
+
+            tvLocation.setText(R.string.no_location);
+
+            if (location != null && !location.isEmpty()) {
+                tvLocation.setText(location);
+            }
+
+            if (offers != null) {
+                tvOffers.setText(offers);
+            }
+
+            btnAdd.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int qty = Integer.parseInt(etQty.getText().toString());
+                    qty++; // increment value
+                    etQty.setText(String.valueOf(qty));
+                }
+            });
+            btnMin.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int qty = Integer.parseInt(etQty.getText().toString());
+                    // stop at one
+                    if (qty > 1) {
+                        qty--; // decrement
+                        etQty.setText(String.valueOf(qty));
+                    }
+
+                }
+            });
+
+            btnOrder.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (!etQty.getText().toString().equals("0")) {
+                        // dialog box for confirmation
+                        final AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                        builder.setTitle("Confirm Order?");
+                        builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                Order(userID, postID, etQty.getText().toString(), location);
+                                dialog.dismiss();
+                            }
+                        });
+                        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                            }
+                        });
+                        builder.show();
+                    }
+                }
+            });
+
+            btnWish.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    addWishList();
+                    dialog.dismiss();
+                }
+            });
+
+            dialog.show();
         }
 
         public void setData(String product, String price, String description, String timestamp) {
@@ -367,5 +488,81 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
         }
 
         return output;
+    }
+
+    private void addWishList() {
+        // current user wishList Ref
+        CollectionReference userWishList = db.collection(context.getString(R.string.users))
+                .document(user.getUid())
+                .collection(context.getString(R.string.wishlist));
+
+        Map<String, Object> data = new HashMap<>();
+        // add timestamp for arrangement
+        data.put(context.getString(R.string.timestamp), System.currentTimeMillis());
+
+        userWishList.document(postID).set(data).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                Toast.makeText(context, "Added to " + context.getString(R.string.wishlist), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+    }
+
+    private void Order(final String userID, final String postID, String qty, String location) {
+        // orders ref
+        userOrders = db.collection(context.getString(R.string.users)).document(userID)
+                .collection("orders_customer");
+        final Map<String, Object> data = new HashMap<>();
+        data.put(context.getString(R.string.timestamp), -System.currentTimeMillis());
+        data.put("quantity", qty);
+        data.put("userID", user.getUid());
+        data.put("postID", postID);
+        data.put(context.getString(R.string.location).toLowerCase(), location);
+
+        // send currentUserID to post likes collection
+        userOrders.add(data).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentReference> task) {
+                // current user order ref
+                userOrders = db.collection(context.getString(R.string.users)).document(user.getUid())
+                        .collection("orders_me");
+                // remove redundant current userID
+                data.remove("userID");
+                userOrders.add(data);
+                Toast.makeText(context, "Order Complete. Thank you for using Shopline", Toast.LENGTH_SHORT).show();
+
+                loadActivity(Orders.class, context.getString(R.string.you), "");
+                // load orders window
+
+                DocumentReference orders = db.collection(context.getString(R.string.users))
+                        .document(userID)
+                        .collection("data")
+                        .document(context.getString(R.string.title_orders).toLowerCase());
+
+                orders.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            // update orders by 1
+                            documentSnapshot.getReference().update("orders", FieldValue.increment(1));
+                        } else {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put(context.getString(R.string.title_orders).toLowerCase(), 1);
+                            documentSnapshot.getReference().set(data);
+                        }
+                    }
+                });
+
+            }
+        });
+    }
+
+    private void loadActivity(Class aClass, String name, String value) {
+        Intent intent = new Intent(context, aClass);
+        if (name != null) {
+            intent.putExtra(name, value); // send intent to load You Tab
+        }
+        context.startActivity(intent);
     }
 }
