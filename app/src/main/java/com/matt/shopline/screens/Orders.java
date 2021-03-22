@@ -24,7 +24,6 @@ public class Orders extends AppCompatActivity {
         setContentView(R.layout.activity_orders);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-//        getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setTitle(R.string.title_orders);
 
         tabLayout = findViewById(R.id.tabLayout);

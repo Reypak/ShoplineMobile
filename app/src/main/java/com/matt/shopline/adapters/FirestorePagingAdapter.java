@@ -24,7 +24,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.firebase.ui.firestore.paging.FirestorePagingOptions;
-import com.firebase.ui.firestore.paging.LoadingState;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -78,6 +77,58 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
         super(options);
         this.context = context;
         user = FirebaseAuth.getInstance().getCurrentUser();
+    }
+
+    public static String durationFromNow(Date startDate) {
+
+        long different = System.currentTimeMillis() - startDate.getTime();
+
+        long secondsInMilli = 1000;
+        long minutesInMilli = secondsInMilli * 60;
+        long hoursInMilli = minutesInMilli * 60;
+        long daysInMilli = hoursInMilli * 24;
+        long weeksInMilli = daysInMilli * 7;
+        long monthsInMilli = daysInMilli * 30;
+        long yearsInMilli = monthsInMilli * 12;
+
+        long elapsedYears = different / yearsInMilli;
+        different = different % yearsInMilli;
+
+        long elapsedMonths = different / monthsInMilli;
+        different = different % monthsInMilli;
+
+        long elapsedWeeks = different / weeksInMilli;
+        different = different % weeksInMilli;
+
+        long elapsedDays = different / daysInMilli;
+        different = different % daysInMilli;
+
+        long elapsedHours = different / hoursInMilli;
+        different = different % hoursInMilli;
+
+        long elapsedMinutes = different / minutesInMilli;
+        different = different % minutesInMilli;
+
+        long elapsedSeconds = different / secondsInMilli;
+
+        String output = "";
+        if (elapsedYears > 0) {
+            output += elapsedYears + "y";
+        } else if (elapsedYears > 0 || elapsedMonths > 0) {
+            output += elapsedMonths + " mon";
+        } else if (elapsedMonths > 0 || elapsedWeeks > 0) {
+            output += elapsedWeeks + "w";
+        } else if (elapsedWeeks > 0 || elapsedDays > 0) {
+            output += elapsedDays + "d";
+        } else if (elapsedDays > 0 || elapsedHours > 0) {
+            output += elapsedHours + "h";
+        } else if (elapsedHours > 0 || elapsedMinutes > 0) {
+            output += elapsedMinutes + "m";
+        } else if (elapsedMinutes > 0 || elapsedSeconds > 0) {
+            output += elapsedSeconds + "s";
+        }
+
+        return output;
     }
 
     @Override
@@ -224,13 +275,6 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
         holder.setComments(getItem(position).getId());
     }
 
-    @NonNull
-    @Override
-    public BlogViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.post_item, parent, false);
-        return new BlogViewHolder(view);
-    }
-
 /*    @Override
     protected void onLoadingStateChanged(@NonNull LoadingState state) {
         switch (state) {
@@ -254,6 +298,89 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
 //                refreshLayout.setRefreshing(false);
         }
     }*/
+
+    @NonNull
+    @Override
+    public BlogViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.post_item, parent, false);
+        return new BlogViewHolder(view);
+    }
+
+    private void addWishList() {
+        // current user wishList Ref
+        CollectionReference userWishList = db.collection(context.getString(R.string.users))
+                .document(user.getUid())
+                .collection(context.getString(R.string.wishlist));
+
+        Map<String, Object> data = new HashMap<>();
+        // add timestamp for arrangement
+        data.put(context.getString(R.string.timestamp), System.currentTimeMillis());
+
+        userWishList.document(postID).set(data).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                Toast.makeText(context, "Added to " + context.getString(R.string.wishlist), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+    }
+
+    private void Order(final String userID, final String postID, String qty, String location) {
+        // orders ref
+        userOrders = db.collection(context.getString(R.string.users)).document(userID)
+                .collection("orders_customer");
+        final Map<String, Object> data = new HashMap<>();
+        data.put(context.getString(R.string.timestamp), -System.currentTimeMillis());
+        data.put("quantity", qty);
+        data.put("userID", user.getUid());
+        data.put("postID", postID);
+        data.put(context.getString(R.string.location).toLowerCase(), location);
+
+        // send currentUserID to post likes collection
+        userOrders.add(data).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentReference> task) {
+                // current user order ref
+                userOrders = db.collection(context.getString(R.string.users)).document(user.getUid())
+                        .collection("orders_me");
+                // remove redundant current userID
+                data.remove("userID");
+                userOrders.add(data);
+                Toast.makeText(context, "Order Complete. Thank you for using Shopline", Toast.LENGTH_SHORT).show();
+
+                loadActivity(Orders.class, context.getString(R.string.you), "");
+                // load orders window
+
+                DocumentReference orders = db.collection(context.getString(R.string.users))
+                        .document(userID)
+                        .collection("data")
+                        .document(context.getString(R.string.title_orders).toLowerCase());
+
+                orders.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            // update orders by 1
+                            documentSnapshot.getReference().update("orders", FieldValue.increment(1));
+                        } else {
+                            Map<String, Object> data = new HashMap<>();
+                            data.put(context.getString(R.string.title_orders).toLowerCase(), 1);
+                            documentSnapshot.getReference().set(data);
+                        }
+                    }
+                });
+
+            }
+        });
+    }
+
+    private void loadActivity(Class aClass, String name, String value) {
+        Intent intent = new Intent(context, aClass);
+        if (name != null) {
+            intent.putExtra(name, value); // send intent to load You Tab
+        }
+        context.startActivity(intent);
+    }
 
     public class BlogViewHolder extends RecyclerView.ViewHolder {
         View mView;
@@ -436,133 +563,5 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
                     .placeholder(R.drawable.ic_launcher_foreground)
                     .into(img);
         }
-    }
-
-    public static String durationFromNow(Date startDate) {
-
-        long different = System.currentTimeMillis() - startDate.getTime();
-
-        long secondsInMilli = 1000;
-        long minutesInMilli = secondsInMilli * 60;
-        long hoursInMilli = minutesInMilli * 60;
-        long daysInMilli = hoursInMilli * 24;
-        long weeksInMilli = daysInMilli * 7;
-        long monthsInMilli = daysInMilli * 30;
-        long yearsInMilli = monthsInMilli * 12;
-
-        long elapsedYears = different / yearsInMilli;
-        different = different % yearsInMilli;
-
-        long elapsedMonths = different / monthsInMilli;
-        different = different % monthsInMilli;
-
-        long elapsedWeeks = different / weeksInMilli;
-        different = different % weeksInMilli;
-
-        long elapsedDays = different / daysInMilli;
-        different = different % daysInMilli;
-
-        long elapsedHours = different / hoursInMilli;
-        different = different % hoursInMilli;
-
-        long elapsedMinutes = different / minutesInMilli;
-        different = different % minutesInMilli;
-
-        long elapsedSeconds = different / secondsInMilli;
-
-        String output = "";
-        if (elapsedYears > 0) {
-            output += elapsedYears + "y";
-        } else if (elapsedYears > 0 || elapsedMonths > 0) {
-            output += elapsedMonths + " mon";
-        } else if (elapsedMonths > 0 || elapsedWeeks > 0) {
-            output += elapsedWeeks + "w";
-        } else if (elapsedWeeks > 0 || elapsedDays > 0) {
-            output += elapsedDays + "d";
-        } else if (elapsedDays > 0 || elapsedHours > 0) {
-            output += elapsedHours + "h";
-        } else if (elapsedHours > 0 || elapsedMinutes > 0) {
-            output += elapsedMinutes + "m";
-        } else if (elapsedMinutes > 0 || elapsedSeconds > 0) {
-            output += elapsedSeconds + "s";
-        }
-
-        return output;
-    }
-
-    private void addWishList() {
-        // current user wishList Ref
-        CollectionReference userWishList = db.collection(context.getString(R.string.users))
-                .document(user.getUid())
-                .collection(context.getString(R.string.wishlist));
-
-        Map<String, Object> data = new HashMap<>();
-        // add timestamp for arrangement
-        data.put(context.getString(R.string.timestamp), System.currentTimeMillis());
-
-        userWishList.document(postID).set(data).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                Toast.makeText(context, "Added to " + context.getString(R.string.wishlist), Toast.LENGTH_SHORT).show();
-            }
-        });
-
-    }
-
-    private void Order(final String userID, final String postID, String qty, String location) {
-        // orders ref
-        userOrders = db.collection(context.getString(R.string.users)).document(userID)
-                .collection("orders_customer");
-        final Map<String, Object> data = new HashMap<>();
-        data.put(context.getString(R.string.timestamp), -System.currentTimeMillis());
-        data.put("quantity", qty);
-        data.put("userID", user.getUid());
-        data.put("postID", postID);
-        data.put(context.getString(R.string.location).toLowerCase(), location);
-
-        // send currentUserID to post likes collection
-        userOrders.add(data).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentReference> task) {
-                // current user order ref
-                userOrders = db.collection(context.getString(R.string.users)).document(user.getUid())
-                        .collection("orders_me");
-                // remove redundant current userID
-                data.remove("userID");
-                userOrders.add(data);
-                Toast.makeText(context, "Order Complete. Thank you for using Shopline", Toast.LENGTH_SHORT).show();
-
-                loadActivity(Orders.class, context.getString(R.string.you), "");
-                // load orders window
-
-                DocumentReference orders = db.collection(context.getString(R.string.users))
-                        .document(userID)
-                        .collection("data")
-                        .document(context.getString(R.string.title_orders).toLowerCase());
-
-                orders.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                    @Override
-                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        if (documentSnapshot.exists()) {
-                            // update orders by 1
-                            documentSnapshot.getReference().update("orders", FieldValue.increment(1));
-                        } else {
-                            Map<String, Object> data = new HashMap<>();
-                            data.put(context.getString(R.string.title_orders).toLowerCase(), 1);
-                            documentSnapshot.getReference().set(data);
-                        }
-                    }
-                });
-
-            }
-        });
-    }
-
-    private void loadActivity(Class aClass, String name, String value) {
-        Intent intent = new Intent(context, aClass);
-        if (name != null) {
-            intent.putExtra(name, value); // send intent to load You Tab
-        }
-        context.startActivity(intent);
     }
 }

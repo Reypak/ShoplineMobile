@@ -17,6 +17,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.matt.shopline.R;
 
 public class Login extends AppCompatActivity {
@@ -58,6 +59,10 @@ public class Login extends AppCompatActivity {
                                 openMain();
                                 Register register = new Register();
                                 register.setToken(mAuth.getCurrentUser().getUid());
+
+                                // subscribe Notifications
+                                // TODO : Change to Register Window
+                                FirebaseMessaging.getInstance().subscribeToTopic(mAuth.getCurrentUser().getUid() + "_notifications");
 
                                 // send broadcast to Landing page
                                 Intent intent = new Intent("finish");

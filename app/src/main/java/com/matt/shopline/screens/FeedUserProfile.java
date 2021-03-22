@@ -7,7 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.matt.shopline.R;
-import com.matt.shopline.fragments.profile.UserProfile;
+import com.matt.shopline.fragments.profile.Profile;
 
 public class FeedUserProfile extends AppCompatActivity {
 
@@ -16,7 +16,7 @@ public class FeedUserProfile extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_feed_user_profile);
 
-        loadFragment(new UserProfile());
+        loadFragment(new Profile());
     }
 
     private boolean loadFragment(Fragment fragment) {

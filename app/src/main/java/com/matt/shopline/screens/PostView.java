@@ -59,7 +59,7 @@ public class PostView extends AppCompatActivity {
         setContentView(R.layout.activity_post_view);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
+//        getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setTitle(R.string.comments);
 
         user = FirebaseAuth.getInstance().getCurrentUser();

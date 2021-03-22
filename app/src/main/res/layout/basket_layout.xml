@@ -17,10 +17,9 @@
         android:layout_height="18dp"
         android:layout_gravity="end|top"
         android:layout_marginTop="5dp"
-        android:background="@drawable/card_background"
-        android:backgroundTint="@color/colorHighlight"
+        android:background="@drawable/bottom_nav_bg"
         android:gravity="center"
-        android:padding="3dp"
+        android:padding="2dp"
         android:textColor="@android:color/white"
         android:textSize="10sp" />
 </FrameLayout>

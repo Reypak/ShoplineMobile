@@ -154,40 +154,6 @@ public class Suggestions extends Fragment {
         mSuggestionList.setAdapter(adapter);
     }
 
-    public static class BlogViewHolder extends RecyclerView.ViewHolder {
-        View mView;
-
-        public BlogViewHolder(final View itemView) {
-            super(itemView);
-            mView = itemView;
-        }
-
-        public void setUsername(String username) {
-            TextView textView = mView.findViewById(R.id.Username);
-            textView.setText(username);
-        }
-
-        public void setOccupation(String occupation) {
-            TextView textView = mView.findViewById(R.id.tvOccupation);
-            if (occupation.isEmpty()) {
-                textView.setVisibility(View.GONE);
-            } else {
-                textView.setText(occupation);
-            }
-
-        }
-
-        public void setImageURL(final Context ctx, String imageURL) {
-            ImageView img = mView.findViewById(R.id.profile_image);
-            Picasso.with(ctx)
-                    .load(imageURL)
-                    .fit()
-                    .centerInside()
-                    .placeholder(R.drawable.ic_launcher_foreground)
-                    .into(img);
-        }
-    }
-
     private void checkSuggestions() {
         userSuggestions.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
@@ -238,6 +204,40 @@ public class Suggestions extends Fragment {
     public void onStop() {
         super.onStop();
         adapter.stopListening();
+    }
+
+    public static class BlogViewHolder extends RecyclerView.ViewHolder {
+        View mView;
+
+        public BlogViewHolder(final View itemView) {
+            super(itemView);
+            mView = itemView;
+        }
+
+        public void setUsername(String username) {
+            TextView textView = mView.findViewById(R.id.Username);
+            textView.setText(username);
+        }
+
+        public void setOccupation(String occupation) {
+            TextView textView = mView.findViewById(R.id.tvOccupation);
+            if (occupation.isEmpty()) {
+                textView.setVisibility(View.GONE);
+            } else {
+                textView.setText(occupation);
+            }
+
+        }
+
+        public void setImageURL(final Context ctx, String imageURL) {
+            ImageView img = mView.findViewById(R.id.profile_image);
+            Picasso.with(ctx)
+                    .load(imageURL)
+                    .fit()
+                    .centerInside()
+                    .placeholder(R.drawable.ic_launcher_foreground)
+                    .into(img);
+        }
     }
 
 }

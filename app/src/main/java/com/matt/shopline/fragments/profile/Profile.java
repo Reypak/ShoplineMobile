@@ -62,7 +62,7 @@ import java.util.Map;
 
 import static android.app.Activity.RESULT_OK;
 
-public class UserProfile extends Fragment {
+public class Profile extends Fragment {
     int Image_Request_Code = 7;
     private ImageView profileImage;
     private TextView tvUsername, tvLocation, tvBio, tvEmail, tvPhone, tvOccupation, tvWebsite, tvFollowers, tvCatalog;
@@ -669,6 +669,7 @@ public class UserProfile extends Fragment {
             if (!userID.equals(user.getUid())) {
                 menu.removeItem(0);
                 menu.add(Menu.NONE, 1, Menu.NONE, R.string.share);
+//                menu.add(Menu.NONE, 3, Menu.NONE, "Turn on " + getString(R.string.title_notifications));
                 menu.add(Menu.NONE, 2, Menu.NONE, "Report");
             }
         }

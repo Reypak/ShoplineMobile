@@ -69,7 +69,7 @@ var transporter = nodemailer.createTransport({
 						console.log('Successful');
 					});*/
 				});
-
+				// send post to followers
 				const snapshot = followersRef.get().then(snapshot => {
 					snapshot.forEach(doc => {
 						const id = doc.id;
@@ -136,7 +136,22 @@ var transporter = nodemailer.createTransport({
 			commentRef.update({
 				comments : admin.firestore.FieldValue.increment(1)
 			});
-
+			// get userID from post
+			const postRef = db.doc(`posts/${postID}`).get().then(doc => {
+				PostUserID = doc.data().userID;
+				const userID = change.after.data().userID; // get value from comment snapshot
+				// push to notification ref
+				if (PostUserID != userID) {
+					const userRef = db.collection(`users/${PostUserID}/notifications`);
+					userRef.add({
+						timestamp : admin.firestore.FieldValue.serverTimestamp(),
+						postID : postID,
+						state: 2, // COMMENT
+						userID: userID
+					});	
+				}
+				// console.log('Succesful');
+			});
 			// console.log('A comment has been added :' , commentID);
 		}
 		
@@ -160,6 +175,20 @@ var transporter = nodemailer.createTransport({
 		} else {
 			postRef.update({
 				likes : admin.firestore.FieldValue.increment(1)
+			});
+			// push to notification ref
+			postRef.get().then(doc => {
+				PostUserID = doc.data().userID;
+				if (PostUserID != userID) {
+					const userRef = db.collection(`users/${PostUserID}/notifications`);
+					userRef.add({
+						timestamp : admin.firestore.FieldValue.serverTimestamp(),
+						postID : postID,
+						state: 1,// LIKE
+						userID: userID
+					});	
+				}
+				// console.log('Succesful');	
 			});
 			// console.log('User liked :' , userID);
 		}
@@ -192,10 +221,16 @@ var transporter = nodemailer.createTransport({
 						followers : admin.firestore.FieldValue.increment(1)
 					});
 				 }
+
+				 // push to notification reference
+				const userRef = db.doc(`users/${userID}/notifications/${followerID}`);
+					userRef.set({
+						timestamp : admin.firestore.FieldValue.serverTimestamp(),
+						state: 3, // FOLLOW
+						userID: followerID
+				});	
 			});
-			
 			// console.log('New follower :' , followerID);
-			
 		}
 		return null;
 	});
@@ -312,12 +347,58 @@ var transporter = nodemailer.createTransport({
 					    // send email to buyer
 						return transporter.sendMail(mailBuyer);
 					});
-				
+					
+					// send notification to subscribers (Followers)
+					var topic = userID + '_notifications'; 
+					console.log(topic)
+					var message = {
+						notification: {
+							title: `${APP_NAME}`,
+							body: `${customerName} placed an order.`,
+							click_action: ".Orders"
+						},
+						topic: topic
+					};
+					admin.messaging().send(message);
 			    	
 		    	});
     		});
-
     	});
-    	
+		// push to notification reference
+		const userRef = db.collection(`users/${userID}/notifications`);
+			userRef.add({
+				timestamp : admin.firestore.FieldValue.serverTimestamp(),
+				state: 4, // ORDER
+				userID: customerID
+		});	
+
 		return null;
 	});
+
+    // check notifications
+	exports.Notifications = functions.firestore.document('users/{userID}/notifications/{nid}')
+    .onCreate((snap, context) => {
+    	const userID = context.params.userID;
+    	// add to notification counter
+    	const notiCountRef = db.doc(`users/${userID}/data/notifications`);
+    	notiCountRef.set({
+    		notifications : 1
+    	});
+
+    	const notificationRef = db.collection(`users/${userID}/notifications`).get().then(snap => {
+	    	// check size
+	    	size = snap.size
+	    	if (size >= 30) {
+				// create query to get last 5 (oldest dates)
+				const notificationRef = db.collection(`users/${userID}/notifications`).orderBy('timestamp').limit(10);
+				notificationRef.get().then(snapshot => {
+					snapshot.forEach(doc => {
+						doc.ref.delete();
+					});
+				});
+	    	}
+    	});
+    	
+    	return null;
+    });
+						

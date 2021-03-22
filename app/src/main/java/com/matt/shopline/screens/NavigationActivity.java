@@ -7,22 +7,31 @@ import android.view.MenuItem;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.matt.shopline.R;
 import com.matt.shopline.fragments.Home;
 import com.matt.shopline.fragments.Notifications;
 import com.matt.shopline.fragments.Search;
 import com.matt.shopline.fragments.home.Suggestions;
-import com.matt.shopline.fragments.profile.UserProfile;
+import com.matt.shopline.fragments.profile.Profile;
+import com.matt.shopline.objects.BottomMenuHelper;
 
 public class NavigationActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
     private static FirebaseUser user;
     private BottomNavigationView navigation;
+    private DocumentReference notifications;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +44,7 @@ public class NavigationActivity extends AppCompatActivity implements BottomNavig
                 if (user != null) {
                     //loading the default fragment
                     loadFragment(new Home());
+                    notificationCounter();
                 }
             }
         }, 100);
@@ -43,6 +53,34 @@ public class NavigationActivity extends AppCompatActivity implements BottomNavig
         navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(this);
 
+
+    }
+
+    private void notificationCounter() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        user = FirebaseAuth.getInstance().getCurrentUser();
+        notifications = db.collection(getString(R.string.users))
+                .document(user.getUid())
+                .collection("data")
+                .document(getString(R.string.title_notifications).toLowerCase());
+
+        notifications.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                long num;
+                if (error == null) {
+                    if (value.exists()) {
+                        num = value.getLong(getString(R.string.title_notifications).toLowerCase());
+                        // value is not null
+                        if (num != 0) {
+                            BottomMenuHelper.showBadge(NavigationActivity.this, navigation, R.id.navigation_notifications);
+                        } else {
+                            BottomMenuHelper.removeBadge(navigation, R.id.navigation_notifications);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     @Override
@@ -75,10 +113,13 @@ public class NavigationActivity extends AppCompatActivity implements BottomNavig
                 break;
             case R.id.navigation_notifications:
                 fragment = new Notifications();
+                BottomMenuHelper.removeBadge(navigation, R.id.navigation_notifications);
+                // reset counter
+                notifications.update(getString(R.string.title_notifications).toLowerCase(), 0);
                 break;
 
             case R.id.navigation_profile:
-                fragment = new UserProfile();
+                fragment = new Profile();
                 break;
         }
 

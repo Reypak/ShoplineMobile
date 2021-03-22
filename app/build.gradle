@@ -34,6 +34,9 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
+    // google places
+//    implementation 'com.google.android.libraries.places:places:1.1.0'
+
     // picasso
     implementation 'com.squareup.picasso:picasso:2.5.2'
 
