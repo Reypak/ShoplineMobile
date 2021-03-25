@@ -3,9 +3,11 @@ package com.matt.shopline.screens;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
@@ -83,9 +85,7 @@ public class Register extends FragmentActivity implements OnDataPass {
         btnNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-
-                if (btnNext.getText().equals("Sign Up")) {
+                if (btnNext.getText().equals(getString(R.string.sign_up))) {
 
                     register();
 //                        Toast.makeText(RegisterStepper.this, dataStep2[0] + "\n" + dataStep2[1], Toast.LENGTH_SHORT).show();
@@ -109,7 +109,7 @@ public class Register extends FragmentActivity implements OnDataPass {
                 // setting the step number
                 stepNumber(position);
                 if (position == 3) {
-                    btnNext.setText("Sign Up");
+                    btnNext.setText(getString(R.string.sign_up));
 
                 } else {
                     btnNext.setText("Next");
@@ -176,7 +176,11 @@ public class Register extends FragmentActivity implements OnDataPass {
                                 }
                             });
 
-
+                            // save to SharedPrefs
+                            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                            sharedPreferences.edit()
+                                    .putString(getString(R.string.location).toLowerCase(), location)
+                                    .apply();
                         } else {
                             dialog.dismiss();
                             // If sign in fails, display a message to the user.

@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.paging.FirestorePagingAdapter;
 import com.firebase.ui.firestore.paging.FirestorePagingOptions;
+import com.firebase.ui.firestore.paging.LoadingState;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -52,6 +54,7 @@ public class PostView extends AppCompatActivity {
     private RecyclerView mCommentsList;
     private DocumentReference deleteRef;
     private String userID;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +62,6 @@ public class PostView extends AppCompatActivity {
         setContentView(R.layout.activity_post_view);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-//        getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setTitle(R.string.comments);
 
         user = FirebaseAuth.getInstance().getCurrentUser();
@@ -71,6 +73,7 @@ public class PostView extends AppCompatActivity {
 //        Toast.makeText(this, postID, Toast.LENGTH_SHORT).show();
 
         View btnComment = findViewById(R.id.btnComment);
+        progressBar = findViewById(R.id.progressBar);
         etComment = findViewById(R.id.etComment);
 
         mCommentsList = findViewById(R.id.recView);
@@ -117,6 +120,8 @@ public class PostView extends AppCompatActivity {
 
             @Override
             protected void onBindViewHolder(@NonNull final BlogViewHolder holder, final int position, @NonNull final Comment model) {
+                progressBar.setVisibility(View.GONE);
+
                 String comment = model.getComment();
                 userID = model.getUserID();
                 long timestamp = model.getTimestamp();
@@ -150,6 +155,17 @@ public class PostView extends AppCompatActivity {
                         return false;
                     }
                 });
+            }
+
+            @Override
+            protected void onLoadingStateChanged(@NonNull LoadingState state) {
+                switch (state) {
+                    case FINISHED:
+                        if (getItemCount() == 0) {
+                            progressBar.setVisibility(View.GONE);
+                            Toast.makeText(PostView.this, "Nothing to show", Toast.LENGTH_SHORT).show();
+                        }
+                }
             }
         };
         mCommentsList.setAdapter(adapter);

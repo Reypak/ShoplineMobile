@@ -36,6 +36,8 @@
     <string name="delete">Delete</string>
     <string name="comments">Comments</string>
     <string name="following">Following</string>
+    <string name="get_started">Get Started</string>
+    <string name="title_discover">Discover</string>
 
     <string-array name="category">
         <item>-- Select --</item>

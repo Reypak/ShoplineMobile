@@ -29,13 +29,16 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.firebase.ui.firestore.paging.FirestorePagingAdapter;
 import com.firebase.ui.firestore.paging.FirestorePagingOptions;
+import com.firebase.ui.firestore.paging.LoadingState;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
@@ -62,13 +65,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.FirestorePagingAdapter<User, com.matt.shopline.adapters.FirestorePagingAdapter.BlogViewHolder> {
+public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFirestorePagingAdapter.BlogViewHolder> {
 
     private String imageUrl;
     private String product;
     private String postID;
     private DocumentReference postRef;
-    private CollectionReference postLikes;
+    private CollectionReference postLikes, reposts;
     private String duserID;
     private String price;
     private String offers;
@@ -86,7 +89,7 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
     private Context context;
     private View rootView;
 
-    public FirestorePagingAdapter(FirestorePagingOptions<User> options, Context context, View rootView) {
+    public MyFirestorePagingAdapter(FirestorePagingOptions<User> options, Context context, View rootView) {
         super(options);
         this.context = context;
         this.rootView = rootView;
@@ -154,10 +157,7 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
 
     @Override
     protected void onBindViewHolder(@NonNull final BlogViewHolder holder, final int position, @NonNull final User model) {
-        // hide progress bar
-        ProgressBar progressBar = rootView.findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.GONE);
-//        hideProgress();
+        hideProgress(rootView);
 
         ImageButton imageButton = holder.mView.findViewById(R.id.btnOptions);
         View btnOrder = holder.mView.findViewById(R.id.btnOrder);
@@ -208,6 +208,7 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
                             tvComments.setText(comments);
                         }
 
+
                         holder.setData(product, price, description, timestamp);
                         holder.setImageURL(context, imageUrl);
 
@@ -245,10 +246,23 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
                         String likes = value.get("likes").toString();
                         tvLikes.setText(likes);
                     }
+                    // get reposts from counter
+                    if (value.get("reposts") != null) {
+                        TextView tvRepost = holder.mView.findViewById(R.id.tvRepost);
+                        tvRepost.setText(value.get("reposts").toString());
+                    }
                 }
             }
         });
 
+       /* reposts = postRef.collection("reposts");
+        reposts.document(user.getUid()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                if(documentSnapshot.exists())
+
+            }
+        });*/
         // get post likes
         final CollectionReference likeRef = postRef.collection("likes");
                /* likeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -375,6 +389,7 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
 
         // post comments
         holder.setComments(getItem(position).getId());
+        holder.setReposts(getItem(position).getId());
     }
 
 
@@ -383,9 +398,58 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
         holder.setImageURL(context, null);
     }
 
-    public static void hideProgress(ProgressBar progressBar, View rootView) {
+    @Override
+    protected void onLoadingStateChanged(@NonNull LoadingState state) {
+        switch (state) {
+            case FINISHED:
+                if (getItemCount() == 0) {
+                    // hide progress bar
+                    hideProgress(rootView);
+                }
+        }
+    }
+
+    private void repost(final String postID, boolean b) {
+        // current user Following Ref
+        final CollectionReference userCatalog = db.collection(context.getString(R.string.users))
+                .document(user.getUid())
+                .collection(context.getString(R.string.catalog).toLowerCase());
+        // post re-post ref
+        reposts = db.collection("posts").document(postID)
+                .collection("reposts");
+
+        if (b) {
+            final Map<String, Object> data = new HashMap<>();
+            data.put("exists", true);
+            // send currentUserID to re-post collection
+            reposts.document(user.getUid()).set(data)
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+
+                            data.remove("exists");
+                            data.put(context.getString(R.string.timestamp), new Timestamp(new Date()));
+                            data.put("state", 5);
+
+                            userCatalog.document(postID).set(data)
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<Void> task) {
+                                            Toast.makeText(context, "Re-posted", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        }
+                    });
+        } else {
+            reposts.document(user.getUid()).delete();
+            userCatalog.document(postID).delete();
+        }
+
+    }
+
+    public static void hideProgress(View rootView) {
         // hide progress bar
-        progressBar = rootView.findViewById(R.id.progressBar);
+        ProgressBar progressBar = rootView.findViewById(R.id.progressBar);
         progressBar.setVisibility(View.GONE);
     }
 
@@ -560,7 +624,6 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
     }
 
     public class BlogViewHolder extends RecyclerView.ViewHolder {
-        private ImageButton btnRepost;
         View mView;
         private TextView textView2;
         private TextView textView;
@@ -570,13 +633,33 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
             super(itemView);
             mView = itemView;
             img = mView.findViewById(R.id.imageView);
+
+        }
+
+        public void setReposts(final String postID) {
             // re-post button
-            btnRepost = mView.findViewById(R.id.btnRepost);
+            final ImageButton btnRepost = mView.findViewById(R.id.btnRepost);
+            reposts = postRef.collection("reposts");
+            reposts.document(user.getUid()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                @Override
+                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                    if (documentSnapshot.exists()) {
+                        btnRepost.setColorFilter(context.getResources().getColor(R.color.colorHighlight));
+                    }
+                }
+            });
 
             btnRepost.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    btnRepost.setColorFilter(context.getResources().getColor(R.color.colorHighlight));
+                    if (btnRepost.getColorFilter() != null) {
+                        repost(postID, false);
+                        btnRepost.clearColorFilter();
+                    } else {
+                        repost(postID, true);
+                        btnRepost.setColorFilter(context.getResources().getColor(R.color.colorHighlight));
+                    }
+
                 }
             });
         }
@@ -757,5 +840,7 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
                     .placeholder(R.drawable.ic_launcher_foreground)
                     .into(img);
         }
+
+
     }
 }

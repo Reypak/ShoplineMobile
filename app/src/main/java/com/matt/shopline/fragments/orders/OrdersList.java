@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.paging.FirestorePagingAdapter;
 import com.firebase.ui.firestore.paging.FirestorePagingOptions;
+import com.firebase.ui.firestore.paging.LoadingState;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -27,6 +28,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.matt.shopline.R;
+import com.matt.shopline.adapters.MyFirestorePagingAdapter;
 import com.matt.shopline.objects.Order;
 import com.matt.shopline.screens.FeedUserProfile;
 import com.matt.shopline.screens.PostView;
@@ -44,11 +46,12 @@ public class OrdersList extends Fragment {
     private LinearLayoutManager mLayoutManager;
     private Bundle bundle;
     private String product, price, imageUrl, offers, location;
+    private ViewGroup rootView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_orderslist, container, false);
+        rootView = (ViewGroup) inflater.inflate(R.layout.fragment_orderslist, container, false);
 
         user = FirebaseAuth.getInstance().getCurrentUser();
         db = FirebaseFirestore.getInstance();
@@ -103,6 +106,7 @@ public class OrdersList extends Fragment {
 
             @Override
             protected void onBindViewHolder(@NonNull final BlogViewHolder holder, final int position, @NonNull final Order model) {
+                MyFirestorePagingAdapter.hideProgress(rootView);
 //                String itemID = getItem(position).getId();
                 String postID = model.getPostID();
                 final String location = model.getLocation();
@@ -186,6 +190,15 @@ public class OrdersList extends Fragment {
                 });
             }
 
+            @Override
+            protected void onLoadingStateChanged(@NonNull LoadingState state) {
+                switch (state) {
+                    case FINISHED:
+                        if (getItemCount() == 0) {
+                            MyFirestorePagingAdapter.hideProgress(rootView);
+                        }
+                }
+            }
         };
         mOrdersList.setAdapter(adapter);
     }

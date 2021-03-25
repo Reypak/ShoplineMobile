@@ -1,4 +1,4 @@
-package com.matt.shopline.fragments;
+package com.matt.shopline.fragments.search;
 
 import android.content.Context;
 import android.os.Bundle;

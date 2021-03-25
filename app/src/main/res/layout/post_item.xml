@@ -204,7 +204,7 @@
                     android:layout_marginStart="5dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:padding="10dp"
-                    android:src="@drawable/ic_arrow_big_top"
+                    android:src="@drawable/ic_arrow_up_circle"
                     android:tint="@color/bottom_bar_item_color" />
 
                 <TextView

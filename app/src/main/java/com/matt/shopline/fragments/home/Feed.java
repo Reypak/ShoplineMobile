@@ -17,7 +17,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.matt.shopline.R;
-import com.matt.shopline.adapters.FirestorePagingAdapter;
+import com.matt.shopline.adapters.MyFirestorePagingAdapter;
 import com.matt.shopline.objects.User;
 
 public class Feed extends Fragment {
@@ -26,13 +26,14 @@ public class Feed extends Fragment {
     private String userID;
     private FirebaseFirestore db;
     private RecyclerView mFeedList;
-    private FirestorePagingAdapter adapter;
+    private MyFirestorePagingAdapter adapter;
     private SwipeRefreshLayout refreshLayout;
+    private ViewGroup rootView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_feed, container, false);
+        rootView = (ViewGroup) inflater.inflate(R.layout.fragment_feed, container, false);
 
         user = FirebaseAuth.getInstance().getCurrentUser();
         db = FirebaseFirestore.getInstance();
@@ -43,6 +44,7 @@ public class Feed extends Fragment {
                 .document(userID)
                 .collection("feed")
                 .orderBy(getString(R.string.timestamp), Query.Direction.DESCENDING);
+        // todo : Add a priority field : { 0-50 followers = 1, 50-100 =2 }
 
         mFeedList = rootView.findViewById(R.id.recView);
         refreshLayout = rootView.findViewById(R.id.swipeRefresh);
@@ -71,12 +73,7 @@ public class Feed extends Fragment {
                 .setQuery(userFeed, config, User.class)
                 .build();
 
-      /*  FirestoreRecyclerOptions<User> options = new FirestoreRecyclerOptions.Builder<User>()
-                .setLifecycleOwner(this)
-                .setQuery(userCatalog, User.class)
-                .build();*/
-
-        adapter = new com.matt.shopline.adapters.FirestorePagingAdapter(options, getActivity());
+        adapter = new MyFirestorePagingAdapter(options, getActivity(), rootView);
         mFeedList.setAdapter(adapter);
     }
 

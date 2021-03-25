@@ -19,13 +19,11 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.messaging.FirebaseMessaging;
 import com.matt.shopline.R;
 import com.matt.shopline.fragments.Home;
 import com.matt.shopline.fragments.Notifications;
-import com.matt.shopline.fragments.Search;
-import com.matt.shopline.fragments.home.Suggestions;
 import com.matt.shopline.fragments.profile.Profile;
+import com.matt.shopline.fragments.search.Discover;
 import com.matt.shopline.objects.BottomMenuHelper;
 
 public class NavigationActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
@@ -106,10 +104,10 @@ public class NavigationActivity extends AppCompatActivity implements BottomNavig
                 break;
 
             case R.id.navigation_search:
-                fragment = new Search();
+                fragment = new Discover();
                 break;
             case R.id.navigation_analytics:
-                fragment = new Suggestions();
+                fragment = new Fragment();
                 break;
             case R.id.navigation_notifications:
                 fragment = new Notifications();
@@ -125,7 +123,6 @@ public class NavigationActivity extends AppCompatActivity implements BottomNavig
 
         return loadFragment(fragment);
     }
-
 
     @Override
     public void onBackPressed() {

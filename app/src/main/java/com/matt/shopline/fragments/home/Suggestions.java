@@ -1,9 +1,14 @@
 package com.matt.shopline.fragments.home;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +19,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -32,6 +38,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.matt.shopline.R;
+import com.matt.shopline.fragments.Home;
 import com.matt.shopline.objects.User;
 import com.matt.shopline.screens.FeedUserProfile;
 import com.squareup.picasso.Picasso;
@@ -47,6 +54,8 @@ public class Suggestions extends Fragment {
     private CollectionReference userSuggestions, userFollowers, userFollowing;
     private FirestoreRecyclerAdapter<User, BlogViewHolder> adapter;
     private String username;
+    private Button btnStart;
+    private int followCount;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -68,6 +77,35 @@ public class Suggestions extends Fragment {
         checkSuggestions();
         getSuggestions();
 
+        btnStart = rootView.findViewById(R.id.btnStart);
+        btnStart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final ProgressDialog dialog = ProgressDialog.show(getActivity(), "",
+                        "Getting things ready" + getString(R.string.load), true);
+                dialog.show();
+                // save prefs
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                sharedPreferences.edit().putString(getString(R.string.title_home), "1").apply();
+
+                // load 5 seconds
+                new Handler(Looper.myLooper()).postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        dialog.dismiss();
+                        getActivity().getSupportFragmentManager()
+                                .beginTransaction()
+                                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                                .replace(R.id.fragment_container, new Home())
+                                .commit();
+                    }
+                }, 5000);
+
+               /* // send broadcast to Landing page
+                Intent intent = new Intent("finish");
+                getActivity().sendBroadcast(intent);*/
+            }
+        });
         return rootView;
     }
 
@@ -87,6 +125,11 @@ public class Suggestions extends Fragment {
             @Override
             protected void onBindViewHolder(@NonNull final BlogViewHolder holder, final int position, @NonNull User model) {
                 final Button btnFollow = holder.itemView.findViewById(R.id.btnFollow);
+                // initial state
+                btnFollow.setText("Follow");
+                btnFollow.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+                btnFollow.setTextColor(Color.WHITE);
+
                 btnFollow.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -119,8 +162,25 @@ public class Suggestions extends Fragment {
                                 btnFollow.setText("Following");
                                 btnFollow.setBackgroundColor(Color.parseColor("#265458F7"));
                                 btnFollow.setTextColor(getResources().getColor(R.color.colorPrimary));
+                                // delete id from suggestions (2 seconds)
+                                new Handler(Looper.myLooper()).postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        getSnapshots().getSnapshot(position).getReference().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                notifyDataSetChanged();
+                                            }
+                                        });
+                                    }
+                                }, 2000);
                             }
                         });
+                        // increment count
+                        followCount++;
+                        if (followCount == 2) {
+                            btnStart.setVisibility(View.VISIBLE);
+                        }
                     }
 
                 });
@@ -148,6 +208,19 @@ public class Suggestions extends Fragment {
                         holder.setImageURL(getActivity(), profileUrl);
                     }
                 });
+                // get Followers
+                userRef.collection("data").document(getString(R.string.followers).toLowerCase())
+                        .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.getResult().exists()) {
+                            TextView textView2 = holder.mView.findViewById(R.id.tvFollowers);
+                            textView2.setText(String.format("%s %s",
+                                    task.getResult().get(getString(R.string.followers).toLowerCase()).toString(),
+                                    getString(R.string.followers).toLowerCase()));
+                        }
+                    }
+                });
             }
         };
 
@@ -155,42 +228,38 @@ public class Suggestions extends Fragment {
     }
 
     private void checkSuggestions() {
-        userSuggestions.addSnapshotListener(new EventListener<QuerySnapshot>() {
+        userSuggestions.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
-            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                if (error == null) {
-                    // if suggestions do not exist
-                    if (value.isEmpty()) {
-                        // snapshot of users
-                        Query userRef = db.collection("users")
-                                .limit(4); // limit number of users
-                        userRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
-                            @Override
-                            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                                for (DocumentSnapshot documentSnapshot : value.getDocuments()) {
-                                    // getting users ID's
-                                    String data = documentSnapshot.getId();
-                                    /*Toast.makeText(getActivity(), data, Toast.LENGTH_SHORT).show();*/
-
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.getResult().isEmpty()) {
+                    // snapshot of users
+                    Query userRef = db.collection("users")
+                            .limit(10); // limit number of users
+                    userRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                            for (DocumentSnapshot documentSnapshot : value.getDocuments()) {
+                                // getting users ID's
+                                String data = documentSnapshot.getId();
+                                /*Toast.makeText(getActivity(), data, Toast.LENGTH_SHORT).show();*/
+                                if (!data.equals(user.getUid())) {
                                     Map<String, Object> userdata = new HashMap<>();
                                     userdata.put("exists", true);
 
                                     // add ID's to current users suggestions
                                     userSuggestions.document(data).set(userdata);
                                 }
-
                             }
-                        });
-                    }
+                        }
+                    });
                 }
-
+            }
+        });
                    /* for (DocumentSnapshot documentSnapshot : value.getDocuments()) {
                         // getting users ID's
                         String data = documentSnapshot.getId();
                         Toast.makeText(getActivity(), data, Toast.LENGTH_SHORT).show();
                     }*/
-            }
-        });
 
     }
 

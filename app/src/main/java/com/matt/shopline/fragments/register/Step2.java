@@ -8,11 +8,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.matt.shopline.R;
+import com.matt.shopline.screens.Login;
 
 public class Step2 extends Fragment {
     OnDataPass dataPass;
@@ -27,6 +29,15 @@ public class Step2 extends Fragment {
 
         etEmail = rootView.findViewById(R.id.etEmail);
         etPwrd = rootView.findViewById(R.id.etPwrd);
+
+        final ImageButton btnToggle = rootView.findViewById(R.id.btnToggle);
+        btnToggle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Login login = new Login();
+                login.togglePassword(getActivity(), etPwrd, btnToggle);
+            }
+        });
 
         etPwrd.addTextChangedListener(new TextWatcher() {
             @Override
@@ -43,7 +54,7 @@ public class Step2 extends Fragment {
             public void afterTextChanged(Editable editable) {
                 pwrd = etPwrd.getText().toString();
                 if (!pwrd.isEmpty() && pwrd.length() < 6) {
-                    etPwrd.setError("Password too short!");
+                    etPwrd.setError(getString(R.string.password) + " too short!");
                 }
             }
         });

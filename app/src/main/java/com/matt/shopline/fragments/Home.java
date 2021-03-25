@@ -1,7 +1,9 @@
 package com.matt.shopline.fragments;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,6 +30,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.matt.shopline.R;
 import com.matt.shopline.fragments.home.Feed;
+import com.matt.shopline.fragments.home.Suggestions;
 import com.matt.shopline.screens.Orders;
 
 public class Home extends Fragment {
@@ -47,8 +50,31 @@ public class Home extends Fragment {
         user = FirebaseAuth.getInstance().getCurrentUser();
         db = FirebaseFirestore.getInstance();
 
-        // load Feed Fragment
-        loadFragment(new Feed());
+        // get shared prefs
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+//        sharedPreferences.edit().putString(getString(R.string.title_home), null).apply();
+        final String location = sharedPreferences.getString(getString(R.string.title_home), null);
+        if (location != null) {
+            // load Feed Fragment
+            loadFragment(new Feed());
+        } else {
+            View fab = rootView.findViewById(R.id.fab);
+            fab.setVisibility(View.GONE);
+            loadFragment(new Suggestions());
+        }
+
+        /*// broadcast receiver to receive intent data from login activity
+        BroadcastReceiver receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if (action.equals("finish")) {
+                    loadFragment(new Feed());
+                }
+            }
+        };
+        getActivity().registerReceiver(receiver, new IntentFilter("finish"));*/
+
         return rootView;
     }
 
@@ -128,13 +154,5 @@ public class Home extends Fragment {
         Intent intent = new Intent(getActivity(), Orders.class);
         startActivity(intent);
     }
-
-   /* @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == 0) {
-            Orders();
-        }
-        return super.onOptionsItemSelected(item);
-    }*/
 
 }

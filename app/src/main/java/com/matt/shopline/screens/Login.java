@@ -1,16 +1,21 @@
 package com.matt.shopline.screens;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.text.method.PasswordTransformationMethod;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -36,7 +41,7 @@ public class Login extends AppCompatActivity {
         etEmail = findViewById(R.id.etEmail);
         etPwrd = findViewById(R.id.etPwrd);
         btnLogin = findViewById(R.id.login);
-
+        final ImageButton btnToggle = findViewById(R.id.btnToggle);
         // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
 
@@ -80,7 +85,12 @@ public class Login extends AppCompatActivity {
                 }
             }
         });
-
+        btnToggle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                togglePassword(getApplicationContext(), etPwrd, btnToggle);
+            }
+        });
     }
 
     @Override
@@ -90,6 +100,19 @@ public class Login extends AppCompatActivity {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
             openMain();
+        }
+    }
+
+    public void togglePassword(Context context, TextView etPwrd, ImageButton btnToggle) {
+        // change password box and icon
+        if (etPwrd.getTransformationMethod() == null) {
+            // hide
+            btnToggle.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_eye_off));
+            etPwrd.setTransformationMethod(new PasswordTransformationMethod());
+        } else {
+            // show
+            btnToggle.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_eye));
+            etPwrd.setTransformationMethod(null);
         }
     }
 

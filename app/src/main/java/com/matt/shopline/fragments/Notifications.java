@@ -21,6 +21,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.firebase.ui.firestore.paging.FirestorePagingAdapter;
 import com.firebase.ui.firestore.paging.FirestorePagingOptions;
+import com.firebase.ui.firestore.paging.LoadingState;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -30,6 +31,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.matt.shopline.R;
+import com.matt.shopline.adapters.MyFirestorePagingAdapter;
 import com.matt.shopline.objects.Notification;
 import com.matt.shopline.objects.User;
 import com.matt.shopline.screens.FeedUserProfile;
@@ -50,11 +52,12 @@ public class Notifications extends Fragment {
     private FirebaseFirestore db;
     private FirestorePagingAdapter adapter;
     private SwipeRefreshLayout refreshLayout;
+    private ViewGroup rootView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_notifications, container, false);
+        rootView = (ViewGroup) inflater.inflate(R.layout.fragment_notifications, container, false);
         Toolbar toolbar = rootView.findViewById(R.id.toolbar1);
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
         toolbar.setTitle(R.string.title_notifications);
@@ -103,6 +106,7 @@ public class Notifications extends Fragment {
 
             @Override
             protected void onBindViewHolder(@NonNull final BlogViewHolder holder, int position, @NonNull final Notification model) {
+                MyFirestorePagingAdapter.hideProgress(rootView);
                 // user query
                 if (model.getUserID() != null) {
                     DocumentReference userRef = db.collection(getString(R.string.users)).document(model.getUserID());
@@ -112,7 +116,8 @@ public class Notifications extends Fragment {
                             User user = task.getResult().toObject(User.class);
                             String profileUrl = user.getProfileUrl();
                             // set data
-                            holder.setNotificationData(model.getState(), user.getUsername(), model.getTimestamp(), getActivity(), profileUrl, model.getUserID());
+                            holder.setNotificationData(model.getState(), user.getUsername(),
+                                    model.getTimestamp(), getActivity(), profileUrl, model.getUserID());
                         }
                     });
                 }
@@ -123,6 +128,17 @@ public class Notifications extends Fragment {
             @Override
             public void onViewRecycled(@NonNull BlogViewHolder holder) {
                 holder.setNotificationData(0, null, null, null, null, null);
+            }
+
+            @Override
+            protected void onLoadingStateChanged(@NonNull LoadingState state) {
+                switch (state) {
+                    case FINISHED:
+                        if (getItemCount() == 0) {
+                            // hide progress bar
+                            MyFirestorePagingAdapter.hideProgress(rootView);
+                        }
+                }
             }
         };
         mList.setAdapter(adapter);
@@ -183,6 +199,10 @@ public class Notifications extends Fragment {
                 icon.setImageDrawable(getResources().getDrawable(R.drawable.ic_basket));
                 icon.setColorFilter(getResources().getColor(R.color.colorTextOverlay));
                 comment = username + " placed an order";
+            } else if (state == 5) {
+                icon.setImageDrawable(getResources().getDrawable(R.drawable.ic_arrow_up_circle));
+                icon.setColorFilter(getResources().getColor(R.color.colorHighlight));
+                comment = username + " reposted your post";
             }
             textView.setText(comment);
             textView2.setText(null);

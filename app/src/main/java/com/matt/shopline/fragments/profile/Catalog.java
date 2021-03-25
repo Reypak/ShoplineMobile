@@ -435,6 +435,11 @@ public class Catalog extends Fragment {
             }
 
             @Override
+            public void onViewRecycled(@NonNull BlogViewHolder holder) {
+                holder.setImageURL(getActivity(), null);
+            }
+
+            @Override
             protected void onLoadingStateChanged(@NonNull LoadingState state) {
                 switch (state) {
                     case LOADING_INITIAL:
