@@ -1,6 +1,7 @@
 package com.matt.shopline.adapters;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -9,11 +10,16 @@ import android.graphics.Color;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.ScaleAnimation;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,9 +31,11 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.firebase.ui.firestore.paging.FirestorePagingOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
@@ -38,9 +46,13 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.matt.shopline.R;
 import com.matt.shopline.objects.User;
+import com.matt.shopline.screens.FeedUserProfile;
 import com.matt.shopline.screens.Orders;
+import com.matt.shopline.screens.PostView;
 import com.squareup.picasso.Picasso;
 
 import java.text.DecimalFormat;
@@ -72,10 +84,12 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
     private FirestorePagingAdapter adapter;
 
     private Context context;
+    private View rootView;
 
-    public FirestorePagingAdapter(FirestorePagingOptions<User> options, Context context) {
+    public FirestorePagingAdapter(FirestorePagingOptions<User> options, Context context, View rootView) {
         super(options);
         this.context = context;
+        this.rootView = rootView;
         user = FirebaseAuth.getInstance().getCurrentUser();
     }
 
@@ -115,7 +129,7 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
         if (elapsedYears > 0) {
             output += elapsedYears + "y";
         } else if (elapsedYears > 0 || elapsedMonths > 0) {
-            output += elapsedMonths + " mon";
+            output += elapsedMonths + " mn";
         } else if (elapsedMonths > 0 || elapsedWeeks > 0) {
             output += elapsedWeeks + "w";
         } else if (elapsedWeeks > 0 || elapsedDays > 0) {
@@ -131,8 +145,20 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
         return output;
     }
 
+    @NonNull
+    @Override
+    public BlogViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.post_item, parent, false);
+        return new BlogViewHolder(view);
+    }
+
     @Override
     protected void onBindViewHolder(@NonNull final BlogViewHolder holder, final int position, @NonNull final User model) {
+        // hide progress bar
+        ProgressBar progressBar = rootView.findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.GONE);
+//        hideProgress();
+
         ImageButton imageButton = holder.mView.findViewById(R.id.btnOptions);
         View btnOrder = holder.mView.findViewById(R.id.btnOrder);
         ImageView img = holder.mView.findViewById(R.id.profile_image);
@@ -189,9 +215,10 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
                         userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                             @Override
                             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                username = task.getResult().get("username").toString();
-                                String occupation = task.getResult().get("occupation").toString();
-                                String profileUrl = task.getResult().get("profileUrl").toString();
+                                User user = task.getResult().toObject(User.class);
+                                username = user.getUsername();
+                                String occupation = user.getOccupation();
+                                String profileUrl = user.getProfileUrl();
                                 holder.setUserData(username, occupation, context, profileUrl);
                             }
                         });
@@ -248,6 +275,54 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
             }
         });
 
+        btnLike.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                postID = getItem(position).getId();
+                likeRef.document(user.getUid()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(final DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            // remove like
+                            unlikePost();
+
+                            // back to default
+                            btnLike.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_favorite_border));
+                            tvLikes.setTextColor(context.getResources().getColor(R.color.colorTextSecondary));
+                        } else {
+                            // liked state
+                            btnLike.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_favorite));
+                            tvLikes.setTextColor(Color.RED);
+
+                            // bounce animation
+                            ScaleAnimation animation = new ScaleAnimation(1, (float) 0.7, 1, (float) 0.7,
+                                    Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+                            animation.setDuration(300);
+                            animation.setRepeatMode(Animation.REVERSE);
+                            animation.setRepeatCount(3);
+
+                            btnLike.startAnimation(animation);
+
+                            likePost();
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Snackbar snackbar = Snackbar.make(rootView.getRootView().findViewById(android.R.id.content),
+                                "Check Internet Connection", Snackbar.LENGTH_LONG)
+                                .setAction("OK", new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                    }
+                                });
+
+                        snackbar.show();
+                    }
+                });
+            }
+        });
+
         btnOrder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -271,39 +346,47 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
             }
         });
 
+        // profile image click
+        img.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                onBindViewHolder(holder, position, model);
+
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        loadActivity(FeedUserProfile.class, "userID", duserID);
+                    }
+                }, 200);
+
+            }
+        });
+
+        imageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // rerun the onBind method to get required data
+                onBindViewHolder(holder, position, model);
+                // display popup
+                showPopup(view);
+            }
+        });
+
         // post comments
         holder.setComments(getItem(position).getId());
     }
 
-/*    @Override
-    protected void onLoadingStateChanged(@NonNull LoadingState state) {
-        switch (state) {
-            case LOADING_INITIAL:
-                // The initial load has begun
-                // ...
-            case LOADING_MORE:
-//                refreshLayout.setRefreshing(true);
-                // The adapter has started to load an additional page
-                // ...
-            case LOADED:
-//                refreshLayout.setRefreshing(false);
-                // The previous load (either initial or additional) completed
-                // ...
-            case ERROR:
-//                refreshLayout.setRefreshing(false);
-                // The previous load (either initial or additional) failed. Call
-                // the retry() method in order to retry the load operation.
-                // ...
-            case FINISHED:
-//                refreshLayout.setRefreshing(false);
-        }
-    }*/
 
-    @NonNull
     @Override
-    public BlogViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.post_item, parent, false);
-        return new BlogViewHolder(view);
+    public void onViewRecycled(@NonNull BlogViewHolder holder) {
+        holder.setImageURL(context, null);
+    }
+
+    public static void hideProgress(ProgressBar progressBar, View rootView) {
+        // hide progress bar
+        progressBar = rootView.findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.GONE);
     }
 
     private void addWishList() {
@@ -382,7 +465,102 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
         context.startActivity(intent);
     }
 
+    private void likePost() {
+        // post ref
+        postLikes = db.collection("posts").document(postID)
+                .collection("likes");
+        Map<String, Object> userdata = new HashMap<>();
+        userdata.put("exists", true);
+
+        // send currentUserID to post likes collection
+        postLikes.document(user.getUid()).set(userdata);
+    }
+
+    private void unlikePost() {
+        postLikes = db.collection("posts").document(postID)
+                .collection("likes");
+        // delete current userID document
+        postLikes.document(user.getUid()).delete();
+    }
+
+    private void showPopup(View view) {
+        PopupMenu popupMenu = new PopupMenu(context, view);
+
+        popupMenu.getMenu().add(R.string.share);
+
+        // if current User
+        if (duserID.equals(user.getUid())) {
+            popupMenu.getMenu().add("Add to Features");
+            popupMenu.getMenu().add("Edit");
+            popupMenu.getMenu().add(R.string.delete);
+            popupMenu.getMenu().add("Advertise Post");
+        } else {
+            popupMenu.getMenu().add(R.string.add_wishlist);
+        }
+
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                if (menuItem.getTitle() == context.getString(R.string.delete)) {
+                    Snackbar snackbar = Snackbar
+                            .make(rootView.getRootView().findViewById(android.R.id.content),
+                                    "Confirm " + context.getString(R.string.delete),
+                                    Snackbar.LENGTH_LONG)
+                            .setAction(R.string.yes, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    deletePost();
+                                }
+                            });
+
+                    snackbar.show();
+                } else if (menuItem.getTitle() == context.getString(R.string.add_wishlist)) {
+                    addWishList();
+                }
+                return false;
+            }
+        });
+        popupMenu.show();
+    }
+
+    private void deletePost() {
+        final ProgressDialog dialog = ProgressDialog.show(context, null,
+                "Deleting Post" + context.getString(R.string.load), true);
+        dialog.setCancelable(true);
+
+        FirebaseStorage mStorage = FirebaseStorage.getInstance();
+        StorageReference imageRef = mStorage.getReferenceFromUrl(imageUrl);
+        // delete from Storage Ref
+        imageRef.delete();
+
+        // deleting record from FireStore post Reference
+        postRef.delete()
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        // delete from user Catalog Ref
+                        CollectionReference userCatalog = db.collection(context.getString(R.string.users))
+                                .document(userID)
+                                .collection(context.getString(R.string.catalog).toLowerCase());
+                        userCatalog.document(postID).delete()
+                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        Toast.makeText(context, context.getString(R.string.delete) + "d " + product, Toast.LENGTH_SHORT).show();
+                                        dialog.dismiss();
+
+                                        // inform adapter of deleted item
+                                        adapter.refresh();
+                                    }
+                                });
+                    }
+                });
+
+
+    }
+
     public class BlogViewHolder extends RecyclerView.ViewHolder {
+        private ImageButton btnRepost;
         View mView;
         private TextView textView2;
         private TextView textView;
@@ -393,13 +571,29 @@ public class FirestorePagingAdapter extends com.firebase.ui.firestore.paging.Fir
             mView = itemView;
             img = mView.findViewById(R.id.imageView);
             // re-post button
-            ImageButton btnRepost = mView.findViewById(R.id.btnRepost);
-//            btnRepost.setColorFilter(getResources().getColor(R.color.colorHighlight));
+            btnRepost = mView.findViewById(R.id.btnRepost);
+
+            btnRepost.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    btnRepost.setColorFilter(context.getResources().getColor(R.color.colorHighlight));
+                }
+            });
         }
 
         public void setComments(final String postID) {
-            ImageButton btnComment = mView.findViewById(R.id.btnComment);
+            // to handle click events
+            View.OnClickListener listener = new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // open PostView
+                    loadActivity(PostView.class, "postID", postID);
+                }
+            };
 
+            ImageButton btnComment = mView.findViewById(R.id.btnComment);
+            img.setOnClickListener(listener);
+            btnComment.setOnClickListener(listener);
         }
 
         public void setOrderData(String offers, final String userID, final String postID) {

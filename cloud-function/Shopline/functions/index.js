@@ -46,7 +46,7 @@ var transporter = nodemailer.createTransport({
 				catalog : admin.firestore.FieldValue.increment(-1)
 			});
 
-		} else {
+		} else if (change.after.data()) {
 				// get username
 				const userRef = db.doc(`users/${userID}`).get().then(doc => {
 					username = doc.data().username;
@@ -188,6 +188,19 @@ var transporter = nodemailer.createTransport({
 						userID: userID
 					});	
 				}
+				/*// send notification to subscribers (Followers)
+					var topic = PostUserID + '_notifications'; 
+					console.log(topic)
+					var message = {
+						notification: {
+							title: `${APP_NAME}`,
+							body: `${customerName}, placed an new order.`,
+							click_action: 'Orders'
+						},
+						
+						topic: topic
+					};
+					admin.messaging().sendToTopic(message);*/
 				// console.log('Succesful');	
 			});
 			// console.log('User liked :' , userID);
@@ -295,6 +308,23 @@ var transporter = nodemailer.createTransport({
     		const customerRef = db.doc(`users/${customerID}`).get().then(doc => {
     			customerName = doc.data().username;
     			customerEmail = doc.data().email;
+
+    			// send notification to subscribers (Followers)
+					var topic = userID + '_notifications'; 
+					// console.log(topic)
+					var message = {
+						notification: {
+							title: `${APP_NAME}`,
+							body: `${customerName}, placed an new order.`,
+							
+						},
+						data: {
+							click_action: 'Orders'
+						},
+						topic: topic
+					};
+					admin.messaging().send(message);
+
     			// get buyer's name and email
 		    	const userRef = db.doc(`users/${userID}`);
 		    	return userRef.get().then(doc => {
@@ -348,19 +378,6 @@ var transporter = nodemailer.createTransport({
 						return transporter.sendMail(mailBuyer);
 					});
 					
-					// send notification to subscribers (Followers)
-					var topic = userID + '_notifications'; 
-					console.log(topic)
-					var message = {
-						notification: {
-							title: `${APP_NAME}`,
-							body: `${customerName} placed an order.`,
-							click_action: ".Orders"
-						},
-						topic: topic
-					};
-					admin.messaging().send(message);
-			    	
 		    	});
     		});
     	});
@@ -401,4 +418,41 @@ var transporter = nodemailer.createTransport({
     	
     	return null;
     });
+
+    // re-posts
+    exports.Reposts = functions.firestore.document('posts/{postID}/reposts/{userID}')
+    .onWrite((change, context) => {
+    	const userID = context.params.userID;
+    	const postID = context.params.postID;
+		const postRef = db.doc(`posts/${postID}`);
+    	
+    	if (!change.after.data()) 
+		{
+			postRef.update({
+				reposts : admin.firestore.FieldValue.increment(-1)
+			});
+			
+			// console.log('User unliked :' , userID);
+		} else {
+
+			// increment value
+			postRef.update({
+				reposts : admin.firestore.FieldValue.increment(1)
+			});
+			// push to notification reference
+			postRef.get().then(doc => {
+				PostUserID = doc.data().userID;
+				const userRef = db.collection(`users/${PostUserID}/notifications`);
+				userRef.add({
+					timestamp : admin.firestore.FieldValue.serverTimestamp(),
+					postID : postID,
+					state: 5, // RE-POST
+					userID: userID
+				});	
+			});
+		}
+		
+		return null;
+    });
+    
 						
