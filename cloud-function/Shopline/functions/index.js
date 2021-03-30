@@ -48,6 +48,7 @@ var transporter = nodemailer.createTransport({
 
 		} else if (change.after.data()) {
 				// get username
+				const ruserID = change.after.data().ruserID; 
 				const userRef = db.doc(`users/${userID}`).get().then(doc => {
 					username = doc.data().username;
 					
@@ -73,12 +74,19 @@ var transporter = nodemailer.createTransport({
 				const snapshot = followersRef.get().then(snapshot => {
 					snapshot.forEach(doc => {
 						const id = doc.id;
-						// add to follower feed
-						const userFeed = db.doc(`users/${id}/feed/${postID}`)
-						.set({
-							timestamp : admin.firestore.FieldValue.serverTimestamp()
-						});
-
+						const userFeed = db.doc(`users/${id}/feed/${postID}`);
+						// check if repostID is null 
+						if (ruserID != null) {
+							// add to follower feed
+							userFeed.set({
+								timestamp : admin.firestore.FieldValue.serverTimestamp(),
+								ruserID : ruserID
+							});
+						} else {
+							userFeed.set({
+								timestamp : admin.firestore.FieldValue.serverTimestamp()
+							});
+						}
 						// console.log(doc.id);
 					});
 				});

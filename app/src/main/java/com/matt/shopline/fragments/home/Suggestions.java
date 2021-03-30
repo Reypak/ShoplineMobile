@@ -51,7 +51,7 @@ public class Suggestions extends Fragment {
     private FirebaseUser user;
     private RecyclerView mSuggestionList;
     private GridLayoutManager mLayoutManager;
-    private CollectionReference userSuggestions, userFollowers, userFollowing;
+    private CollectionReference userSuggestions, userFollowers, userFollowing, userFeed;
     private FirestoreRecyclerAdapter<User, BlogViewHolder> adapter;
     private String username;
     private Button btnStart;
@@ -60,7 +60,7 @@ public class Suggestions extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_suggestions, container, false);
+        final ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_suggestions, container, false);
 
         user = FirebaseAuth.getInstance().getCurrentUser();
         db = FirebaseFirestore.getInstance();
@@ -78,6 +78,7 @@ public class Suggestions extends Fragment {
         getSuggestions();
 
         btnStart = rootView.findViewById(R.id.btnStart);
+//        btnStart.setVisibility(View.VISIBLE);
         btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -88,18 +89,34 @@ public class Suggestions extends Fragment {
                 SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
                 sharedPreferences.edit().putString(getString(R.string.title_home), "1").apply();
 
-                // load 5 seconds
-                new Handler(Looper.myLooper()).postDelayed(new Runnable() {
+                // listen until feed is created
+                userFeed = db.collection("users")
+                        .document(user.getUid())
+                        .collection("feed");
+                userFeed.addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
-                    public void run() {
-                        dialog.dismiss();
-                        getActivity().getSupportFragmentManager()
-                                .beginTransaction()
-                                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                                .replace(R.id.fragment_container, new Home())
-                                .commit();
+                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                        if (error == null) {
+                            if (!value.isEmpty()) {
+                                // load 5 seconds
+                                new Handler(Looper.myLooper()).postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        dialog.dismiss();
+                                        // check context
+                                        if (getActivity() != null) {
+                                            getActivity().getSupportFragmentManager()
+                                                    .beginTransaction()
+                                                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                                                    .replace(R.id.fragment_container, new Home())
+                                                    .commit();
+                                        }
+                                    }
+                                }, 5000);
+                            }
+                        }
                     }
-                }, 5000);
+                });
 
                /* // send broadcast to Landing page
                 Intent intent = new Intent("finish");
@@ -162,25 +179,23 @@ public class Suggestions extends Fragment {
                                 btnFollow.setText("Following");
                                 btnFollow.setBackgroundColor(Color.parseColor("#265458F7"));
                                 btnFollow.setTextColor(getResources().getColor(R.color.colorPrimary));
+
                                 // delete id from suggestions (2 seconds)
-                                new Handler(Looper.myLooper()).postDelayed(new Runnable() {
+                                getSnapshots().getSnapshot(position).getReference().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
-                                    public void run() {
-                                        getSnapshots().getSnapshot(position).getReference().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
-                                            @Override
-                                            public void onComplete(@NonNull Task<Void> task) {
-                                                notifyDataSetChanged();
-                                            }
-                                        });
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        notifyDataSetChanged();
                                     }
-                                }, 2000);
+                                });
+
+                                // increment count
+                                followCount++;
+                                if (followCount == 2) {
+                                    btnStart.setVisibility(View.VISIBLE);
+                                }
                             }
                         });
-                        // increment count
-                        followCount++;
-                        if (followCount == 2) {
-                            btnStart.setVisibility(View.VISIBLE);
-                        }
+
                     }
 
                 });
@@ -200,12 +215,15 @@ public class Suggestions extends Fragment {
                 userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        username = task.getResult().get("username").toString();
-                        String occupation = task.getResult().get("occupation").toString();
-                        String profileUrl = task.getResult().get("profileUrl").toString();
-                        holder.setUsername(username);
-                        holder.setOccupation(occupation);
-                        holder.setImageURL(getActivity(), profileUrl);
+                        if (task.getResult().exists()) {
+                            User user = task.getResult().toObject(User.class);
+                            username = user.getUsername();
+                            String occupation = user.getOccupation();
+                            String profileUrl = user.getProfileUrl();
+                            holder.setUsername(username);
+                            holder.setOccupation(occupation);
+                            holder.setImageURL(getActivity(), profileUrl);
+                        }
                     }
                 });
                 // get Followers
@@ -213,8 +231,9 @@ public class Suggestions extends Fragment {
                         .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        TextView textView2 = holder.mView.findViewById(R.id.tvFollowers);
+                        textView2.setText("0 " + getString(R.string.followers).toLowerCase());
                         if (task.getResult().exists()) {
-                            TextView textView2 = holder.mView.findViewById(R.id.tvFollowers);
                             textView2.setText(String.format("%s %s",
                                     task.getResult().get(getString(R.string.followers).toLowerCase()).toString(),
                                     getString(R.string.followers).toLowerCase()));
@@ -238,16 +257,18 @@ public class Suggestions extends Fragment {
                     userRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
                         @Override
                         public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                            for (DocumentSnapshot documentSnapshot : value.getDocuments()) {
-                                // getting users ID's
-                                String data = documentSnapshot.getId();
-                                /*Toast.makeText(getActivity(), data, Toast.LENGTH_SHORT).show();*/
-                                if (!data.equals(user.getUid())) {
-                                    Map<String, Object> userdata = new HashMap<>();
-                                    userdata.put("exists", true);
+                            if (error == null) {
+                                for (DocumentSnapshot documentSnapshot : value.getDocuments()) {
+                                    // getting users ID's
+                                    String data = documentSnapshot.getId();
+                                    /*Toast.makeText(getActivity(), data, Toast.LENGTH_SHORT).show();*/
+                                    if (!data.equals(user.getUid())) {
+                                        Map<String, Object> userdata = new HashMap<>();
+                                        userdata.put("exists", true);
 
-                                    // add ID's to current users suggestions
-                                    userSuggestions.document(data).set(userdata);
+                                        // add ID's to current users suggestions
+                                        userSuggestions.document(data).set(userdata);
+                                    }
                                 }
                             }
                         }
@@ -273,6 +294,12 @@ public class Suggestions extends Fragment {
     public void onStop() {
         super.onStop();
         adapter.stopListening();
+        /* Toast.makeText(getActivity(), "Stop", Toast.LENGTH_SHORT).show();
+         *//* Fragment fragment = new Suggestions();
+        getActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_container, new Home())
+                .commit();*/
     }
 
     public static class BlogViewHolder extends RecyclerView.ViewHolder {
@@ -290,12 +317,13 @@ public class Suggestions extends Fragment {
 
         public void setOccupation(String occupation) {
             TextView textView = mView.findViewById(R.id.tvOccupation);
-            if (occupation.isEmpty()) {
-                textView.setVisibility(View.GONE);
-            } else {
-                textView.setText(occupation);
+            textView.setVisibility(View.GONE);
+            if (occupation != null) {
+                if (!occupation.isEmpty()) {
+                    textView.setVisibility(View.VISIBLE);
+                    textView.setText(occupation);
+                }
             }
-
         }
 
         public void setImageURL(final Context ctx, String imageURL) {

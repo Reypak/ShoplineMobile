@@ -78,16 +78,14 @@ public class Home extends Fragment {
         return rootView;
     }
 
-    private boolean loadFragment(Fragment fragment) {
+    private void loadFragment(Fragment fragment) {
         //switching fragment
         if (fragment != null) {
             getChildFragmentManager()
                     .beginTransaction()
                     .replace(R.id.fragment_container, fragment)
                     .commit();
-            return true;
         }
-        return false;
     }
 
     @Override

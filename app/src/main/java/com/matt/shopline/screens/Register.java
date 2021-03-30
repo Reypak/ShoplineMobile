@@ -31,6 +31,7 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -143,7 +144,6 @@ public class Register extends FragmentActivity implements OnDataPass {
 
                             // Sign in success, update UI with the signed-in user's information
                             user = mAuth.getCurrentUser();
-
                             db = FirebaseFirestore.getInstance();
 
                             // set the profile image if exists
@@ -153,7 +153,6 @@ public class Register extends FragmentActivity implements OnDataPass {
                                 // call update method to add Username and profile image
                                 updateUser(Register.this, user, username, profileUrl);
                             }
-
 
                             // Create a new user data
                             Map<String, Object> userdata = new HashMap<>();
@@ -173,6 +172,8 @@ public class Register extends FragmentActivity implements OnDataPass {
                                     dialog.dismiss();
                                     openMain();
                                     setToken(user.getUid());
+                                    // subscribe to notify
+                                    FirebaseMessaging.getInstance().subscribeToTopic(mAuth.getCurrentUser().getUid() + "_notifications");
                                 }
                             });
 
@@ -321,6 +322,10 @@ public class Register extends FragmentActivity implements OnDataPass {
         Intent intent = new Intent(this, NavigationActivity.class);
         startActivity(intent);
         finish();
+
+        // send broadcast to Landing page
+        intent = new Intent("finish");
+        sendBroadcast(intent);
     }
 
     private class PagerAdapter extends FragmentStatePagerAdapter {

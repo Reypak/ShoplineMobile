@@ -37,7 +37,6 @@ import com.matt.shopline.objects.User;
 import com.matt.shopline.screens.FeedUserProfile;
 import com.matt.shopline.screens.Orders;
 import com.matt.shopline.screens.PostView;
-import com.matt.shopline.screens.follow.FollowView;
 import com.squareup.picasso.Picasso;
 
 import java.util.Date;
@@ -74,8 +73,12 @@ public class Notifications extends Fragment {
 
         mList = rootView.findViewById(R.id.recView);
         refreshLayout = rootView.findViewById(R.id.swipeRefresh);
-        // todo: re enable
-        refreshLayout.setEnabled(false);
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                adapter.refresh();
+            }
+        });
         mList.setHasFixedSize(true);
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mList.setLayoutManager(mLayoutManager);
@@ -105,24 +108,31 @@ public class Notifications extends Fragment {
             }
 
             @Override
-            protected void onBindViewHolder(@NonNull final BlogViewHolder holder, int position, @NonNull final Notification model) {
+            protected void onBindViewHolder(@NonNull final BlogViewHolder holder, final int position, @NonNull final Notification model) {
                 MyFirestorePagingAdapter.hideProgress(rootView);
                 // user query
                 if (model.getUserID() != null) {
-                    DocumentReference userRef = db.collection(getString(R.string.users)).document(model.getUserID());
+                    final DocumentReference userRef = db.collection(getString(R.string.users)).document(model.getUserID());
                     userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            User user = task.getResult().toObject(User.class);
-                            String profileUrl = user.getProfileUrl();
-                            // set data
-                            holder.setNotificationData(model.getState(), user.getUsername(),
-                                    model.getTimestamp(), getActivity(), profileUrl, model.getUserID());
+                            if (task.getResult().exists()) {
+                                User user = task.getResult().toObject(User.class);
+                                String profileUrl = user.getProfileUrl();
+                                // set data
+                                holder.setNotificationData(model.getState(), user.getUsername(),
+                                        model.getTimestamp(), getActivity(), profileUrl, model.getUserID());
+                            } else {
+                                // delete void notification
+                                getItem(position).getReference().delete();
+                                refresh();
+                            }
+
                         }
                     });
                 }
-
-                holder.loadPost(model.getPostID(), model.getState());
+                // loader
+                holder.loadPost(model.getPostID(), model.getState(), model.getUserID());
             }
 
             @Override
@@ -138,6 +148,8 @@ public class Notifications extends Fragment {
                             // hide progress bar
                             MyFirestorePagingAdapter.hideProgress(rootView);
                         }
+                    case LOADED:
+                        refreshLayout.setRefreshing(false);
                 }
             }
         };
@@ -160,7 +172,7 @@ public class Notifications extends Fragment {
             mView = itemView;
         }
 
-        public void loadPost(final String postID, final long state) {
+        public void loadPost(final String postID, final long state, final String userID) {
             mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -168,7 +180,7 @@ public class Notifications extends Fragment {
                     if (postID != null) {
                         loadActivity(PostView.class, "postID", postID);
                     } else if (state == 3) {
-                        loadActivity(FollowView.class, "userID", user.getUid());
+                        loadActivity(FeedUserProfile.class, "userID", userID);
                     } else if (state == 4) {
                         loadActivity(Orders.class, null, null);
                     }

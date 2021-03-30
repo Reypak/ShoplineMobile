@@ -163,6 +163,9 @@ public class Profile extends Fragment {
                     case R.id.logout:
                         //sign out
                         FirebaseAuth.getInstance().signOut();
+                        // unsubscribe to notify
+                        FirebaseMessaging.getInstance().unsubscribeFromTopic(user.getUid() + "_notifications");
+
                         Toast.makeText(getActivity(), "Logged Out", Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(getActivity(), LandingPage.class);
                         startActivity(intent);
@@ -231,7 +234,10 @@ public class Profile extends Fragment {
                 bio = task.getResult().get("bio").toString();
                 email = task.getResult().get("email").toString();
                 phone = task.getResult().get("phone").toString();
-                profileUri = task.getResult().get("profileUrl").toString();
+
+                if (task.getResult().get("profileUrl") != null) {
+                    profileUri = task.getResult().get("profileUrl").toString();
+                }
 
                 getProfileImage();
 
@@ -460,7 +466,9 @@ public class Profile extends Fragment {
     private void getProfileImage() {
         // get profile from default user
         if (bundle == null) {
-            profileUri = user.getPhotoUrl().toString();
+            if (user.getPhotoUrl() != null) {
+                profileUri = user.getPhotoUrl().toString();
+            }
         }
         Picasso.with(getActivity()).load(profileUri)
                 .fit()

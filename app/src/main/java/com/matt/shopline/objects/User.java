@@ -9,12 +9,12 @@ public class User {
     public User() {
     }
 
-    public User(String userID, String username, String occupation, String profileUrl) {
+  /*  public User(String userID, String username, String occupation, String profileUrl) {
         this.userID = userID;
         this.username = username;
         this.occupation = occupation;
         this.profileUrl = profileUrl;
-    }
+    }*/
 
     public String getUserID() {
         return userID;

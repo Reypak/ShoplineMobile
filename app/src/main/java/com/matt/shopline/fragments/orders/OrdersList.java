@@ -136,18 +136,24 @@ public class OrdersList extends Fragment {
                                 userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                                     @Override
                                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                        String profileUrl = task.getResult().get("profileUrl").toString();
-                                        holder.setUserData(getActivity(), profileUrl);
+                                        if (task.getResult().exists()) {
+                                            String profileUrl = task.getResult().get("profileUrl").toString();
+                                            holder.setUserData(getActivity(), profileUrl);
 
-                                        ImageView img = holder.mView.findViewById(R.id.profile_image);
-                                        img.setOnClickListener(new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View view) {
-                                                Intent intent = new Intent(getActivity(), FeedUserProfile.class);
-                                                intent.putExtra("userID", userID);
-                                                startActivity(intent);
-                                            }
-                                        });
+                                            ImageView img = holder.mView.findViewById(R.id.profile_image);
+                                            img.setOnClickListener(new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View view) {
+                                                    Intent intent = new Intent(getActivity(), FeedUserProfile.class);
+                                                    intent.putExtra("userID", userID);
+                                                    startActivity(intent);
+                                                }
+                                            });
+                                        } else {
+                                            // remove item
+                                            getItem(position).getReference().delete();
+                                            refresh();
+                                        }
                                     }
                                 });
                             }

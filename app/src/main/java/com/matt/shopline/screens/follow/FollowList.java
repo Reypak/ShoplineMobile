@@ -99,13 +99,19 @@ public class FollowList extends Fragment {
                     userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            User user = task.getResult().toObject(User.class);
-                            String profileUrl = user.getProfileUrl();
-                            String username = user.getUsername();
-                            String occupation = user.getOccupation();
+                            if (task.getResult().exists()) {
+                                User user = task.getResult().toObject(User.class);
+                                String profileUrl = user.getProfileUrl();
+                                String username = user.getUsername();
+                                String occupation = user.getOccupation();
 
-                            holder.setUserData(username, occupation, getActivity(), profileUrl, model.getUserID());
+                                holder.setUserData(username, occupation, getActivity(), profileUrl, model.getUserID());
 
+                            } else {
+                                // delete void field
+                                getItem(position).getReference().delete();
+                                refresh();
+                            }
                         }
                     });
                 }
@@ -140,10 +146,12 @@ public class FollowList extends Fragment {
             ImageView img = mView.findViewById(R.id.profile_image);
 
             textView.setText(username);
-            if (occupation.isEmpty()) {
-                textView2.setVisibility(View.GONE);
-            } else {
-                textView2.setText(occupation);
+            textView2.setVisibility(View.GONE);
+            if (occupation != null) {
+                if (!occupation.isEmpty()) {
+                    textView2.setText(occupation);
+                    textView2.setVisibility(View.VISIBLE);
+                }
             }
 
             Picasso.with(ctx)

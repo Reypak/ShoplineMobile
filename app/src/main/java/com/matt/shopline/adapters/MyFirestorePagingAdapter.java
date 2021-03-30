@@ -94,6 +94,7 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
         this.context = context;
         this.rootView = rootView;
         user = FirebaseAuth.getInstance().getCurrentUser();
+        db = FirebaseFirestore.getInstance();
     }
 
     public static String durationFromNow(Date startDate) {
@@ -159,12 +160,18 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
     protected void onBindViewHolder(@NonNull final BlogViewHolder holder, final int position, @NonNull final User model) {
         hideProgress(rootView);
 
+        // check for repost userID value
+        Object ruserID = getItem(position).get("ruserID");
+        if (ruserID != null) {
+            holder.showRepostUser(ruserID.toString());
+        }
+
         ImageButton imageButton = holder.mView.findViewById(R.id.btnOptions);
         View btnOrder = holder.mView.findViewById(R.id.btnOrder);
         ImageView img = holder.mView.findViewById(R.id.profile_image);
         final ImageButton btnLike = holder.mView.findViewById(R.id.btnLike);
         final TextView tvLikes = holder.mView.findViewById(R.id.tvLikes);
-        db = FirebaseFirestore.getInstance();
+
         postID = getItem(position).getId();
         postRef = db.collection("posts").document(postID);
 //                Toast.makeText(context, postID, Toast.LENGTH_SHORT).show();
@@ -396,6 +403,7 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
     @Override
     public void onViewRecycled(@NonNull BlogViewHolder holder) {
         holder.setImageURL(context, null);
+        holder.showRepostUser(null);
     }
 
     @Override
@@ -429,7 +437,7 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
 
                             data.remove("exists");
                             data.put(context.getString(R.string.timestamp), new Timestamp(new Date()));
-                            data.put("state", 5);
+                            data.put("ruserID", user.getUid());
 
                             userCatalog.document(postID).set(data)
                                     .addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -634,6 +642,33 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
             mView = itemView;
             img = mView.findViewById(R.id.imageView);
 
+        }
+
+        public void showRepostUser(final String ruserID) {
+            View viewRepostUser = mView.findViewById(R.id.viewRepostUser);
+            final TextView tvRepostUser = mView.findViewById(R.id.tvRepostUser);
+            viewRepostUser.setVisibility(View.GONE);
+            if (ruserID != null) {
+                viewRepostUser.setVisibility(View.VISIBLE);
+
+                DocumentReference userRef = db.collection("users").document(ruserID);
+                userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.getResult().exists()) {
+                            User user = task.getResult().toObject(User.class);
+                            tvRepostUser.setText(user.getUsername() + " reposted");
+                        }
+                    }
+                });
+                // open profile
+                viewRepostUser.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        loadActivity(FeedUserProfile.class, "userID", ruserID);
+                    }
+                });
+            }
         }
 
         public void setReposts(final String postID) {
