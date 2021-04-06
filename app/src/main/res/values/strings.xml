@@ -38,6 +38,7 @@
     <string name="following">Following</string>
     <string name="get_started">Get Started</string>
     <string name="title_discover">Discover</string>
+    <string name="edit">Edit</string>
 
     <string-array name="category">
         <item>-- Select --</item>

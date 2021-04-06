@@ -20,8 +20,9 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.matt.shopline.R;
-import com.matt.shopline.fragments.Home;
+import com.matt.shopline.fragments.home.Home;
 import com.matt.shopline.fragments.Notifications;
+import com.matt.shopline.fragments.analytics.Analytics;
 import com.matt.shopline.fragments.profile.Profile;
 import com.matt.shopline.fragments.search.Discover;
 import com.matt.shopline.objects.BottomMenuHelper;
@@ -107,7 +108,7 @@ public class NavigationActivity extends AppCompatActivity implements BottomNavig
                 fragment = new Discover();
                 break;
             case R.id.navigation_analytics:
-                fragment = new Fragment();
+                fragment = new Analytics();
                 break;
             case R.id.navigation_notifications:
                 fragment = new Notifications();

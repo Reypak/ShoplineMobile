@@ -1,4 +1,4 @@
-package com.matt.shopline.fragments;
+package com.matt.shopline.fragments.home;
 
 import android.content.Intent;
 import android.content.SharedPreferences;

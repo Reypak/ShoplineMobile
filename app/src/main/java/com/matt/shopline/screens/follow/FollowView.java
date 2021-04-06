@@ -16,7 +16,6 @@ import com.matt.shopline.adapters.FollowTabAdapter;
 public class FollowView extends AppCompatActivity {
     private TabLayout tabLayout;
     private ViewPager viewPager;
-    private FollowTabAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +41,7 @@ public class FollowView extends AppCompatActivity {
 
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
-        adapter = new FollowTabAdapter(this, getSupportFragmentManager(), tabLayout.getTabCount(), userID);
+        FollowTabAdapter adapter = new FollowTabAdapter(this, getSupportFragmentManager(), tabLayout.getTabCount(), userID);
         viewPager.setAdapter(adapter);
 
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));

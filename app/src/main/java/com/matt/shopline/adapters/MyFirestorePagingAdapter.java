@@ -27,7 +27,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.firebase.ui.firestore.paging.FirestorePagingAdapter;
 import com.firebase.ui.firestore.paging.FirestorePagingOptions;
@@ -48,7 +47,6 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.matt.shopline.R;
@@ -56,6 +54,7 @@ import com.matt.shopline.objects.User;
 import com.matt.shopline.screens.FeedUserProfile;
 import com.matt.shopline.screens.Orders;
 import com.matt.shopline.screens.PostView;
+import com.matt.shopline.screens.Upload;
 import com.squareup.picasso.Picasso;
 
 import java.text.DecimalFormat;
@@ -69,6 +68,7 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
 
     private String imageUrl;
     private String product;
+    private String description;
     private String postID;
     private DocumentReference postRef;
     private CollectionReference postLikes, reposts;
@@ -77,17 +77,13 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
     private String offers;
     private String username;
     private CollectionReference userOrders;
-    private SwipeRefreshLayout refreshLayout;
-
-    private Query userCatalog;
     private FirebaseUser user;
     private String userID;
     private FirebaseFirestore db;
-    private RecyclerView mCatalogList;
-    private FirestorePagingAdapter adapter;
 
     private Context context;
     private View rootView;
+
 
     public MyFirestorePagingAdapter(FirestorePagingOptions<User> options, Context context, View rootView) {
         super(options);
@@ -182,7 +178,7 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
                     if (task.getResult().exists()) {
                         product = task.getResult().get("product").toString();
                         price = task.getResult().get("price").toString();
-                        String description = task.getResult().get("description").toString();
+                        description = task.getResult().get("description").toString();
                         imageUrl = task.getResult().get("imageUrl").toString();
                         duserID = task.getResult().get("userID").toString();
                         String timestamp = task.getResult().get("timestamp").toString();
@@ -198,6 +194,7 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
                                 public void onClick(View view) {
                                     offers = task.getResult().get("offers").toString();
                                     String product = task.getResult().get("product").toString();
+
                                     // create dialog message
                                     AlertDialog.Builder builder = new AlertDialog.Builder(context);
                                     builder.setTitle(product);
@@ -235,8 +232,8 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
                         getItem(position).getReference().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
-                                adapter.refresh();
-                                Toast.makeText(context, "Removed Deleted Post", Toast.LENGTH_SHORT).show();
+                                refresh();
+//                                Toast.makeText(context, "Removed Deleted Post", Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
@@ -262,17 +259,7 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
             }
         });
 
-       /* reposts = postRef.collection("reposts");
-        reposts.document(user.getUid()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                if(documentSnapshot.exists())
-
-            }
-        });*/
-        // get post likes
-        final CollectionReference likeRef = postRef.collection("likes");
-               /* likeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+        /* likeRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                         if (error == null) {
@@ -283,6 +270,9 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
 
                     }
                 });*/
+
+        // get post likes
+        final CollectionReference likeRef = postRef.collection("likes");
 
         // check if current userID exists
         likeRef.document(user.getUid()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
@@ -386,11 +376,18 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
 
         imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onClick(final View view) {
                 // rerun the onBind method to get required data
                 onBindViewHolder(holder, position, model);
-                // display popup
-                showPopup(view);
+
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        // display popup
+                        showPopup(view);
+                    }
+                }, 200);
+
             }
         });
 
@@ -408,12 +405,11 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
 
     @Override
     protected void onLoadingStateChanged(@NonNull LoadingState state) {
-        switch (state) {
-            case FINISHED:
-                if (getItemCount() == 0) {
-                    // hide progress bar
-                    hideProgress(rootView);
-                }
+        if (state == LoadingState.FINISHED) {
+            if (getItemCount() == 0) {
+                // hide progress bar
+                hideProgress(rootView);
+            }
         }
     }
 
@@ -529,7 +525,7 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
         });
     }
 
-    private void loadActivity(Class aClass, String name, String value) {
+    private void loadActivity(Class<?> aClass, String name, String value) {
         Intent intent = new Intent(context, aClass);
         if (name != null) {
             intent.putExtra(name, value); // send intent to load You Tab
@@ -563,7 +559,7 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
         // if current User
         if (duserID.equals(user.getUid())) {
             popupMenu.getMenu().add("Add to Features");
-            popupMenu.getMenu().add("Edit");
+            popupMenu.getMenu().add(R.string.edit);
             popupMenu.getMenu().add(R.string.delete);
             popupMenu.getMenu().add("Advertise Post");
         } else {
@@ -588,6 +584,12 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
                     snackbar.show();
                 } else if (menuItem.getTitle() == context.getString(R.string.add_wishlist)) {
                     addWishList();
+                } else if (menuItem.getTitle() == context.getString(R.string.edit)) {
+                    // string array with data
+                    String[] strings = {postID, product, price, description, offers};
+                    Intent intent = new Intent(context, Upload.class);
+                    intent.putExtra("data", strings);
+                    context.startActivity(intent);
                 }
                 return false;
             }
@@ -622,7 +624,7 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
                                         dialog.dismiss();
 
                                         // inform adapter of deleted item
-                                        adapter.refresh();
+                                        refresh();
                                     }
                                 });
                     }
@@ -635,7 +637,7 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
         View mView;
         private TextView textView2;
         private TextView textView;
-        private ImageView img;
+        private final ImageView img;
 
         public BlogViewHolder(final View itemView) {
             super(itemView);
@@ -820,7 +822,7 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
                 formatted = price + "0";
             }
             textView.setText(product);
-            textView2.setText("UGX " + formatted);
+            textView2.setText(String.format("UGX %s", formatted));
             textView3.setText(description);
 
             SimpleDateFormat sdf = new SimpleDateFormat();

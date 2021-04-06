@@ -33,6 +33,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.matt.shopline.R;
+import com.matt.shopline.adapters.MyFirestorePagingAdapter;
 import com.matt.shopline.objects.Comment;
 import com.matt.shopline.objects.User;
 import com.squareup.picasso.Picasso;
@@ -41,7 +42,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static com.matt.shopline.fragments.profile.Catalog.durationFromNow;
+import static com.matt.shopline.adapters.MyFirestorePagingAdapter.durationFromNow;
 
 public class PostView extends AppCompatActivity {
 

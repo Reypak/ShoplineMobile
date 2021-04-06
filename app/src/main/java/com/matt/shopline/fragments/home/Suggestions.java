@@ -38,7 +38,6 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.matt.shopline.R;
-import com.matt.shopline.fragments.Home;
 import com.matt.shopline.objects.User;
 import com.matt.shopline.screens.FeedUserProfile;
 import com.squareup.picasso.Picasso;
@@ -294,12 +293,6 @@ public class Suggestions extends Fragment {
     public void onStop() {
         super.onStop();
         adapter.stopListening();
-        /* Toast.makeText(getActivity(), "Stop", Toast.LENGTH_SHORT).show();
-         *//* Fragment fragment = new Suggestions();
-        getActivity().getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, new Home())
-                .commit();*/
     }
 
     public static class BlogViewHolder extends RecyclerView.ViewHolder {

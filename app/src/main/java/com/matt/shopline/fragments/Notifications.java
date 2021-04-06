@@ -41,7 +41,8 @@ import com.squareup.picasso.Picasso;
 
 import java.util.Date;
 
-import static com.matt.shopline.fragments.profile.Catalog.durationFromNow;
+import static com.matt.shopline.adapters.MyFirestorePagingAdapter.durationFromNow;
+
 
 public class Notifications extends Fragment {
     private RecyclerView mList;

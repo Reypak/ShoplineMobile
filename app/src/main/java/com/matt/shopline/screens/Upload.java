@@ -40,12 +40,17 @@ import java.util.Map;
 
 public class Upload extends AppCompatActivity {
     private ImageView imageView;
-    private int Image_Request_Code = 7;
+    private final int Image_Request_Code = 7;
     private Uri FilePathUri;
     private View viewOffers, offerIcon, viewSizes, sizesIcon;
     private ProgressDialog dialog;
     private FirebaseUser user;
     private MenuItem btnUpload;
+    private TextView etDesc, etProduct, etPrice, etOffer;
+    private Bundle extras;
+    private Map<String, Object> postData;
+    private CollectionReference postRef, userCatalog;
+    private String[] strings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +58,15 @@ public class Upload extends AppCompatActivity {
         setContentView(R.layout.activity_upload);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-//        getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setTitle(R.string.title_upload);
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        postRef = db.collection("posts");
+        user = FirebaseAuth.getInstance().getCurrentUser();
+        // current user Following Ref
+        userCatalog = db.collection("users")
+                .document(user.getUid())
+                .collection("catalog");
 
         viewOffers = findViewById(R.id.viewOffers);
         viewSizes = findViewById(R.id.viewSizes);
@@ -64,6 +76,11 @@ public class Upload extends AppCompatActivity {
 
         viewOffers.setVisibility(View.GONE);
         viewSizes.setVisibility(View.GONE);
+
+        etProduct = findViewById(R.id.etProduct);
+        etPrice = findViewById(R.id.etPrice);
+        etOffer = findViewById(R.id.etOffers);
+        etDesc = findViewById(R.id.etDescription);
 
         imageView = findViewById(R.id.imageView);
         imageView.setOnClickListener(new View.OnClickListener() {
@@ -76,6 +93,22 @@ public class Upload extends AppCompatActivity {
             }
         });
 
+        extras = getIntent().getExtras();
+        if (extras != null) {
+            getSupportActionBar().setTitle(getString(R.string.edit) + " Post");
+            View imageLayout = findViewById(R.id.imageLayout);
+            imageLayout.setVisibility(View.GONE);
+
+            strings = extras.getStringArray("data");
+            etProduct.setText(strings[1]);
+            etPrice.setText(strings[2]);
+            etDesc.setText(strings[3]);
+            etOffer.setText(strings[4]);
+
+            if (strings[4] != null) {
+                viewOffers.setVisibility(View.VISIBLE);
+            }
+        }
     }
 
     @Override
@@ -108,37 +141,45 @@ public class Upload extends AppCompatActivity {
         if (item.getItemId() == android.R.id.home) {
             finish();
         } else if (item.getItemId() == 0) {
-            uploadImage();
+            if (extras != null) {
+                updateData();
+            } else {
+                uploadImage();
+            }
         }
         return super.onOptionsItemSelected(item);
     }
 
-    private void uploadData(String imageUrl) {
-        // upload product
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        CollectionReference postRef = db.collection("posts");
+    private void updateData() {
+        collectData();
+        postRef.document(strings[0]).update(postData).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                Toast.makeText(Upload.this, "Post Updated", Toast.LENGTH_SHORT).show();
+            }
+        });
+        finish();
+    }
 
-        // current user Following Ref
-        final CollectionReference userCatalog = db.collection("users")
-                .document(user.getUid())
-                .collection("catalog");
-
-        TextView etProduct = findViewById(R.id.etProduct);
-        TextView etPrice = findViewById(R.id.etPrice);
-        TextView etOffer = findViewById(R.id.etOffers);
-        TextView etDesc = findViewById(R.id.etDescription);
-
-        Map<String, Object> postData = new HashMap<>();
+    private void collectData() {
+        postData = new HashMap<>();
         postData.put("product", etProduct.getText().toString().trim());
         postData.put("price", etPrice.getText().toString().trim());
         postData.put("description", etDesc.getText().toString().trim());
-        postData.put("timestamp", System.currentTimeMillis());
-        postData.put("userID", user.getUid());
 
         String offers = etOffer.getText().toString().trim();
         if (viewOffers.getVisibility() == View.VISIBLE && !offers.isEmpty()) {
             postData.put("offers", offers);
         }
+    }
+
+    private void uploadData(String imageUrl) {
+        // upload product
+        collectData();
+
+        // add fields to the map
+        postData.put("timestamp", System.currentTimeMillis());
+        postData.put("userID", user.getUid());
 
         if (imageUrl != null) {
             postData.put("imageUrl", imageUrl);
@@ -174,7 +215,6 @@ public class Upload extends AppCompatActivity {
                     "Uploading your post...", true);
             dialog.setCancelable(true);
 
-            user = FirebaseAuth.getInstance().getCurrentUser();
             StorageReference storageReference = FirebaseStorage.getInstance().getReference("Images").child(user.getUid());
             StorageReference fileReference = storageReference.child(System.currentTimeMillis() + ".jpg");
 
@@ -200,6 +240,7 @@ public class Upload extends AppCompatActivity {
                         @Override
                         public void onSuccess(Uri uri) {
                             String imageUrl = uri.toString();
+                            // start to send data to firestore
                             uploadData(imageUrl);
                         }
                     });

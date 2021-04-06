@@ -29,8 +29,7 @@ public class Login extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private EditText etEmail;
     private EditText etPwrd;
-    private Button btnLogin;
-//    private ProgressBar progressBar;
+    //    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +39,7 @@ public class Login extends AppCompatActivity {
 
         etEmail = findViewById(R.id.etEmail);
         etPwrd = findViewById(R.id.etPwrd);
-        btnLogin = findViewById(R.id.login);
+        Button btnLogin = findViewById(R.id.login);
         final ImageButton btnToggle = findViewById(R.id.btnToggle);
         // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
@@ -126,5 +125,24 @@ public class Login extends AppCompatActivity {
         Intent intent = new Intent(this, Register.class);
         startActivity(intent);
         finish();
+    }
+
+    public void resetPassword(View view) {
+        String email = etEmail.getText().toString().trim();
+        if (!email.isEmpty()) {
+            final ProgressDialog dialog = ProgressDialog.show(Login.this, null, "Sending " + getString(R.string.email) + getString(R.string.load));
+            mAuth.sendPasswordResetEmail(email)
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            Toast.makeText(Login.this, "Password Reset Email Sent", Toast.LENGTH_SHORT).show();
+                            dialog.dismiss();
+                        }
+                    });
+        } else {
+            etEmail.requestFocus();
+            Toast.makeText(this, "Fill in Password Reset Email", Toast.LENGTH_SHORT).show();
+        }
+
     }
 }

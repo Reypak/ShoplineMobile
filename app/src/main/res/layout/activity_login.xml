@@ -79,6 +79,7 @@
                 android:layout_height="wrap_content"
                 android:paddingVertical="5dp"
                 android:paddingEnd="5dp"
+                android:onClick="resetPassword"
                 android:text="Forgot password?"
                 android:textAlignment="viewEnd"
                 android:textColor="@color/colorPrimary" />

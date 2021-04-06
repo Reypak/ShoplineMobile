@@ -223,6 +223,13 @@ var transporter = nodemailer.createTransport({
 		const followerID = context.params.followerID;
 
 		const followersRef = db.doc(`users/${userID}/data/followers`);
+		
+		var d = new Date();
+		var date = d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear(); // date format (dd-MM-yyyy)
+		// console.log('Date: ' , date);
+
+		const userAnalyticsRef = db.doc(`analytics/${userID}/followers/${date}`);
+
 		if (!change.after.data()) 
 		{
 			followersRef.update({
@@ -230,8 +237,20 @@ var transporter = nodemailer.createTransport({
 			});
 			
 			// console.log('New unfollower :' , followerID);
+
+			// decrement analytics
+			userAnalyticsRef.update({
+				count: admin.firestore.FieldValue.increment(-1),
+			});
 			
 		} else {
+			
+			// setting analytics
+			userAnalyticsRef.set({
+				timestamp : admin.firestore.FieldValue.serverTimestamp(),
+				count: admin.firestore.FieldValue.increment(1),
+			}, { merge: true });
+
 			followersRef.get().then((docSnapshot) => {
 				 if (docSnapshot.exists) {
 					followersRef.update({
