@@ -1,12 +1,14 @@
 package com.matt.shopline.objects;
 
+import java.util.List;
+
 public class Analytics {
     String title;
-    float[] data;
+    List<Float> data;
     String count;
     String percentile;
 
-    public Analytics(String title, float[] data, String count, String percentile) {
+    public Analytics(String title, List<Float> data, String count, String percentile) {
         this.title = title;
         this.data = data;
         this.count = count;
@@ -17,7 +19,7 @@ public class Analytics {
         return title;
     }
 
-    public float[] getData() {
+    public List<Float> getData() {
         return data;
     }
 

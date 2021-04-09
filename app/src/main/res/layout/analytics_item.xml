@@ -36,7 +36,7 @@
                 app:spark_scrubEnabled="true"
                 android:scaleX="1.1"
                 android:scaleY="1.1"
-                app:spark_fillColor="#5E5458F7" />
+                app:spark_fillColor="#335D4C77" />
         </FrameLayout>
 
         <LinearLayout

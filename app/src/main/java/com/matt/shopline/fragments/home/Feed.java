@@ -33,10 +33,12 @@ public class Feed extends Fragment {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         // view user Feed
-        userFeed = db.collection(getString(R.string.users))
-                .document(user.getUid())
-                .collection("feed")
-                .orderBy(getString(R.string.timestamp), Query.Direction.DESCENDING);
+        if (user != null) {
+            userFeed = db.collection(getString(R.string.users))
+                    .document(user.getUid())
+                    .collection("feed")
+                    .orderBy(getString(R.string.timestamp), Query.Direction.DESCENDING);
+        }
         // todo : Add a priority field : { 0-50 followers = 1, 50-100 =2 }
 
 //        SwipeRefreshLayout refreshLayout = rootView.findViewById(R.id.swipeRefresh);

@@ -2,7 +2,6 @@ package com.matt.shopline.fragments;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -138,7 +138,7 @@ public class Notifications extends Fragment {
 
             @Override
             public void onViewRecycled(@NonNull BlogViewHolder holder) {
-                holder.setNotificationData(0, null, null, null, null, null);
+                holder.setNotificationData(0, null, null, requireActivity(), null, null);
             }
 
             @Override
@@ -196,50 +196,54 @@ public class Notifications extends Fragment {
             ImageView icon = mView.findViewById(R.id.icon);
 
             String comment = null;
-            if (state == 1) {
-                icon.setImageDrawable(getResources().getDrawable(R.drawable.ic_favorite));
-                icon.clearColorFilter();
-                comment = username + " has liked your post";
-            } else if (state == 2) {
-                icon.setImageDrawable(getResources().getDrawable(R.drawable.ic_message2));
-                icon.setColorFilter(Color.parseColor("#FF4CAF50"));
-                comment = username + " has commented your post";
-            } else if (state == 3) {
-                icon.setImageDrawable(getResources().getDrawable(R.drawable.ic_user));
-                icon.setColorFilter(getResources().getColor(R.color.colorTextOverlay));
-                comment = username + " followed " + getString(R.string.you).toLowerCase();
-            } else if (state == 4) {
-                icon.setImageDrawable(getResources().getDrawable(R.drawable.ic_basket));
-                icon.setColorFilter(getResources().getColor(R.color.colorTextOverlay));
-                comment = username + " placed an order";
-            } else if (state == 5) {
-                icon.setImageDrawable(getResources().getDrawable(R.drawable.ic_arrow_up_circle));
-                icon.setColorFilter(getResources().getColor(R.color.colorHighlight));
-                comment = username + " reposted your post";
-            }
-            textView.setText(comment);
-            textView2.setText(null);
-            if (timestamp != null) {
-                textView2.setText(durationFromNow(timestamp));
-            }
-
-            Picasso.with(ctx)
-                    .load(imageURL)
-                    .fit()
-                    .centerCrop()
-                    .placeholder(R.drawable.ic_launcher_foreground)
-                    .into(img);
-
-            img.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    // open profile
-                    Intent intent = new Intent(mView.getContext(), FeedUserProfile.class);
-                    intent.putExtra("userID", userID);
-                    startActivity(intent);
+            // check if context nill
+            if (ctx != null) {
+                if (state == 1) {
+                    setIcon(icon, R.drawable.ic_favorite, android.R.color.transparent);
+                    icon.clearColorFilter();
+                    comment = username + " has liked your post";
+                } else if (state == 2) {
+                    setIcon(icon, R.drawable.ic_message2, R.color.colorGreen);
+                    comment = username + " has commented your post";
+                } else if (state == 3) {
+                    setIcon(icon, R.drawable.ic_user, R.color.colorTextOverlay);
+                    comment = username + " followed " + getString(R.string.you).toLowerCase();
+                } else if (state == 4) {
+                    setIcon(icon, R.drawable.ic_basket, R.color.colorTextOverlay);
+                    comment = username + " placed an order";
+                } else if (state == 5) {
+                    setIcon(icon, R.drawable.ic_arrow_up_circle, R.color.colorHighlight);
+                    comment = username + " reposted your post";
                 }
-            });
+
+                textView.setText(comment);
+                textView2.setText(null);
+                if (timestamp != null) {
+                    textView2.setText(durationFromNow(timestamp));
+                }
+
+                Picasso.with(ctx)
+                        .load(imageURL)
+                        .fit()
+                        .centerCrop()
+                        .placeholder(R.drawable.ic_launcher_foreground)
+                        .into(img);
+
+                img.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        // open profile
+                        Intent intent = new Intent(mView.getContext(), FeedUserProfile.class);
+                        intent.putExtra("userID", userID);
+                        startActivity(intent);
+                    }
+                });
+            }
         }
 
+        private void setIcon(ImageView icon, int res, int color) {
+            icon.setImageDrawable(ContextCompat.getDrawable(requireActivity(), res));
+            icon.setColorFilter(getResources().getColor(color));
+        }
     }
 }

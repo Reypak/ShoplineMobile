@@ -43,6 +43,7 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:maxLines="1"
+                android:ellipsize="end"
                 android:text="@string/load"
                 android:textSize="16sp" />
 

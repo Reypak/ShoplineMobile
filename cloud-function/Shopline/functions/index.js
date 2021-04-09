@@ -14,6 +14,9 @@ var transporter = nodemailer.createTransport({
     }
 });
 
+var d = new Date();
+var date = d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear(); // date format (dd-MM-yyyy)
+// console.log('Date: ' , date);
 
 	// send postID to all followers
 	exports.sendPostID = functions.firestore.document('users/{userID}/catalog/{postID}')
@@ -157,6 +160,14 @@ var transporter = nodemailer.createTransport({
 						state: 2, // COMMENT
 						userID: userID
 					});	
+
+					// comments analytics
+					const userAnalyticsRef = db.doc(`analytics/${PostUserID}/comments/${date}`);
+					// setting analytics
+					userAnalyticsRef.set({
+						timestamp : admin.firestore.FieldValue.serverTimestamp(),
+						count: admin.firestore.FieldValue.increment(1),
+					}, { merge: true });
 				}
 				// console.log('Succesful');
 			});
@@ -195,6 +206,14 @@ var transporter = nodemailer.createTransport({
 						state: 1,// LIKE
 						userID: userID
 					});	
+
+				// likes analytics
+				const userAnalyticsRef = db.doc(`analytics/${PostUserID}/likes/${date}`);
+					// setting analytics
+					userAnalyticsRef.set({
+						timestamp : admin.firestore.FieldValue.serverTimestamp(),
+						count: admin.firestore.FieldValue.increment(1),
+					}, { merge: true });
 				}
 				/*// send notification to subscribers (Followers)
 					var topic = PostUserID + '_notifications'; 
@@ -223,10 +242,6 @@ var transporter = nodemailer.createTransport({
 		const followerID = context.params.followerID;
 
 		const followersRef = db.doc(`users/${userID}/data/followers`);
-		
-		var d = new Date();
-		var date = d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear(); // date format (dd-MM-yyyy)
-		// console.log('Date: ' , date);
 
 		const userAnalyticsRef = db.doc(`analytics/${userID}/followers/${date}`);
 
@@ -475,7 +490,15 @@ var transporter = nodemailer.createTransport({
 					postID : postID,
 					state: 5, // RE-POST
 					userID: userID
-				});	
+				});
+				
+				// repost analytics
+				const userAnalyticsRef = db.doc(`analytics/${PostUserID}/reposts/${date}`);
+					// setting analytics
+					userAnalyticsRef.set({
+						timestamp : admin.firestore.FieldValue.serverTimestamp(),
+						count: admin.firestore.FieldValue.increment(1),
+					}, { merge: true });	
 			});
 		}
 		

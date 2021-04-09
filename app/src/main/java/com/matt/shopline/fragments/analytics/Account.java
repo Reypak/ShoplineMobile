@@ -1,12 +1,12 @@
 package com.matt.shopline.fragments.analytics;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -26,32 +26,34 @@ import com.matt.shopline.objects.Analytics;
 import com.robinhood.spark.SparkAdapter;
 import com.robinhood.spark.SparkView;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class Account extends Fragment {
     FirebaseFirestore db;
-    private String followersCount;
     private Analytics analytics;
     private MyAnalyticsAdapter adapter;
+    private ArrayList<Analytics> mUploads;
+    private FirebaseUser user;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_account, container, false);
 
+        db = FirebaseFirestore.getInstance();
+        user = FirebaseAuth.getInstance().getCurrentUser();
+
         RecyclerView recyclerView = rootView.findViewById(R.id.recView);
         GridLayoutManager mLayoutManager = new GridLayoutManager(requireActivity(), 2);
         recyclerView.setLayoutManager(mLayoutManager);
-        final ArrayList<Analytics> mUploads = new ArrayList<>();
-        float[] data = {7, 2, 3, 10, 7, 3, 5, 0};
-        analytics = new Analytics("Reach", data, "30", "120");
-        mUploads.add(analytics);
-
+        mUploads = new ArrayList<>();
 
         /*String date1 = DateFormat.getDateInstance(DateFormat.DEFAULT).format(new Date());
-        DateFormat format = new SimpleDateFormat("d-M-yyyy");
-        String dd = format.format(new Date());*/
+         */
 
       /*  Toast.makeText(requireActivity(), String.valueOf(dd), Toast.LENGTH_SHORT).show();
         Date date = null;
@@ -62,30 +64,11 @@ public class Account extends Fragment {
             e.printStackTrace();
         }*/
 
-        db = FirebaseFirestore.getInstance();
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        Query reference = db.collection("analytics").document(user.getUid()).collection("followers");
-        reference.orderBy("timestamp", Query.Direction.DESCENDING).limit(4).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                float[] data = new float[4];
-                int i = 0;
-                for (DocumentSnapshot documentSnapshot : task.getResult().getDocuments()) {
-                    documentSnapshot.getId();
-                    followersCount = documentSnapshot.get("count").toString();
-                    data[i] = Float.parseFloat(followersCount);
-                    i++;
-                    Toast.makeText(requireActivity(), followersCount, Toast.LENGTH_SHORT).show();
-                }
+        addData(getString(R.string.followers));
+        addData("Likes");
+        addData(getString(R.string.comments));
+        addData("Reposts");
 
-                int percent = (int) (data[0] / data[1] * 100);
-                int currentCount = (int) data[0];
-//                down ▼
-                analytics = new Analytics(getString(R.string.followers), data, String.valueOf(currentCount), "▲ " + percent);
-                mUploads.add(analytics);
-                adapter.notifyDataSetChanged();
-            }
-        });
        /* reference.document(dd).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -132,6 +115,66 @@ public class Account extends Fragment {
         return rootView;
     }
 
+    private void addData(final String path) {
+        DateFormat format = new SimpleDateFormat("d-M-yyyy");
+        final String date = format.format(new Date());
+
+        Query reference = db.collection("analytics").document(user.getUid()).collection(path.toLowerCase());
+        reference.orderBy("timestamp", Query.Direction.DESCENDING).limit(4).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    List<Float> floats = new ArrayList<>();
+                    List<String> dates = new ArrayList<>();
+                    int i = 1;
+                    floats.add(0, (float) 0);
+
+                    for (DocumentSnapshot documentSnapshot : task.getResult().getDocuments()) {
+                        // get count
+                        String count = documentSnapshot.get("count").toString();
+                        dates.add(count);
+                        if (documentSnapshot.getId().equals(date)) {
+                            floats.set(0, Float.valueOf(count));
+                        } else {
+                            floats.add(i, Float.valueOf(count));
+                            i++;
+                        }
+                    }
+
+                    if (floats.size() <= 1) {
+                        floats.add((float) 0);
+                    }
+
+                    String currentCount = String.valueOf(floats.get(0).intValue());
+
+                    int percent = 0;
+                    String inc = "▲ ";
+
+                    if (floats.size() >= 1) {
+                        if (floats.get(1).intValue() != 0) {
+                            float value = (floats.get(0) / floats.get(1));
+                            if (value < 1) {
+                                inc = "▼ ";
+                            }
+                            percent = (int) (value * 100);
+                        }
+                    }
+
+                    /*Toast.makeText(requireActivity(), String.valueOf(floats.size()), Toast.LENGTH_SHORT).show();
+                    if (floats.size() == 4) {
+                        percent = floats.get(1).intValue();
+                    }*/
+                    /*  int currentCount = (int) data[0];*/
+                    // down ▼
+                    analytics = new Analytics(path, floats, currentCount, inc + percent);
+                    mUploads.add(analytics);
+                    adapter.notifyDataSetChanged();
+                }
+            }
+        });
+    }
+
     private static class MyAnalyticsAdapter extends RecyclerView.Adapter<AnalyticsViewHolder> {
         private final Context mContext;
         private final List<Analytics> mUploads;
@@ -151,7 +194,7 @@ public class Account extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull AnalyticsViewHolder holder, int position) {
             Analytics analytics = mUploads.get(position);
-            holder.setTileData(analytics.getTitle(), analytics.getCount(), analytics.getPercentile());
+            holder.setTileData(mContext, analytics.getTitle(), analytics.getCount(), analytics.getPercentile());
             holder.setGraphData(analytics.getData());
         }
 
@@ -168,7 +211,7 @@ public class Account extends Fragment {
             super(itemView);
         }
 
-        public void setTileData(String title, String count, String percent) {
+        public void setTileData(Context context, String title, String count, String percent) {
             TextView titleText = itemView.findViewById(R.id.tvTitle);
             TextView tvCount = itemView.findViewById(R.id.tvCount);
             TextView tvPercent = itemView.findViewById(R.id.tvPercent);
@@ -176,9 +219,27 @@ public class Account extends Fragment {
             titleText.setText(title);
             tvCount.setText(count);
             tvPercent.setText(percent + "%");
+
+            if (percent.contains("▼")) {
+                tvPercent.setTextColor(Color.RED);
+            }
+            if (title.contains("Reposts")) {
+                setColors(context, titleText, R.color.colorHighlight, "#4DFF8C39");
+            } else if (title.contains("Likes")) {
+                setColors(context, titleText, android.R.color.holo_red_light, "#4DFF4444");
+            } else if (title.contains(context.getString(R.string.comments))) {
+                setColors(context, titleText, R.color.colorPrimary, "#5E5458F7");
+            }
         }
 
-        public void setGraphData(float[] data) {
+        private void setColors(Context context, TextView textView, int res, String colorString) {
+            int orange = context.getResources().getColor(res);
+            textView.setTextColor(orange);
+            sparkView.setFillColor(Color.parseColor(colorString));
+            sparkView.setLineColor(orange);
+        }
+
+        public void setGraphData(List<Float> data) {
 //            sparkView.setFillColor(Color.RED);
             if (data != null) {
                 sparkView.setAdapter(new MyAdapter(data));
@@ -187,26 +248,26 @@ public class Account extends Fragment {
     }
 
     public static class MyAdapter extends SparkAdapter {
-        private final float[] yData;
+        private final List<Float> yData;
 
-        public MyAdapter(float[] yData) {
+        public MyAdapter(List<Float> yData) {
             this.yData = yData;
         }
 
         @Override
         public int getCount() {
-            return yData.length;
+            return yData.size();
         }
 
         @NonNull
         @Override
         public Object getItem(int index) {
-            return yData[index];
+            return yData.get(index);
         }
 
         @Override
         public float getY(int index) {
-            return yData[index];
+            return yData.get(index);
         }
     }
 }

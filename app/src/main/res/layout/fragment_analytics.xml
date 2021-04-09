@@ -47,5 +47,50 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnDate"
+        style="@style/Button3"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="3dp"
+        android:layout_marginEnd="10dp"
+        android:paddingEnd="20dp"
+        android:text="Today"
+        android:textSize="14sp"
+        android:visibility="gone"
+        app:icon="@drawable/ic_arrow_down"
+        app:iconGravity="textStart"
+        app:iconTint="@color/colorPrimary" />
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="10dp"
+        app:cardBackgroundColor="#265458F7"
+        app:cardCornerRadius="50dp"
+        app:cardElevation="0dp">
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center|end"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/ic_arrow_down"
+            android:backgroundTint="@color/colorPrimary" />
+
+        <Spinner
+            android:id="@+id/spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:animateLayoutChanges="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:paddingHorizontal="20dp"
+            android:popupBackground="@drawable/card_background" />
+    </androidx.cardview.widget.CardView>
+
 
 </RelativeLayout>

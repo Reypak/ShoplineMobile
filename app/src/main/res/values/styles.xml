@@ -114,8 +114,12 @@
     </style>
 
     <style name="SparkViewStyle">
-        <item name="spark_lineColor">@color/colorPrimary</item>
+        <item name="spark_lineColor">@color/colorTextOverlay</item>
         <item name="spark_cornerRadius">15dp</item>
         <item name="spark_fillType">down</item>
+    </style>
+
+    <style name="MySpinner">
+
     </style>
 </resources>

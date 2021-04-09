@@ -2,23 +2,23 @@ package com.matt.shopline.fragments.analytics;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.PopupMenu;
+import android.widget.Spinner;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
 import com.matt.shopline.R;
 import com.matt.shopline.adapters.AnalyticsAdapter;
-import com.matt.shopline.fragments.search.Search;
+
+import java.util.ArrayList;
 
 public class Analytics extends Fragment {
     private TabLayout tabLayout;
@@ -31,11 +31,24 @@ public class Analytics extends Fragment {
         Toolbar toolbar = rootView.findViewById(R.id.toolbar1);
         ((AppCompatActivity) requireActivity()).setSupportActionBar(toolbar);
         toolbar.setTitle(R.string.title_analytics);
-        setHasOptionsMenu(true);
 
         tabLayout = rootView.findViewById(R.id.tabLayout);
         viewPager = rootView.findViewById(R.id.viewPager);
-
+        Spinner spinner = rootView.findViewById(R.id.spinner);
+        ArrayList<String> dates = new ArrayList<>();
+        dates.add("Today");
+        dates.add("Yesterday");
+        dates.add("How");
+        ArrayAdapter adapter = new ArrayAdapter(requireActivity(), R.layout.spinner_item, dates);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        Button btnDate = rootView.findViewById(R.id.btnDate);
+        btnDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showPopup(view);
+            }
+        });
         getTabs();
         return rootView;
     }
@@ -66,8 +79,46 @@ public class Analytics extends Fragment {
         });
     }
 
+    private void showPopup(View view) {
+        PopupMenu popupMenu = new PopupMenu(requireActivity(), view);
+        String[] strings = {"Hello", "Yesto"};
+        popupMenu.getMenu().add(R.string.share);
+        popupMenu.getMenu().add("Add to Features");
+        popupMenu.getMenu().add(R.string.edit);
+        popupMenu.getMenu().add(R.string.delete);
+        popupMenu.getMenu().add("Advertise Post");
 
-    @Override
+      /*  popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                if (menuItem.getTitle() == context.getString(R.string.delete)) {
+                    Snackbar snackbar = Snackbar
+                            .make(rootView.getRootView().findViewById(android.R.id.content),
+                                    "Confirm " + context.getString(R.string.delete),
+                                    Snackbar.LENGTH_LONG)
+                            .setAction(R.string.yes, new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    deletePost();
+                                }
+                            });
+
+                    snackbar.show();
+                } else if (menuItem.getTitle() == context.getString(R.string.add_wishlist)) {
+                    addWishList();
+                } else if (menuItem.getTitle() == context.getString(R.string.edit)) {
+                    // string array with data
+                    String[] strings = {postID, product, price, description, offers};
+                    Intent intent = new Intent(context, Upload.class);
+                    intent.putExtra("data", strings);
+                    context.startActivity(intent);
+                }
+                return false;
+            }
+        });*/
+        popupMenu.show();
+    }
+/*    @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         menu.add(Menu.NONE, 0, Menu.NONE, null)
                 .setIcon(R.drawable.ic_search)
@@ -86,5 +137,5 @@ public class Analytics extends Fragment {
                     .commit();
         }
         return super.onOptionsItemSelected(item);
-    }
+    }*/
 }
