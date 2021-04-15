@@ -20,9 +20,9 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.matt.shopline.R;
-import com.matt.shopline.fragments.home.Home;
 import com.matt.shopline.fragments.Notifications;
 import com.matt.shopline.fragments.analytics.Analytics;
+import com.matt.shopline.fragments.home.Home;
 import com.matt.shopline.fragments.profile.Profile;
 import com.matt.shopline.fragments.search.Discover;
 import com.matt.shopline.objects.BottomMenuHelper;
@@ -68,7 +68,7 @@ public class NavigationActivity extends AppCompatActivity implements BottomNavig
             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
                 long num;
                 if (error == null) {
-                    if (value.exists()) {
+                    if (value != null) {
                         num = value.getLong(getString(R.string.title_notifications).toLowerCase());
                         // value is not null
                         if (num != 0) {
@@ -147,12 +147,6 @@ public class NavigationActivity extends AppCompatActivity implements BottomNavig
         }
         return false;
     }
-
-    /*public void signOut(View view) {
-        //sign out
-        FirebaseAuth.getInstance().signOut();
-        openLogin();
-    }*/
 
     public void Upload(View view) {
         Intent intent = new Intent(this, Upload.class);

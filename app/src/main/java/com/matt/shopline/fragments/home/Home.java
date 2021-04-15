@@ -29,9 +29,7 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.matt.shopline.R;
-import com.matt.shopline.fragments.home.Feed;
-import com.matt.shopline.fragments.home.Suggestions;
-import com.matt.shopline.screens.Orders;
+import com.matt.shopline.screens.orders.Orders;
 
 public class Home extends Fragment {
     private FirebaseFirestore db;

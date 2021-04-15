@@ -33,7 +33,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:paddingTop="20dp"
-                app:spark_scrubEnabled="true"
+                app:spark_animateChanges="true"
                 android:scaleX="1.1"
                 android:scaleY="1.1"
                 app:spark_fillColor="#335D4C77" />

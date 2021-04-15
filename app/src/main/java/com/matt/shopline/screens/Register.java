@@ -65,7 +65,6 @@ public class Register extends FragmentActivity implements OnDataPass {
     private String bio;
     private FirebaseAuth mAuth;
     private FirebaseUser user;
-    private StorageReference storageReference;
     private String profileUrl;
     private FirebaseFirestore db;
 
@@ -212,7 +211,7 @@ public class Register extends FragmentActivity implements OnDataPass {
 
     private void setProfileImage() {
 
-        storageReference = FirebaseStorage.getInstance().getReference("Images").child(user.getUid());
+        StorageReference storageReference = FirebaseStorage.getInstance().getReference("Images").child(user.getUid());
         StorageReference fileReference = storageReference.child("profile.jpg");
 
         // compression
@@ -328,7 +327,7 @@ public class Register extends FragmentActivity implements OnDataPass {
         sendBroadcast(intent);
     }
 
-    private class PagerAdapter extends FragmentStatePagerAdapter {
+    private static class PagerAdapter extends FragmentStatePagerAdapter {
         public PagerAdapter(FragmentManager fm, int behaviorResumeOnlyCurrentFragment) {
             super(fm, behaviorResumeOnlyCurrentFragment);
         }

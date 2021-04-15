@@ -24,6 +24,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.matt.shopline.R;
+import com.matt.shopline.adapters.MyFirestorePagingAdapter;
 import com.matt.shopline.objects.User;
 import com.matt.shopline.screens.FeedUserProfile;
 import com.squareup.picasso.Picasso;
@@ -32,20 +33,19 @@ public class FollowList extends Fragment {
 
     private Query userFollowers;
     private FirebaseFirestore db;
-    private FirestorePagingAdapter adapter;
     private RecyclerView mList;
-    private LinearLayoutManager mLayoutManager;
     private Bundle bundle;
     private String userID, You;
+    private ViewGroup rootView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_followlist, container, false);
+        rootView = (ViewGroup) inflater.inflate(R.layout.fragment_followlist, container, false);
 
         db = FirebaseFirestore.getInstance();
         mList = rootView.findViewById(R.id.recView);
-        mLayoutManager = new LinearLayoutManager(getActivity());
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mList.setLayoutManager(mLayoutManager);
 
         initialize();
@@ -83,7 +83,9 @@ public class FollowList extends Fragment {
                 .setQuery(userFollowers, config, User.class)
                 .build();
 
-        adapter = new FirestorePagingAdapter<User, BlogViewHolder>(options) {
+        // delete void field
+        // open profile
+        FirestorePagingAdapter<User, BlogViewHolder> adapter = new FirestorePagingAdapter<User, BlogViewHolder>(options) {
             @NonNull
             @Override
             public BlogViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -93,28 +95,27 @@ public class FollowList extends Fragment {
 
             @Override
             protected void onBindViewHolder(@NonNull final BlogViewHolder holder, final int position, @NonNull final User model) {
+                MyFirestorePagingAdapter.hideProgress(rootView);
                 String userID = getItem(position).getId();
-                if (userID != null) {
-                    DocumentReference userRef = db.collection(getString(R.string.users)).document(userID);
-                    userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            if (task.getResult().exists()) {
-                                User user = task.getResult().toObject(User.class);
-                                String profileUrl = user.getProfileUrl();
-                                String username = user.getUsername();
-                                String occupation = user.getOccupation();
+                DocumentReference userRef = db.collection(getString(R.string.users)).document(userID);
+                userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.getResult().exists()) {
+                            User user = task.getResult().toObject(User.class);
+                            String profileUrl = user.getProfileUrl();
+                            String username = user.getUsername();
+                            String occupation = user.getOccupation();
 
-                                holder.setUserData(username, occupation, getActivity(), profileUrl, model.getUserID());
+                            holder.setUserData(username, occupation, getActivity(), profileUrl, model.getUserID());
 
-                            } else {
-                                // delete void field
-                                getItem(position).getReference().delete();
-                                refresh();
-                            }
+                        } else {
+                            // delete void field
+                            getItem(position).getReference().delete();
+                            refresh();
                         }
-                    });
-                }
+                    }
+                });
 
                 holder.mView.setOnClickListener(new View.OnClickListener() {
                     @Override

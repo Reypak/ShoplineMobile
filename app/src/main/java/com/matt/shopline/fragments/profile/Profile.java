@@ -73,9 +73,7 @@ public class Profile extends Fragment {
     private EditText etUsername, etBio, etPhone, etLocation, etOccupation, etWebsite;
     private Uri FilePathUri;
     private DrawerLayout drawer;
-    private NavigationView navView;
     private FirebaseFirestore db;
-    private StorageReference storageReference;
     private String profileUrl;
     private String profileUri;
     private ViewGroup rootView;
@@ -83,7 +81,6 @@ public class Profile extends Fragment {
     private String userID;
     private TabLayout tabLayout;
     private ViewPager viewPager;
-    private TabAdapter adapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -97,7 +94,7 @@ public class Profile extends Fragment {
         setHasOptionsMenu(true);
 
         drawer = rootView.findViewById(R.id.drawer_layout);
-        navView = rootView.findViewById(R.id.nav_view);
+        NavigationView navView = rootView.findViewById(R.id.nav_view);
 
         tabLayout = rootView.findViewById(R.id.tabLayout);
         viewPager = rootView.findViewById(R.id.viewPager);
@@ -158,19 +155,16 @@ public class Profile extends Fragment {
         navView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+                if (menuItem.getItemId() == R.id.logout) {
+                    //sign out
+                    FirebaseAuth.getInstance().signOut();
+                    // unsubscribe to notify
+                    FirebaseMessaging.getInstance().unsubscribeFromTopic(user.getUid() + "_notifications");
 
-                switch (menuItem.getItemId()) {
-                    case R.id.logout:
-                        //sign out
-                        FirebaseAuth.getInstance().signOut();
-                        // unsubscribe to notify
-                        FirebaseMessaging.getInstance().unsubscribeFromTopic(user.getUid() + "_notifications");
-
-                        Toast.makeText(getActivity(), "Logged Out", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(getActivity(), LandingPage.class);
-                        startActivity(intent);
-                        getActivity().finish();
-                        break;
+                    Toast.makeText(getActivity(), "Logged Out", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(getActivity(), LandingPage.class);
+                    startActivity(intent);
+                    requireActivity().finish();
                 }
                 drawer.closeDrawer(GravityCompat.END);
                 return false;
@@ -285,7 +279,7 @@ public class Profile extends Fragment {
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
         // pass userID to constructor for Catalog tab
-        adapter = new TabAdapter(getActivity(), getFragmentManager(), tabLayout.getTabCount(), userID, b);
+        TabAdapter adapter = new TabAdapter(getActivity(), getFragmentManager(), tabLayout.getTabCount(), userID, b);
         viewPager.setAdapter(adapter);
 
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
@@ -349,7 +343,7 @@ public class Profile extends Fragment {
             public void onSuccess(final DocumentSnapshot documentSnapshot) {
                 if (documentSnapshot.exists()) {
                     // following state
-                    btnFollow.setText("Following");
+                    btnFollow.setText(R.string.following);
                     btnFollow.setBackgroundColor(Color.parseColor("#265458F7"));
                     btnFollow.setTextColor(Color.parseColor("#5458F7"));
 
@@ -475,6 +469,13 @@ public class Profile extends Fragment {
                 .placeholder(R.drawable.ic_launcher_foreground)
                 .centerCrop()
                 .into(profileImage);
+        // load edit profile
+        profileImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                EditProfile();
+            }
+        });
     }
 
     private void EditProfile() {
@@ -512,7 +513,6 @@ public class Profile extends Fragment {
                 if (FilePathUri != null) {
                     setProfileImage();
                 }
-
                 username = etUsername.getText().toString().trim();
 
                 // Create a new user data
@@ -535,7 +535,6 @@ public class Profile extends Fragment {
                         }
                     });
                 }
-
 
                 // Add a new document with user ID
                 db.collection(getString(R.string.users)).document(user.getUid())
@@ -580,13 +579,13 @@ public class Profile extends Fragment {
 
     private void setProfileImage() {
 
-        storageReference = FirebaseStorage.getInstance().getReference("Images").child(user.getUid());
+        StorageReference storageReference = FirebaseStorage.getInstance().getReference("Images").child(user.getUid());
         StorageReference fileReference = storageReference.child("profile.jpg");
 
         // compression
         Bitmap bitmap = null;
         try {
-            Bitmap b = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), FilePathUri);
+            Bitmap b = MediaStore.Images.Media.getBitmap(requireActivity().getContentResolver(), FilePathUri);
             bitmap = Bitmap.createScaledBitmap(b, (int) (b.getWidth() * 0.5), (int) (b.getHeight() * 0.5), false);
         } catch (IOException e) {
             e.printStackTrace();
@@ -647,7 +646,7 @@ public class Profile extends Fragment {
                 drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
             }
             // back button
-            ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            ((AppCompatActivity) requireActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
     }
 
@@ -694,7 +693,7 @@ public class Profile extends Fragment {
                 drawer.openDrawer(GravityCompat.END);
             }
         } else if (item.getItemId() == android.R.id.home) {
-            getActivity().finish();
+            requireActivity().finish();
         }
 
         return super.onOptionsItemSelected(item);

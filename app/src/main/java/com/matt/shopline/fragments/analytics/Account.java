@@ -1,6 +1,7 @@
 package com.matt.shopline.fragments.analytics;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -27,6 +28,7 @@ import com.robinhood.spark.SparkAdapter;
 import com.robinhood.spark.SparkView;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,6 +40,7 @@ public class Account extends Fragment {
     private MyAnalyticsAdapter adapter;
     private ArrayList<Analytics> mUploads;
     private FirebaseUser user;
+    private String date;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -47,10 +50,36 @@ public class Account extends Fragment {
         db = FirebaseFirestore.getInstance();
         user = FirebaseAuth.getInstance().getCurrentUser();
 
+        DateFormat format = new SimpleDateFormat("d-M-yyyy");
+        date = format.format(new Date());
+
+        Bundle bundle = getArguments();
+        if (bundle != null) {
+            // get date string
+            date = bundle.getString("date");
+            try {
+                Date date1 = DateFormat.getDateInstance(DateFormat.DEFAULT).parse(date);
+                // format short date to Date main format
+                date = format.format(date1);
+            } catch (ParseException ignored) {
+
+            }
+        }
+
         RecyclerView recyclerView = rootView.findViewById(R.id.recView);
         GridLayoutManager mLayoutManager = new GridLayoutManager(requireActivity(), 2);
         recyclerView.setLayoutManager(mLayoutManager);
         mUploads = new ArrayList<>();
+
+        addData(getString(R.string.followers));
+        addData("Likes");
+        addData(getString(R.string.comments));
+        addData("Reposts");
+
+        adapter = new MyAnalyticsAdapter(requireActivity(), mUploads);
+        recyclerView.setAdapter(adapter);
+
+        return rootView;
 
         /*String date1 = DateFormat.getDateInstance(DateFormat.DEFAULT).format(new Date());
          */
@@ -64,10 +93,7 @@ public class Account extends Fragment {
             e.printStackTrace();
         }*/
 
-        addData(getString(R.string.followers));
-        addData("Likes");
-        addData(getString(R.string.comments));
-        addData("Reposts");
+
 
        /* reference.document(dd).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -104,75 +130,72 @@ public class Account extends Fragment {
         });
         */
 
-
-        adapter = new MyAnalyticsAdapter(requireActivity(), mUploads);
-        recyclerView.setAdapter(adapter);
-
-        /*SparkView sparkView = rootView.findViewById(R.id.sparkView);
-        float[] data = {0, 20, 30, 13, 70, 67, 15, 55, 0};
-        sparkView.setAdapter(new MyAdapter(data));*/
-
-        return rootView;
     }
 
     private void addData(final String path) {
-        DateFormat format = new SimpleDateFormat("d-M-yyyy");
-        final String date = format.format(new Date());
+        Query reference = db.collection("analytics")
+                .document(user.getUid())
+                .collection(path.toLowerCase());
+        reference.orderBy("timestamp", Query.Direction.DESCENDING)
+                .limit(4).get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
 
-        Query reference = db.collection("analytics").document(user.getUid()).collection(path.toLowerCase());
-        reference.orderBy("timestamp", Query.Direction.DESCENDING).limit(4).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            // collect for graph values
+                            List<Float> floats = new ArrayList<>();
+                            // collect dates for spinner
+                            ArrayList<String> dates = new ArrayList<>();
 
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
-                    List<Float> floats = new ArrayList<>();
-                    List<String> dates = new ArrayList<>();
-                    int i = 1;
-                    floats.add(0, (float) 0);
+                            int i = 1; // start at 1
+                            floats.add(0, (float) 0); // set default to 0
 
-                    for (DocumentSnapshot documentSnapshot : task.getResult().getDocuments()) {
-                        // get count
-                        String count = documentSnapshot.get("count").toString();
-                        dates.add(count);
-                        if (documentSnapshot.getId().equals(date)) {
-                            floats.set(0, Float.valueOf(count));
-                        } else {
-                            floats.add(i, Float.valueOf(count));
-                            i++;
-                        }
-                    }
-
-                    if (floats.size() <= 1) {
-                        floats.add((float) 0);
-                    }
-
-                    String currentCount = String.valueOf(floats.get(0).intValue());
-
-                    int percent = 0;
-                    String inc = "▲ ";
-
-                    if (floats.size() >= 1) {
-                        if (floats.get(1).intValue() != 0) {
-                            float value = (floats.get(0) / floats.get(1));
-                            if (value < 1) {
-                                inc = "▼ ";
+                            for (DocumentSnapshot documentSnapshot : task.getResult().getDocuments()) {
+                                // get count value
+                                String count = documentSnapshot.get("count").toString();
+                                dates.add(documentSnapshot.getId()); // get ID
+                                // current Date
+                                if (documentSnapshot.getId().equals(date)) {
+                                    // set default value
+                                    floats.set(0, Float.valueOf(count));
+                                } else {
+                                    // continue
+                                    floats.add(i, Float.valueOf(count));
+                                    i++;
+                                }
                             }
-                            percent = (int) (value * 100);
+
+                            if (floats.size() <= 1) {
+                                // add second value
+                                floats.add((float) 0);
+                            }
+                            String currentCount = String.valueOf(floats.get(0).intValue());
+                            // calculate percent
+                            int percent = 0;
+                            String inc = "▲ ";
+
+                            if (floats.size() >= 1) {
+                                if (floats.get(1).intValue() != 0) {
+                                    float value = (floats.get(0) / floats.get(1));
+                                    if (value < 1) {
+                                        inc = "▼ ";
+                                    }
+                                    percent = (int) (value * 100);
+                                }
+                            }
+
+                            // send broadcast
+                            Intent intent = new Intent("finish");
+                            intent.putStringArrayListExtra("dates", dates);
+                            requireActivity().sendBroadcast(intent);
+
+                            analytics = new Analytics(path, floats, currentCount, inc + percent);
+                            mUploads.add(analytics);
+                            adapter.notifyDataSetChanged();
                         }
                     }
-
-                    /*Toast.makeText(requireActivity(), String.valueOf(floats.size()), Toast.LENGTH_SHORT).show();
-                    if (floats.size() == 4) {
-                        percent = floats.get(1).intValue();
-                    }*/
-                    /*  int currentCount = (int) data[0];*/
-                    // down ▼
-                    analytics = new Analytics(path, floats, currentCount, inc + percent);
-                    mUploads.add(analytics);
-                    adapter.notifyDataSetChanged();
-                }
-            }
-        });
+                });
     }
 
     private static class MyAnalyticsAdapter extends RecyclerView.Adapter<AnalyticsViewHolder> {
@@ -218,7 +241,7 @@ public class Account extends Fragment {
 
             titleText.setText(title);
             tvCount.setText(count);
-            tvPercent.setText(percent + "%");
+            tvPercent.setText(String.format("%s%%", percent));
 
             if (percent.contains("▼")) {
                 tvPercent.setTextColor(Color.RED);
@@ -240,7 +263,6 @@ public class Account extends Fragment {
         }
 
         public void setGraphData(List<Float> data) {
-//            sparkView.setFillColor(Color.RED);
             if (data != null) {
                 sparkView.setAdapter(new MyAdapter(data));
             }

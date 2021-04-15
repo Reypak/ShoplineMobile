@@ -1,12 +1,15 @@
 package com.matt.shopline.fragments.analytics;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.PopupMenu;
 import android.widget.Spinner;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,11 +21,17 @@ import com.google.android.material.tabs.TabLayout;
 import com.matt.shopline.R;
 import com.matt.shopline.adapters.AnalyticsAdapter;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class Analytics extends Fragment {
     private TabLayout tabLayout;
     private ViewPager viewPager;
+    private Spinner spinner;
+    private String date;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -34,23 +43,74 @@ public class Analytics extends Fragment {
 
         tabLayout = rootView.findViewById(R.id.tabLayout);
         viewPager = rootView.findViewById(R.id.viewPager);
-        Spinner spinner = rootView.findViewById(R.id.spinner);
-        ArrayList<String> dates = new ArrayList<>();
+        spinner = rootView.findViewById(R.id.spinner);
+
+        addSpinnerDates();
+
+        return rootView;
+    }
+
+    private void addSpinnerDates() {
+        final ArrayList<String> dates = new ArrayList<>();
         dates.add("Today");
-        dates.add("Yesterday");
-        dates.add("How");
-        ArrayAdapter adapter = new ArrayAdapter(requireActivity(), R.layout.spinner_item, dates);
+
+        final ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(), R.layout.spinner_item, dates);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
-        Button btnDate = rootView.findViewById(R.id.btnDate);
-        btnDate.setOnClickListener(new View.OnClickListener() {
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onClick(View view) {
-                showPopup(view);
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                date = null;
+                if (!adapterView.getSelectedItem().equals("Today")) {
+                    date = adapterView.getSelectedItem().toString();
+                }
+                viewPager.removeAllViews();
+                tabLayout.removeAllTabs();
+                getTabs();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
             }
         });
-        getTabs();
-        return rootView;
+        // listen for broadcast
+        BroadcastReceiver receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals("finish")) {
+                    ArrayList<String> newDates = intent.getStringArrayListExtra("dates");
+                    // check if value exists
+                    DateFormat format = new SimpleDateFormat("d-M-yyyy");
+                    String currentDate = format.format(new Date());
+
+//                    String n1 = DateFormat.getDateInstance(DateFormat.DEFAULT).format(new Date());
+
+                    for (String s : newDates) {
+                        // create short date format
+                        DateFormat format2 = DateFormat.getDateInstance(DateFormat.DEFAULT);
+
+                        Date date2 = null;
+                        try {
+                            // convert to date
+                            date2 = format.parse(s);
+                        } catch (ParseException ignored) {
+
+                        }
+                        // date to string using short format
+                        String n1 = format2.format(date2);
+
+                        // remove duplicates and current Date
+                        if (!dates.contains(n1) && !s.contains(currentDate)) {
+                            dates.add(n1);
+                        }
+                    }
+                    adapter.notifyDataSetChanged();
+                }
+            }
+        };
+        requireActivity().registerReceiver(receiver, new IntentFilter("finish"));
     }
 
     private void getTabs() {
@@ -58,7 +118,7 @@ public class Analytics extends Fragment {
         tabLayout.addTab(tabLayout.newTab().setText("Sales"));
         tabLayout.addTab(tabLayout.newTab().setText("Market Stats"));
 
-        AnalyticsAdapter adapter = new AnalyticsAdapter(requireActivity(), getFragmentManager(), tabLayout.getTabCount());
+        AnalyticsAdapter adapter = new AnalyticsAdapter(getFragmentManager(), tabLayout.getTabCount(), date);
         viewPager.setAdapter(adapter);
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -79,7 +139,7 @@ public class Analytics extends Fragment {
         });
     }
 
-    private void showPopup(View view) {
+/*    private void showPopup(View view) {
         PopupMenu popupMenu = new PopupMenu(requireActivity(), view);
         String[] strings = {"Hello", "Yesto"};
         popupMenu.getMenu().add(R.string.share);
@@ -88,54 +148,6 @@ public class Analytics extends Fragment {
         popupMenu.getMenu().add(R.string.delete);
         popupMenu.getMenu().add("Advertise Post");
 
-      /*  popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem menuItem) {
-                if (menuItem.getTitle() == context.getString(R.string.delete)) {
-                    Snackbar snackbar = Snackbar
-                            .make(rootView.getRootView().findViewById(android.R.id.content),
-                                    "Confirm " + context.getString(R.string.delete),
-                                    Snackbar.LENGTH_LONG)
-                            .setAction(R.string.yes, new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    deletePost();
-                                }
-                            });
-
-                    snackbar.show();
-                } else if (menuItem.getTitle() == context.getString(R.string.add_wishlist)) {
-                    addWishList();
-                } else if (menuItem.getTitle() == context.getString(R.string.edit)) {
-                    // string array with data
-                    String[] strings = {postID, product, price, description, offers};
-                    Intent intent = new Intent(context, Upload.class);
-                    intent.putExtra("data", strings);
-                    context.startActivity(intent);
-                }
-                return false;
-            }
-        });*/
         popupMenu.show();
-    }
-/*    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        menu.add(Menu.NONE, 0, Menu.NONE, null)
-                .setIcon(R.drawable.ic_search)
-                .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == 0) {
-            // open Search
-            getActivity().getSupportFragmentManager()
-                    .beginTransaction()
-                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                    .replace(R.id.fragment_container, new Search())
-                    .commit();
-        }
-        return super.onOptionsItemSelected(item);
     }*/
 }

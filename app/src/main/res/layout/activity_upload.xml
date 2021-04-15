@@ -136,36 +136,76 @@
                     android:maxLines="3" />
             </LinearLayout>
 
-            <RadioGroup
+
+            <LinearLayout
                 android:id="@+id/viewSizes"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:orientation="horizontal">
+                android:orientation="vertical">
 
-                <RadioButton
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="10dp"
-                    android:buttonTint="@color/bottom_bar_item_color"
-                    android:text="Small"
-                    android:textColor="@color/colorPrimary" />
+                    android:animateLayoutChanges="true"
+                    android:gravity="center">
 
-                <RadioButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="10dp"
-                    android:buttonTint="@color/bottom_bar_item_color"
-                    android:text="Medium"
-                    android:textColor="@color/colorPrimary" />
+                    <SeekBar
+                        android:id="@+id/seekBar"
+                        style="@style/Widget.AppCompat.SeekBar"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:max="50"
+                        android:min="1"
+                        android:padding="20dp" />
 
-                <RadioButton
-                    android:layout_width="wrap_content"
+                    <TextView
+                        android:id="@+id/progressText"
+                        android:layout_width="20dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="10dp"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
+
+                <RadioGroup
+                    android:id="@+id/radioGroup"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:buttonTint="@color/bottom_bar_item_color"
-                    android:text="Large"
-                    android:textColor="@color/colorPrimary" />
-            </RadioGroup>
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/radio1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="10dp"
+                        android:layout_weight="1"
+                        android:buttonTint="@color/bottom_bar_item_color"
+                        android:text="Small"
+                        android:textColor="@color/colorPrimary" />
+
+                    <RadioButton
+                        android:id="@+id/radio2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="10dp"
+                        android:layout_weight="1"
+                        android:buttonTint="@color/bottom_bar_item_color"
+                        android:text="Medium"
+                        android:textColor="@color/colorPrimary" />
+
+                    <RadioButton
+                        android:id="@+id/radio3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:buttonTint="@color/bottom_bar_item_color"
+                        android:text="Large"
+                        android:textColor="@color/colorPrimary" />
+                </RadioGroup>
+
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"

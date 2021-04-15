@@ -35,8 +35,8 @@ import com.matt.shopline.adapters.MyFirestorePagingAdapter;
 import com.matt.shopline.objects.Notification;
 import com.matt.shopline.objects.User;
 import com.matt.shopline.screens.FeedUserProfile;
-import com.matt.shopline.screens.Orders;
 import com.matt.shopline.screens.PostView;
+import com.matt.shopline.screens.orders.Orders;
 import com.squareup.picasso.Picasso;
 
 import java.util.Date;
@@ -47,10 +47,8 @@ import static com.matt.shopline.adapters.MyFirestorePagingAdapter.durationFromNo
 public class Notifications extends Fragment {
     private RecyclerView mList;
     private Query userNotify;
-    private FirebaseUser user;
-    private String userID;
     private FirebaseFirestore db;
-    private FirestorePagingAdapter adapter;
+    private FirestorePagingAdapter<Notification, BlogViewHolder> adapter;
     private SwipeRefreshLayout refreshLayout;
     private ViewGroup rootView;
 
@@ -62,10 +60,10 @@ public class Notifications extends Fragment {
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
         toolbar.setTitle(R.string.title_notifications);
 
-        user = FirebaseAuth.getInstance().getCurrentUser();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         db = FirebaseFirestore.getInstance();
 
-        userID = user.getUid();
+        String userID = user.getUid();
         // view user Notify
         userNotify = db.collection(getString(R.string.users))
                 .document(userID)
@@ -157,7 +155,7 @@ public class Notifications extends Fragment {
         mList.setAdapter(adapter);
     }
 
-    private void loadActivity(Class aClass, String name, String value) {
+    private void loadActivity(Class<?> aClass, String name, String value) {
         Intent intent = new Intent(getActivity(), aClass);
         if (name != null) {
             intent.putExtra(name, value); // send intent to load You Tab

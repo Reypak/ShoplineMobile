@@ -1,7 +1,9 @@
 package com.matt.shopline.adapters;
 
 import android.content.Context;
+import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
@@ -11,20 +13,27 @@ import com.matt.shopline.fragments.analytics.Account;
 public class AnalyticsAdapter extends FragmentStatePagerAdapter {
 
     int totalTabs;
-    private Context myContext;
+    private final String date;
 
-    public AnalyticsAdapter(Context context, FragmentManager fm, int totalTabs) {
+    public AnalyticsAdapter(FragmentManager fm, int totalTabs, String date) {
         super(fm);
-        myContext = context;
         this.totalTabs = totalTabs;
+        this.date = date;
     }
 
     // this is for fragment tabs
+    @NonNull
     @Override
     public Fragment getItem(int position) {
         switch (position) {
             case 0:
-                return new Account();
+                Account account = new Account();
+                if (date != null) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("date", date);
+                    account.setArguments(bundle);
+                }
+                return account;
             case 1:
             case 2:
                 return new Fragment();

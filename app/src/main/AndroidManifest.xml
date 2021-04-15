@@ -34,11 +34,17 @@
 
         <activity android:name=".screens.follow.FollowView" />
         <activity android:name=".screens.PostView" />
-        <activity android:name=".screens.Orders" />
+        <activity android:name=".screens.orders.Orders" />
         <activity
             android:name=".screens.FeedUserProfile"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".screens.Upload" />
+        <activity android:name=".screens.Upload">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".screens.Register"
             android:windowSoftInputMode="stateUnchanged" />

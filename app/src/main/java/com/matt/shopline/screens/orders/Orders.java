@@ -1,4 +1,4 @@
-package com.matt.shopline.screens;
+package com.matt.shopline.screens.orders;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -16,7 +16,6 @@ import com.matt.shopline.adapters.OrdersTabAdapter;
 public class Orders extends AppCompatActivity {
     private TabLayout tabLayout;
     private ViewPager viewPager;
-    private OrdersTabAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +49,7 @@ public class Orders extends AppCompatActivity {
 
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
-        adapter = new OrdersTabAdapter(this, getSupportFragmentManager(), tabLayout.getTabCount());
+        OrdersTabAdapter adapter = new OrdersTabAdapter(this, getSupportFragmentManager(), tabLayout.getTabCount());
         viewPager.setAdapter(adapter);
 
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));

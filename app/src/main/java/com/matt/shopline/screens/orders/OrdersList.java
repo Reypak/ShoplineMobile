@@ -1,4 +1,4 @@
-package com.matt.shopline.fragments.orders;
+package com.matt.shopline.screens.orders;
 
 import android.content.Context;
 import android.content.Intent;
@@ -43,8 +43,6 @@ public class OrdersList extends Fragment {
     private FirebaseUser user;
     private FirestorePagingAdapter<Order, BlogViewHolder> adapter;
     private RecyclerView mOrdersList;
-    private LinearLayoutManager mLayoutManager;
-    private Bundle bundle;
     private String product, price, imageUrl, offers, location;
     private ViewGroup rootView;
 
@@ -59,7 +57,7 @@ public class OrdersList extends Fragment {
         initialize();
 
         mOrdersList = rootView.findViewById(R.id.recView);
-        mLayoutManager = new LinearLayoutManager(getActivity());
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mOrdersList.setLayoutManager(mLayoutManager);
 
         getOrders();
@@ -68,7 +66,7 @@ public class OrdersList extends Fragment {
     }
 
     private void initialize() {
-        bundle = getArguments();
+        Bundle bundle = getArguments();
         if (bundle == null) {
             // load from Customers orders
             userOrders = db.collection(getString(R.string.users)).document(user.getUid())

@@ -30,6 +30,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.matt.shopline.R;
@@ -51,8 +52,8 @@ public class PostView extends AppCompatActivity {
     private FirebaseFirestore db;
     private FirebaseUser user;
     private EditText etComment;
-    private FirestorePagingAdapter adapter;
-    private RecyclerView mCommentsList;
+    private FirestorePagingAdapter<Comment, BlogViewHolder> adapter;
+    private RecyclerView mCommentsList, mPostList;
     private DocumentReference deleteRef;
     private String userID;
     private ProgressBar progressBar;
@@ -63,7 +64,6 @@ public class PostView extends AppCompatActivity {
         setContentView(R.layout.activity_post_view);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle(R.string.comments);
 
         user = FirebaseAuth.getInstance().getCurrentUser();
         db = FirebaseFirestore.getInstance();
@@ -71,20 +71,19 @@ public class PostView extends AppCompatActivity {
         Intent intent = getIntent();
         postID = intent.getStringExtra("postID");
 
-//        Toast.makeText(this, postID, Toast.LENGTH_SHORT).show();
-
         View btnComment = findViewById(R.id.btnComment);
         progressBar = findViewById(R.id.progressBar);
         etComment = findViewById(R.id.etComment);
 
         mCommentsList = findViewById(R.id.recView);
+        mPostList = findViewById(R.id.recView1);
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
         mCommentsList.setLayoutManager(mLayoutManager);
 
         postComments = db.collection("posts").document(postID)
                 .collection(getString(R.string.comments).toLowerCase())
                 .orderBy(getString(R.string.timestamp), Query.Direction.DESCENDING);
-
+        getPost();
         getComments();
 
         btnComment.setOnClickListener(new View.OnClickListener() {
@@ -93,10 +92,25 @@ public class PostView extends AppCompatActivity {
                 if (!etComment.getText().toString().trim().isEmpty()) {
                     addComment();
                 }
-
             }
         });
 
+    }
+
+    private void getPost() {
+        // query to only get document with id matching postID
+        Query postRef = db.collection("posts").whereEqualTo(FieldPath.documentId(), postID);
+        PagedList.Config config = new PagedList.Config.Builder()
+                .setPageSize(1)
+                .build();
+
+        FirestorePagingOptions<User> options = new FirestorePagingOptions.Builder<User>()
+                .setLifecycleOwner(this)
+                .setQuery(postRef, config, User.class)
+                .build();
+        // get rootView of activity window
+        MyFirestorePagingAdapter adapter = new MyFirestorePagingAdapter(options, this, getWindow().getDecorView());
+        mPostList.setAdapter(adapter);
     }
 
     private void getComments() {
@@ -160,12 +174,13 @@ public class PostView extends AppCompatActivity {
 
             @Override
             protected void onLoadingStateChanged(@NonNull LoadingState state) {
-                switch (state) {
-                    case FINISHED:
-                        if (getItemCount() == 0) {
-                            progressBar.setVisibility(View.GONE);
-                            Toast.makeText(PostView.this, "Nothing to show", Toast.LENGTH_SHORT).show();
-                        }
+                if (state == LoadingState.FINISHED) {
+                    TextView errorText = findViewById(R.id.errorText);
+                    errorText.setVisibility(View.GONE);
+                    if (getItemCount() == 0) {
+                        progressBar.setVisibility(View.GONE);
+                        errorText.setVisibility(View.VISIBLE);
+                    }
                 }
             }
         };

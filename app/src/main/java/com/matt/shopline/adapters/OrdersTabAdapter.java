@@ -8,7 +8,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 
 import com.matt.shopline.R;
-import com.matt.shopline.fragments.orders.OrdersList;
+import com.matt.shopline.screens.orders.OrdersList;
 
 public class OrdersTabAdapter extends FragmentStatePagerAdapter {
 
