@@ -55,11 +55,12 @@ public class Suggestions extends Fragment {
     private String username;
     private Button btnStart;
     private int followCount;
+    private ViewGroup rootView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        final ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_suggestions, container, false);
+        rootView = (ViewGroup) inflater.inflate(R.layout.fragment_suggestions, container, false);
 
         user = FirebaseAuth.getInstance().getCurrentUser();
         db = FirebaseFirestore.getInstance();
@@ -72,12 +73,12 @@ public class Suggestions extends Fragment {
         mSuggestionList = rootView.findViewById(R.id.recView);
         mLayoutManager = new GridLayoutManager(getActivity(), 2);
         mSuggestionList.setLayoutManager(mLayoutManager);
+        mSuggestionList.setHasFixedSize(true);
 
         checkSuggestions();
         getSuggestions();
 
         btnStart = rootView.findViewById(R.id.btnStart);
-//        btnStart.setVisibility(View.VISIBLE);
         btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -231,11 +232,11 @@ public class Suggestions extends Fragment {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         TextView textView2 = holder.mView.findViewById(R.id.tvFollowers);
-                        textView2.setText("0 " + getString(R.string.followers).toLowerCase());
+                        textView2.setText(String.format("0 %s", rootView.getContext().getString(R.string.followers).toLowerCase()));
                         if (task.getResult().exists()) {
                             textView2.setText(String.format("%s %s",
-                                    task.getResult().get(getString(R.string.followers).toLowerCase()).toString(),
-                                    getString(R.string.followers).toLowerCase()));
+                                    task.getResult().get(rootView.getContext().getString(R.string.followers).toLowerCase()).toString(),
+                                    rootView.getContext().getString(R.string.followers).toLowerCase()));
                         }
                     }
                 });
@@ -260,7 +261,6 @@ public class Suggestions extends Fragment {
                                 for (DocumentSnapshot documentSnapshot : value.getDocuments()) {
                                     // getting users ID's
                                     String data = documentSnapshot.getId();
-                                    /*Toast.makeText(getActivity(), data, Toast.LENGTH_SHORT).show();*/
                                     if (!data.equals(user.getUid())) {
                                         Map<String, Object> userdata = new HashMap<>();
                                         userdata.put("exists", true);
@@ -321,12 +321,14 @@ public class Suggestions extends Fragment {
 
         public void setImageURL(final Context ctx, String imageURL) {
             ImageView img = mView.findViewById(R.id.profile_image);
-            Picasso.with(ctx)
-                    .load(imageURL)
-                    .fit()
-                    .centerInside()
-                    .placeholder(R.drawable.ic_launcher_foreground)
-                    .into(img);
+            if (ctx != null) {
+                Picasso.with(ctx)
+                        .load(imageURL)
+                        .fit()
+                        .centerCrop()
+                        .placeholder(R.drawable.ic_launcher_foreground)
+                        .into(img);
+            }
         }
     }
 

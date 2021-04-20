@@ -39,6 +39,7 @@
     <string name="get_started">Get Started</string>
     <string name="title_discover">Discover</string>
     <string name="edit">Edit</string>
+    <string name="errorText">Nothing To Show</string>
 
     <string-array name="category">
         <item>-- Select --</item>

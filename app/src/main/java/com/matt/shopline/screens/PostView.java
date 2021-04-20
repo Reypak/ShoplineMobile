@@ -109,7 +109,7 @@ public class PostView extends AppCompatActivity {
                 .setQuery(postRef, config, User.class)
                 .build();
         // get rootView of activity window
-        MyFirestorePagingAdapter adapter = new MyFirestorePagingAdapter(options, this, getWindow().getDecorView());
+        MyFirestorePagingAdapter adapter = new MyFirestorePagingAdapter(options, this, getWindow().getDecorView(),false);
         mPostList.setAdapter(adapter);
     }
 

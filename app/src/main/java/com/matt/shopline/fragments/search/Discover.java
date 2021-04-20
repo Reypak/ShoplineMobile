@@ -135,24 +135,6 @@ public class Discover extends Fragment {
         recyclerView.setAdapter(adapter);
     }
 
-
-    public static class BlogViewHolder extends RecyclerView.ViewHolder {
-        public BlogViewHolder(final View itemView) {
-            super(itemView);
-            itemView.startAnimation(AnimationUtils.loadAnimation(itemView.getContext(), R.anim.float_in));
-        }
-
-        public void setData(Context ctx, String imageURL) {
-            ImageView img = itemView.findViewById(R.id.imageView);
-            Picasso.with(ctx)
-                    .load(imageURL)
-                    .fit()
-                    .centerCrop()
-                    .placeholder(R.drawable.ic_launcher_foreground)
-                    .into(img);
-        }
-    }
-
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         menu.add(Menu.NONE, 0, Menu.NONE, null)
@@ -172,5 +154,22 @@ public class Discover extends Fragment {
                     .commit();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public static class BlogViewHolder extends RecyclerView.ViewHolder {
+        public BlogViewHolder(final View itemView) {
+            super(itemView);
+            itemView.startAnimation(AnimationUtils.loadAnimation(itemView.getContext(), R.anim.float_in));
+        }
+
+        public void setData(Context ctx, String imageURL) {
+            ImageView img = itemView.findViewById(R.id.imageView);
+            Picasso.with(ctx)
+                    .load(imageURL)
+                    .fit()
+                    .centerCrop()
+                    .placeholder(R.drawable.ic_launcher_foreground)
+                    .into(img);
+        }
     }
 }

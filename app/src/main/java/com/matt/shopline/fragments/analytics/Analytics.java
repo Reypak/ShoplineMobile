@@ -116,7 +116,6 @@ public class Analytics extends Fragment {
     private void getTabs() {
         tabLayout.addTab(tabLayout.newTab().setText("Account"));
         tabLayout.addTab(tabLayout.newTab().setText("Sales"));
-        tabLayout.addTab(tabLayout.newTab().setText("Market Stats"));
 
         AnalyticsAdapter adapter = new AnalyticsAdapter(getFragmentManager(), tabLayout.getTabCount(), date);
         viewPager.setAdapter(adapter);

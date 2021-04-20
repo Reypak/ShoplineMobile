@@ -37,19 +37,19 @@ public class Step3 extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_step3, container, false);
-        initializePlaces();
 
         etPhone = rootView.findViewById(R.id.etPhone);
         etLocation = rootView.findViewById(R.id.etLocation);
 
-        etLocation.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+       /* initializePlaces();
+       etLocation.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
                 if (b) {
                     onSearchCalled();
                 }
             }
-        });
+        });*/
 
         return rootView;
     }
@@ -136,9 +136,9 @@ public class Step3 extends Fragment {
         String[] data = {phone, location};
         onDataPass(data);
 
-//        if (!TextUtils.isEmpty(phone) || !TextUtils.isEmpty(location)) {
-//            onDataPass(data);
-//        }
+       /* if (!TextUtils.isEmpty(phone) || !TextUtils.isEmpty(location)) {
+            onDataPass(data);
+        }*/
     }
 
     @Override

@@ -5,6 +5,7 @@ public class Order {
     String quantity;
     String location;
     String postID;
+    long status;
 
     public Order() {
     }
@@ -23,5 +24,9 @@ public class Order {
 
     public String getLocation() {
         return location;
+    }
+
+    public long getStatus() {
+        return status;
     }
 }

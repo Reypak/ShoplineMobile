@@ -10,95 +10,95 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_margin="10dp"
-        android:background="@drawable/card_background"
-        android:padding="10dp">
+        android:background="@drawable/card_background">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <TextView
-                style="@style/TextTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/montserrat_bold"
-                android:paddingVertical="15dp"
-                android:paddingStart="5dp"
-                android:text="Welcome Back!"
-                android:textSize="21sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingStart="5dp"
-                android:text="@string/email"
-                android:textColor="@color/colorPrimary" />
-
-            <EditText
-                android:id="@+id/etEmail"
-                style="@style/TextBoxRound"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginVertical="10dp"
-                android:inputType="textEmailAddress" />
+                android:orientation="vertical"
+                android:padding="10dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
-                android:paddingStart="5dp"
-                android:text="@string/password"
-                android:textColor="@color/colorPrimary" />
+                <TextView
+                    style="@style/TextTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/montserrat_bold"
+                    android:paddingVertical="15dp"
+                    android:paddingStart="5dp"
+                    android:text="Welcome Back!"
+                    android:textSize="21sp" />
 
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="5dp"
+                    android:text="@string/email"
+                    android:textColor="@color/colorPrimary" />
 
                 <EditText
-                    android:id="@+id/etPwrd"
+                    android:id="@+id/etEmail"
                     style="@style/TextBoxRound"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textPassword" />
+                    android:layout_marginVertical="10dp"
+                    android:inputType="textEmailAddress" />
 
-                <ImageButton
-                    android:id="@+id/btnToggle"
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center|end"
-                    android:layout_marginEnd="15dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@drawable/ic_eye_off"
-                    android:tint="#6468FF" />
+                    android:layout_marginBottom="10dp"
+                    android:paddingStart="5dp"
+                    android:text="@string/password"
+                    android:textColor="@color/colorPrimary" />
 
-            </FrameLayout>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingVertical="5dp"
-                android:paddingEnd="5dp"
-                android:onClick="resetPassword"
-                android:text="Forgot password?"
-                android:textAlignment="viewEnd"
-                android:textColor="@color/colorPrimary" />
+                    <EditText
+                        android:id="@+id/etPwrd"
+                        style="@style/TextBoxRound"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPassword" />
+
+                    <ImageButton
+                        android:id="@+id/btnToggle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center|end"
+                        android:layout_marginEnd="15dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_eye_off"
+                        android:tint="#6468FF" />
+
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:onClick="resetPassword"
+                    android:paddingVertical="5dp"
+                    android:paddingEnd="5dp"
+                    android:text="Forgot password?"
+                    android:textAlignment="viewEnd"
+                    android:textColor="@color/colorPrimary" />
+            </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/login"
                 style="@style/ButtonMain"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginHorizontal="10dp"
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="10dp"
                 android:text="@string/login" />
-
-            <!--  <com.google.android.material.button.MaterialButton
-                  style="@style/ButtonMain"
-                  android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
-                  android:onClick="openRegister"
-                  android:text="Sign Up" />-->
 
             <LinearLayout
                 android:layout_width="match_parent"

@@ -26,7 +26,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.firebase.ui.firestore.paging.FirestorePagingAdapter;
 import com.firebase.ui.firestore.paging.FirestorePagingOptions;
@@ -50,6 +53,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.matt.shopline.R;
+import com.matt.shopline.fragments.home.Home;
 import com.matt.shopline.objects.Post;
 import com.matt.shopline.objects.User;
 import com.matt.shopline.screens.FeedUserProfile;
@@ -67,6 +71,11 @@ import java.util.Map;
 
 public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFirestorePagingAdapter.BlogViewHolder> {
 
+    private final FirebaseUser user;
+    private final FirebaseFirestore db;
+    private final Context context;
+    private final View rootView;
+    private final Boolean b;
     private String imageUrl;
     private String product;
     private String description;
@@ -79,18 +88,13 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
     private String offers;
     private String username;
     private CollectionReference userOrders;
-    private final FirebaseUser user;
-    //    private String userID;
-    private final FirebaseFirestore db;
-
-    private final Context context;
-    private final View rootView;
 
 
-    public MyFirestorePagingAdapter(FirestorePagingOptions<User> options, Context context, View rootView) {
+    public MyFirestorePagingAdapter(FirestorePagingOptions<User> options, Context context, View rootView, Boolean b) {
         super(options);
         this.context = context;
         this.rootView = rootView;
+        this.b = b;
         user = FirebaseAuth.getInstance().getCurrentUser();
         db = FirebaseFirestore.getInstance();
     }
@@ -147,6 +151,12 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
         return output;
     }
 
+    public static void hideProgress(View rootView) {
+        // hide progress bar
+        ProgressBar progressBar = rootView.findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.GONE);
+    }
+
     @NonNull
     @Override
     public BlogViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -157,6 +167,7 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
     @Override
     protected void onBindViewHolder(@NonNull final BlogViewHolder holder, final int position, @NonNull final User model) {
         hideProgress(rootView);
+        hideSwipe(rootView);
 
         // check for repost userID value
         Object ruserID = getItem(position).get("ruserID");
@@ -288,11 +299,13 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
                         userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                             @Override
                             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                User user = task.getResult().toObject(User.class);
-                                username = user.getUsername();
-                                String occupation = user.getOccupation();
-                                String profileUrl = user.getProfileUrl();
-                                holder.setUserData(username, occupation, context, profileUrl);
+                                if (task.isSuccessful()) {
+                                    User user = task.getResult().toObject(User.class);
+                                    username = user.getUsername();
+                                    String occupation = user.getOccupation();
+                                    String profileUrl = user.getProfileUrl();
+                                    holder.setUserData(username, occupation, context, profileUrl);
+                                }
                             }
                         });
                     } else {
@@ -453,6 +466,12 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
         holder.setReposts(getItem(position).getId());
     }
 
+    private void hideSwipe(View rootView) {
+        SwipeRefreshLayout refreshLayout = rootView.findViewById(R.id.swipeRefresh);
+        if (refreshLayout != null) {
+            refreshLayout.setRefreshing(false);
+        }
+    }
 
     @Override
     public void onViewRecycled(@NonNull BlogViewHolder holder) {
@@ -466,6 +485,20 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
             if (getItemCount() == 0) {
                 // hide progress bar
                 hideProgress(rootView);
+                hideSwipe(rootView);
+
+                if (b) {
+                    // reset shared prefs
+                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+                    sharedPreferences.edit().putString(context.getString(R.string.title_home), null).apply();
+                    // reload home activity
+                    ((FragmentActivity) context)
+                            .getSupportFragmentManager()
+                            .beginTransaction()
+                            .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                            .replace(R.id.fragment_container, new Home())
+                            .commit();
+                }
             }
         }
     }
@@ -508,12 +541,6 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
 
     }
 
-    public static void hideProgress(View rootView) {
-        // hide progress bar
-        ProgressBar progressBar = rootView.findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.GONE);
-    }
-
     private void addWishList() {
         // current user wishList Ref
         CollectionReference userWishList = db.collection(context.getString(R.string.users))
@@ -542,9 +569,10 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
         data.put("quantity", qty);
         data.put("userID", user.getUid());
         data.put("postID", postID);
+        data.put("status", 1);
         data.put(context.getString(R.string.location).toLowerCase(), location);
 
-        // send currentUserID to post likes collection
+        // send currentUserID to seller orders collection
         userOrders.add(data).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
             @Override
             public void onComplete(@NonNull Task<DocumentReference> task) {
@@ -552,8 +580,9 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
                 userOrders = db.collection(context.getString(R.string.users)).document(user.getUid())
                         .collection("orders_me");
                 // remove redundant current userID
+                data.put("status", 0);
                 data.remove("userID");
-                userOrders.add(data);
+                userOrders.document(task.getResult().getId()).set(data);
                 Toast.makeText(context, "Order Complete. Thank you for using Shopline", Toast.LENGTH_SHORT).show();
 
                 loadActivity(Orders.class, context.getString(R.string.you), "");
@@ -689,10 +718,10 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
     }
 
     public class BlogViewHolder extends RecyclerView.ViewHolder {
+        private final ImageView img;
         View mView;
         private TextView textView2;
         private TextView textView;
-        private final ImageView img;
 
         public BlogViewHolder(final View itemView) {
             super(itemView);

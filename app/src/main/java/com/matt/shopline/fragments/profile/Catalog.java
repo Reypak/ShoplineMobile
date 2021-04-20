@@ -78,7 +78,7 @@ public class Catalog extends Fragment {
                 .setQuery(userCatalog, config, User.class)
                 .build();
 
-        MyFirestorePagingAdapter adapter = new MyFirestorePagingAdapter(options, getActivity(), rootView);
+        MyFirestorePagingAdapter adapter = new MyFirestorePagingAdapter(options, getActivity(), rootView,false);
         mCatalogList.setAdapter(adapter);
     }
 

@@ -377,7 +377,7 @@ var date = d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear(); // da
 					    from: `${APP_NAME} <noreply@firebase.com>`,
 					    to: email,
 					    subject: `${username}, You have a New Order!`,
-					    html: `<h1>${APP_NAME}</h1>
+					    html: `<img src="https://firebasestorage.googleapis.com/v0/b/shopline-15b78.appspot.com/o/Shopline%2Fbanner.png?alt=media&token=92cbde61-9c28-48f8-9746-087fea41ca4e"  width="120px">
 						    
 						    <p>Hi ${username}, You have a new order from a customer. Here are the details.</p>
 						    
@@ -397,7 +397,7 @@ var date = d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear(); // da
 					    from: `${APP_NAME} <noreply@firebase.com>`,
 					    to: customerEmail,
 					    subject: `${customerName}, You have placed an Order!`,
-					    html: `<h1>${APP_NAME}</h1>
+					    html: `<img src="https://firebasestorage.googleapis.com/v0/b/shopline-15b78.appspot.com/o/Shopline%2Fbanner.png?alt=media&token=92cbde61-9c28-48f8-9746-087fea41ca4e"  width="120px">
 						    
 						    <p>Hi ${customerName}, You have placed a new order. Here are the details.</p>
 						    
@@ -504,5 +504,34 @@ var date = d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear(); // da
 		
 		return null;
     });
-    
+    // user welcome email
+    exports.WelcomeEmail = functions.firestore.document('users/{userID}')
+    .onCreate((snap, context) => {
+    	const email = snap.data().email;
+    	const username = snap.data().username;
+
+    	// create email
+		const mailUser = {
+		    from: `${APP_NAME} <noreply@firebase.com>`,
+		    to: email,
+		    subject: `Welcome to ${APP_NAME}!`,
+		    html: `
+				<img src="https://firebasestorage.googleapis.com/v0/b/shopline-15b78.appspot.com/o/Shopline%2Fbanner.png?alt=media&token=92cbde61-9c28-48f8-9746-087fea41ca4e"  width="120px">
+				<p>
+				<h3>Hey <b>${username}</b> Welcome,</h3>
+				My name is <b>Busulwa</b>, CEO of Shopline. I am happy to welcome you as the newest member of Shopline, a community of small businesses where you get to browse and buy items from nearby local stores.
+				</p>
+				<p>Here are a few on how to get the best out of Shopline;<br>
+				<b>Follow Shops:</b> Get to know the latest latest products, promos or deals from shops you're following.
+				</p>
+				<p><b>Upload:</b> Do what to sell something?? Post it with a price and description and then wait for orders to come your way
+				<p><b>Wish list:</b> Add items you wish to buy in the near future to your wishlist so that you can access them later.
+				<p><b>Make Referrals:</b> Love the service or item, refer the shop to your followers as an appreciation.
+				<p><b>Rating:</b> Shops always use your feedback to improve their service. Don't forget to rate them after confirming receipt of your item.
+				<p><b>Analytics:</b> Track your daily account growth and sales with our mobile-first analytics.</p> 
+				Thanks for joining and Enjoy your stay,
+				<p><b>Busulwa and the Team at Shopline`
+		};
+		return transporter.sendMail(mailUser);
+    });
 						

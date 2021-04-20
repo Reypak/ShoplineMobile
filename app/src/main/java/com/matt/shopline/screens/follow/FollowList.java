@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.paging.FirestorePagingAdapter;
 import com.firebase.ui.firestore.paging.FirestorePagingOptions;
+import com.firebase.ui.firestore.paging.LoadingState;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
@@ -128,12 +129,22 @@ public class FollowList extends Fragment {
                 });
             }
 
+            @Override
+            protected void onLoadingStateChanged(@NonNull LoadingState state) {
+                if (state == LoadingState.FINISHED) {
+                    if (getItemCount() == 0) {
+                        MyFirestorePagingAdapter.hideProgress(rootView);
+                        TextView errorText = rootView.findViewById(R.id.errorText);
+                        errorText.setVisibility(View.VISIBLE);
+                    }
+                }
+            }
         };
         mList.setAdapter(adapter);
     }
 
 
-    public class BlogViewHolder extends RecyclerView.ViewHolder {
+    public static class BlogViewHolder extends RecyclerView.ViewHolder {
         View mView;
 
         public BlogViewHolder(final View itemView) {
@@ -161,7 +172,6 @@ public class FollowList extends Fragment {
                     .centerCrop()
                     .placeholder(R.drawable.ic_launcher_foreground)
                     .into(img);
-
         }
 
     }

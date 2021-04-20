@@ -55,16 +55,7 @@
         app:cardElevation="0dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <TextView
-            android:id="@+id/errorText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:fontFamily="@font/montserrat_bold"
-            android:text="Nothing To Show"
-            android:textColor="@color/colorTextOverlay"
-            android:textSize="17sp"
-            android:visibility="gone" />
+        <include layout="@layout/error_text" />
 
         <ProgressBar
             android:id="@+id/progressBar"

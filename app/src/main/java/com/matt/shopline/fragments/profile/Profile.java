@@ -190,7 +190,7 @@ public class Profile extends Fragment {
     }
 
     private void getUserData() {
-        DocumentReference userRef;
+        DocumentReference userRef = null;
 
         bundle = getArguments();
         if (bundle != null) {
@@ -204,54 +204,57 @@ public class Profile extends Fragment {
         } else {
             // Current User
             // get username from AuthInstance
-            username = user.getDisplayName();
-            tvUsername.setText(username);
+            if (user != null) {
+                username = user.getDisplayName();
+                tvUsername.setText(username);
 
-            userRef = db.collection("users").document(user.getUid());
+                userRef = db.collection("users").document(user.getUid());
 
-            getFollowers(user.getUid());
-            getCatalog(user.getUid());
-
+                getFollowers(user.getUid());
+                getCatalog(user.getUid());
+            }
         }
 
         userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                // in case username is empty
-                if (tvUsername.getText().toString().isEmpty()) {
-                    username = task.getResult().get("username").toString();
-                    tvUsername.setText(username);
-                    ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(username);
-                }
+                if (task.getResult().exists()) {
+                    // in case username is empty
+                    if (tvUsername.getText().toString().isEmpty()) {
+                        username = task.getResult().get("username").toString();
+                        tvUsername.setText(username);
+                        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(username);
+                    }
 
-                location = task.getResult().get("location").toString();
-                bio = task.getResult().get("bio").toString();
-                email = task.getResult().get("email").toString();
-                phone = task.getResult().get("phone").toString();
+                    location = task.getResult().get("location").toString();
+                    bio = task.getResult().get("bio").toString();
+                    email = task.getResult().get("email").toString();
+                    phone = task.getResult().get("phone").toString();
 
-                if (task.getResult().get("profileUrl") != null) {
-                    profileUri = task.getResult().get("profileUrl").toString();
-                }
+                    if (task.getResult().get("profileUrl") != null) {
+                        profileUri = task.getResult().get("profileUrl").toString();
+                    }
 
-                getProfileImage();
+                    getProfileImage();
 
-                if (task.getResult().get("occupation") != null && !task.getResult().get("occupation").toString().isEmpty()) {
-                    occupation = task.getResult().get("occupation").toString();
-                    tvOccupation.setText(occupation);
-                    tvOccupation.setVisibility(View.VISIBLE);
-                }
+                    if (task.getResult().get("occupation") != null && !task.getResult().get("occupation").toString().isEmpty()) {
+                        occupation = task.getResult().get("occupation").toString();
+                        tvOccupation.setText(occupation);
+                        tvOccupation.setVisibility(View.VISIBLE);
+                    }
 
-                if (task.getResult().get("website") != null && !task.getResult().get("website").toString().isEmpty()) {
-                    website = task.getResult().get("website").toString();
-                    tvWebsite.setText(website);
+                    if (task.getResult().get("website") != null && !task.getResult().get("website").toString().isEmpty()) {
+                        website = task.getResult().get("website").toString();
+                        tvWebsite.setText(website);
 //                    tvOccupation.setVisibility(View.VISIBLE);
+                    }
+
+                    tvLocation.setText(location);
+                    tvBio.setText(bio);
+                    tvEmail.setText(email);
+                    tvPhone.setText(phone);
+
                 }
-
-                tvLocation.setText(location);
-                tvBio.setText(bio);
-                tvEmail.setText(email);
-                tvPhone.setText(phone);
-
             }
         });
     }
@@ -463,19 +466,19 @@ public class Profile extends Fragment {
             if (user.getPhotoUrl() != null) {
                 profileUri = user.getPhotoUrl().toString();
             }
+            // load edit profile
+            profileImage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    EditProfile();
+                }
+            });
         }
         Picasso.with(getActivity()).load(profileUri)
                 .fit()
                 .placeholder(R.drawable.ic_launcher_foreground)
                 .centerCrop()
                 .into(profileImage);
-        // load edit profile
-        profileImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                EditProfile();
-            }
-        });
     }
 
     private void EditProfile() {

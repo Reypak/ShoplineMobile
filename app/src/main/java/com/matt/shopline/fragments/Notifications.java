@@ -143,9 +143,13 @@ public class Notifications extends Fragment {
             protected void onLoadingStateChanged(@NonNull LoadingState state) {
                 switch (state) {
                     case FINISHED:
+
+//                        errorText.setVisibility(View.GONE);
                         if (getItemCount() == 0) {
                             // hide progress bar
                             MyFirestorePagingAdapter.hideProgress(rootView);
+                            TextView errorText = rootView.findViewById(R.id.errorText);
+                            errorText.setVisibility(View.VISIBLE);
                         }
                     case LOADED:
                         refreshLayout.setRefreshing(false);

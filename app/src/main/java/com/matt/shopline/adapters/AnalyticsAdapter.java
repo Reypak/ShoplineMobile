@@ -1,6 +1,5 @@
 package com.matt.shopline.adapters;
 
-import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -12,8 +11,8 @@ import com.matt.shopline.fragments.analytics.Account;
 
 public class AnalyticsAdapter extends FragmentStatePagerAdapter {
 
-    int totalTabs;
     private final String date;
+    int totalTabs;
 
     public AnalyticsAdapter(FragmentManager fm, int totalTabs, String date) {
         super(fm);
@@ -35,7 +34,6 @@ public class AnalyticsAdapter extends FragmentStatePagerAdapter {
                 }
                 return account;
             case 1:
-            case 2:
                 return new Fragment();
             default:
                 return null;

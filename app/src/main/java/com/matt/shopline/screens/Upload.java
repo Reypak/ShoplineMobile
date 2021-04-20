@@ -45,8 +45,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Upload extends AppCompatActivity {
-    private ImageView imageView;
     private final int Image_Request_Code = 7;
+    private ImageView imageView;
     private Uri FilePathUri;
     private View viewOffers, offerIcon, viewSizes, sizesIcon;
     private ProgressDialog dialog;

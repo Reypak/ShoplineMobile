@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.firebase.ui.firestore.paging.FirestorePagingOptions;
 import com.google.firebase.auth.FirebaseAuth;
@@ -23,6 +24,7 @@ public class Feed extends Fragment {
     private Query userFeed;
     private RecyclerView mFeedList;
     private ViewGroup rootView;
+    private MyFirestorePagingAdapter adapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -41,8 +43,13 @@ public class Feed extends Fragment {
         }
         // todo : Add a priority field : { 0-50 followers = 1, 50-100 =2 }
 
-//        SwipeRefreshLayout refreshLayout = rootView.findViewById(R.id.swipeRefresh);
-
+        SwipeRefreshLayout refreshLayout = rootView.findViewById(R.id.swipeRefresh);
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                adapter.refresh();
+            }
+        });
         mFeedList = rootView.findViewById(R.id.recView);
 //        mFeedList.setHasFixedSize(true);
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
@@ -79,7 +86,7 @@ public class Feed extends Fragment {
                 .setQuery(userFeed, config, User.class)
                 .build();
 
-        MyFirestorePagingAdapter adapter = new MyFirestorePagingAdapter(options, getActivity(), rootView);
+        adapter = new MyFirestorePagingAdapter(options, getActivity(), rootView, true);
         mFeedList.setAdapter(adapter);
     }
 

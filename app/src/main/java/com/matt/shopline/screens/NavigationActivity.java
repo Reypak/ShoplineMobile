@@ -68,7 +68,7 @@ public class NavigationActivity extends AppCompatActivity implements BottomNavig
             public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
                 long num;
                 if (error == null) {
-                    if (value != null) {
+                    if (value.exists()) {
                         num = value.getLong(getString(R.string.title_notifications).toLowerCase());
                         // value is not null
                         if (num != 0) {
