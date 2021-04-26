@@ -233,10 +233,12 @@ public class Suggestions extends Fragment {
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         TextView textView2 = holder.mView.findViewById(R.id.tvFollowers);
                         textView2.setText(String.format("0 %s", rootView.getContext().getString(R.string.followers).toLowerCase()));
-                        if (task.getResult().exists()) {
-                            textView2.setText(String.format("%s %s",
-                                    task.getResult().get(rootView.getContext().getString(R.string.followers).toLowerCase()).toString(),
-                                    rootView.getContext().getString(R.string.followers).toLowerCase()));
+                        if (task.isSuccessful()) {
+                            if (task.getResult().exists()) {
+                                textView2.setText(String.format("%s %s",
+                                        task.getResult().get(rootView.getContext().getString(R.string.followers).toLowerCase()).toString(),
+                                        rootView.getContext().getString(R.string.followers).toLowerCase()));
+                            }
                         }
                     }
                 });

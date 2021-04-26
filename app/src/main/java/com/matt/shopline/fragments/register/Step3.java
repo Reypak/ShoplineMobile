@@ -3,6 +3,8 @@ package com.matt.shopline.fragments.register;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,7 +43,29 @@ public class Step3 extends Fragment {
         etPhone = rootView.findViewById(R.id.etPhone);
         etLocation = rootView.findViewById(R.id.etLocation);
 
-       /* initializePlaces();
+        // capture empty values just in case
+        getData();
+
+        TextWatcher watcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                getData();
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+            }
+        };
+
+        // add listener to text fields
+        etPhone.addTextChangedListener(watcher);
+        etLocation.addTextChangedListener(watcher);
+
+        /* initializePlaces();
        etLocation.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
@@ -52,6 +76,13 @@ public class Step3 extends Fragment {
         });*/
 
         return rootView;
+    }
+
+    private void getData() {
+        String phone = etPhone.getText().toString();
+        String location = etLocation.getText().toString().trim();
+        String[] data = {phone, location};
+        onDataPass(data);
     }
 
     @Override
@@ -128,18 +159,14 @@ public class Step3 extends Fragment {
 
     }
 
-    @Override
+  /*  @Override
     public void onPause() {
         super.onPause();
-        String phone = etPhone.getText().toString();
-        String location = etLocation.getText().toString().trim();
-        String[] data = {phone, location};
-        onDataPass(data);
 
-       /* if (!TextUtils.isEmpty(phone) || !TextUtils.isEmpty(location)) {
+       *//* if (!TextUtils.isEmpty(phone) || !TextUtils.isEmpty(location)) {
             onDataPass(data);
-        }*/
-    }
+        }*//*
+    }*/
 
     @Override
     public void onAttach(@NonNull Context context) {

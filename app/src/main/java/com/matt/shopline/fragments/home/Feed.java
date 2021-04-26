@@ -1,5 +1,9 @@
 package com.matt.shopline.fragments.home;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +16,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.firebase.ui.firestore.paging.FirestorePagingOptions;
+import com.getkeepsafe.taptargetview.TapTarget;
+import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -88,6 +94,58 @@ public class Feed extends Fragment {
 
         adapter = new MyFirestorePagingAdapter(options, getActivity(), rootView, true);
         mFeedList.setAdapter(adapter);
+
+        BroadcastReceiver receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if (action.equals("show")) {
+                    View itemView = mFeedList.getChildAt(0);
+                    if (getActivity() != null) {
+                        if (itemView != null) {
+                           /* TapTargetView.showFor(getActivity(),
+                                    TapTarget.forView(itemView.findViewById(R.id.btnOrder),
+                                            "Place Order", "Make your order for any product you like")
+                                            .descriptionTextSize(15)
+                                            .cancelable(true)
+                                            .tintTarget(true),
+                                    null);*/
+
+                            TapTargetSequence sequence = new TapTargetSequence(requireActivity())
+                                    .targets(
+                                            TapTarget.forView(itemView.findViewById(R.id.btnOrder),
+                                                    "Place Order", "Make your order for any product you like")
+                                                    .descriptionTextSize(15)
+                                                    .cancelable(false)
+                                                    .tintTarget(false),
+
+                                            TapTarget.forView(itemView.findViewById(R.id.btnRepost),
+                                                    "Repost", "Add product to your feed, for your followers to view")
+                                                    .descriptionTextSize(15)
+                                                    .cancelable(false)
+                                                    .outerCircleColor(R.color.colorHighlight)
+                                                    .tintTarget(true)
+                                    )
+                                    .listener(new TapTargetSequence.Listener() {
+                                        @Override
+                                        public void onSequenceFinish() {
+                                        }
+
+                                        @Override
+                                        public void onSequenceStep(TapTarget lastTarget, boolean targetClicked) {
+                                        }
+
+                                        @Override
+                                        public void onSequenceCanceled(TapTarget lastTarget) {
+                                        }
+                                    });
+                            sequence.start();
+                        }
+                    }
+                }
+            }
+        };
+        requireActivity().registerReceiver(receiver, new IntentFilter("show"));
     }
 
 }

@@ -12,7 +12,9 @@
         <item name="android:colorBackground">@color/colorBackground</item>
         <item name="android:textColorPrimary">@color/colorTextOverlay</item>
         <item name="android:dialogCornerRadius" tools:targetApi="p">20dp</item>
-        <item name="android:itemBackground">@android:color/white</item>
+        <item name="android:popupMenuStyle">@style/PopupMenu</item>
+        <item name="popupMenuStyle">@style/PopupMenu</item>
+<!--        <item name="android:itemBackground">@android:color/white</item>-->
     </style>
 
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
@@ -118,5 +120,10 @@
         <item name="spark_cornerRadius">15dp</item>
         <item name="spark_fillType">down</item>
     </style>
+
+   <!-- <style name="PP" parent="@android:style/Widget.PopupMenu">
+        <item name="android:popupBackground">@drawable/card_background</item>
+        <item name="android:popupElevation">10dp</item>
+    </style>-->
 
 </resources>

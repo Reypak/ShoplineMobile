@@ -1,8 +1,11 @@
 package com.matt.shopline.fragments.home;
 
+import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -12,8 +15,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,6 +27,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
+import com.getkeepsafe.taptargetview.TapTarget;
+import com.getkeepsafe.taptargetview.TapTargetSequence;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -29,20 +39,25 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.matt.shopline.R;
+import com.matt.shopline.objects.ReviewComment;
 import com.matt.shopline.screens.orders.Orders;
+
+import java.util.Date;
 
 public class Home extends Fragment {
     private FirebaseFirestore db;
     private FirebaseUser user;
     private long notificationCount;
     private TextView itemCount;
+    private Toolbar toolbar;
+    private ViewGroup rootView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_home, container, false);
-        Toolbar toolbar = rootView.findViewById(R.id.toolbar1);
-        ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
+        rootView = (ViewGroup) inflater.inflate(R.layout.fragment_home, container, false);
+        toolbar = rootView.findViewById(R.id.toolbar1);
+        ((AppCompatActivity) requireActivity()).setSupportActionBar(toolbar);
         setHasOptionsMenu(true);
 
         user = FirebaseAuth.getInstance().getCurrentUser();
@@ -55,11 +70,14 @@ public class Home extends Fragment {
         if (location != null) {
             // load Feed Fragment
             loadFragment(new Feed());
+//            startShowcase();
         } else {
             View fab = rootView.findViewById(R.id.fab);
             fab.setVisibility(View.GONE);
             loadFragment(new Suggestions());
         }
+
+        ratingDialog(user.getUid());
 
         /*// broadcast receiver to receive intent data from login activity
         BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -76,6 +94,100 @@ public class Home extends Fragment {
         return rootView;
     }
 
+    private void ratingDialog(final String userID) {
+        final Dialog d = new Dialog(getActivity());
+        d.setContentView(R.layout.rating_dialog);
+        final EditText editText = d.findViewById(R.id.etReview);
+        Button btnSubmit = d.findViewById(R.id.btnSubmit);
+        btnSubmit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View view) {
+                // create comment object
+                ReviewComment reviewComment = new ReviewComment(4, editText.getText().toString().trim(), new Date());
+                // ref to user reviews
+                DocumentReference reviewComments = db.collection("reviews").document(userID)
+                        .collection("reviews").document(user.getUid());
+
+                reviewComments.set(reviewComment).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        Toast.makeText(view.getContext(), "Done", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                d.dismiss();
+            }
+        });
+        d.show();
+    }
+
+    private void startShowcase() {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (getActivity() != null) {
+                    @SuppressLint("ResourceType") TapTargetSequence sequence = new TapTargetSequence(requireActivity())
+                            .targets(
+                                    TapTarget.forView(rootView.findViewById(R.id.fab),
+                                            "Create Post", "Upload your new products here")
+                                            .descriptionTextSize(15)
+                                            .cancelable(false)
+                                            .tintTarget(false)
+                                    ,
+                                    TapTarget.forToolbarMenuItem(toolbar, 1,
+                                            "Show Orders", "Track your Shopline orders")
+                                            .descriptionTextSize(15)
+                                            .tintTarget(true)
+
+                                   /* TapTarget.forBounds(rickTarget, "Down", ":^)")
+                                            .cancelable(false)
+                                            .icon(rick)*/
+                            )
+                            .listener(new TapTargetSequence.Listener() {
+                                // This listener will tell us when interesting(tm) events happen in regards
+                                // to the sequence
+                                @Override
+                                public void onSequenceFinish() {
+                                    Intent intent = new Intent("show");
+                                    requireActivity().sendBroadcast(intent);
+                                    // Yay
+                                }
+
+                                @Override
+                                public void onSequenceStep(TapTarget lastTarget, boolean targetClicked) {
+                                    // Perform action for the current target
+                                }
+
+                                @Override
+                                public void onSequenceCanceled(TapTarget lastTarget) {
+                                    onSequenceFinish();
+                                    // Boo
+                                }
+                            });
+                    sequence.start();
+                    /*TapTargetView.showFor(requireActivity(), TapTarget.forToolbarMenuItem(toolbar, 2,
+//                            TapTarget.forView(rootView.findViewById(R.id.fab)TapTarget.forView(rootView.findViewById(R.id.fab)
+                            "Create Post", "Upload your new products here")
+                                    .outerCircleColor(R.color.colorPrimary)
+                                    .outerCircleAlpha(0.96f)
+                                    .targetCircleColor(Color.WHITE)
+                                    .titleTextSize(20)
+                                    .titleTextColor(Color.WHITE)
+                                    .descriptionTextSize(15)
+                                    .cancelable(true)
+                                    .tintTarget(true)
+                                    .targetRadius(60),
+                            new TapTargetView.Listener() {
+                                @Override
+                                public void onTargetClick(TapTargetView view) {
+                                    super.onTargetClick(view);      // This call is optional
+//                                    Orders();
+                                }
+                            });*/
+                }
+            }
+        }, 2000);
+    }
+
     private void loadFragment(Fragment fragment) {
         //switching fragment
         if (fragment != null) {
@@ -88,7 +200,7 @@ public class Home extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        menu.add(Menu.NONE, 0, Menu.NONE, null)
+        menu.add(Menu.NONE, 1, Menu.NONE, null)
                 .setActionView(R.layout.basket_layout)
                 .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
@@ -142,8 +254,6 @@ public class Home extends Fragment {
                 }
             }
         });
-
-
     }
 
     public void Orders() {

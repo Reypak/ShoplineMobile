@@ -18,7 +18,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
             android:paddingStart="5dp"
-            android:text="* Adding a profile picture makes it easier for people to identify your business."
+            android:text="* Add a profile picture to display on your account."
             android:textColor="@color/colorTextPrimary"
             android:textStyle="bold" />
 
@@ -62,7 +62,7 @@
             android:layout_height="wrap_content"
             android:layout_marginVertical="20dp"
             android:paddingStart="5dp"
-            android:text="* Use a name customers can easily identify you(r) business with."
+            android:text="* Create a Username to allow others easily identify you."
             android:textColor="@color/colorTextPrimary"
             android:textStyle="bold" />
 
@@ -82,7 +82,33 @@
             android:layout_height="wrap_content"
             android:inputType="textCapWords" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="20dp"
+            android:paddingStart="5dp"
+            android:text="* Briefly describe yourself and what you do. (Optional)"
+            android:textColor="@color/colorTextPrimary"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:paddingStart="5dp"
+            android:text="@string/bio"
+            android:textColor="@color/colorPrimary" />
+
+
+        <EditText
+            android:id="@+id/etBio"
+            style="@style/TextBoxRound"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapSentences|textMultiLine"
+            android:maxLines="2" />
 
     </LinearLayout>
 
 </FrameLayout>
+<!--    android:text="* Use a name customers can easily identify you(r) business with."-->

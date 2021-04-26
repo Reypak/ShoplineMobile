@@ -47,6 +47,10 @@ dependencies {
     implementation 'com.github.robinhood:spark:-SNAPSHOT'
 //    implementation project(path:':spark')
 
+    // Showcase Library
+    implementation 'com.getkeepsafe.taptargetview:taptargetview:1.13.2'
+//    implementation 'uk.co.samuelwall:material-tap-target-prompt:3.1.0'
+
     // Firebase
     implementation 'com.google.firebase:firebase-auth:20.0.1'
     implementation 'com.google.firebase:firebase-firestore:22.0.1'

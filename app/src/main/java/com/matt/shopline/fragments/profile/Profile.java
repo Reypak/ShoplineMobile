@@ -223,7 +223,7 @@ public class Profile extends Fragment {
                     if (tvUsername.getText().toString().isEmpty()) {
                         username = task.getResult().get("username").toString();
                         tvUsername.setText(username);
-                        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(username);
+                        ((AppCompatActivity) requireActivity()).getSupportActionBar().setTitle(username);
                     }
 
                     location = task.getResult().get("location").toString();

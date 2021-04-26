@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -129,6 +130,7 @@ public class OrdersList extends Fragment {
                             product = task.getResult().get("product").toString();
                             price = task.getResult().get("price").toString();
                             imageUrl = task.getResult().get("imageUrl").toString();
+                            String duserID = task.getResult().get("userID").toString();
 
                             offers = null;
                             if (task.getResult().get("offers") != null) {
@@ -137,7 +139,7 @@ public class OrdersList extends Fragment {
 
                             holder.setData(product + quantity, price, offers, location);
                             holder.setImageURL(getActivity(), imageUrl);
-                            holder.setAction(model.getStatus(), getItem(position).getReference(), adapter, model.getUserID());
+                            holder.setAction(model.getStatus(), getItem(position).getReference(), adapter, model.getUserID(), duserID);
 
                             // get User details
                             if (userID != null) {
@@ -203,7 +205,7 @@ public class OrdersList extends Fragment {
                                 return false;
                             }
                         });
-
+                        popupMenu.setGravity(Gravity.END);
                         popupMenu.show();
                         return false;
                     }
@@ -246,7 +248,7 @@ public class OrdersList extends Fragment {
             mView = itemView;
         }
 
-        public void setAction(final long state, final DocumentReference reference, final FirestorePagingAdapter adapter, final String userID) {
+        public void setAction(final long state, final DocumentReference reference, final FirestorePagingAdapter adapter, final String userID, final String duserID) {
             Button btnAction = mView.findViewById(R.id.btnAction);
             Button btnAccept = mView.findViewById(R.id.btnAccept);
             btnAccept.setVisibility(View.GONE);
@@ -290,6 +292,10 @@ public class OrdersList extends Fragment {
                 btnAction.setText("Confirm Delivery");
             } else if (state == 5) {
                 btnAction.setText("Pending Approval");
+            } else if (state == 6) {
+                btnAction.setText("Rate Order");
+            } else if (state == 7) {
+                btnAction.setText("Delivered");
             }
 
             btnAction.setOnClickListener(new View.OnClickListener() {
@@ -299,6 +305,12 @@ public class OrdersList extends Fragment {
                         deleteOrder(reference, view, state, adapter);
                     } else if (state == 4) {
                         updateOrderStatus(reference, null, 5, view, "Pending", null);
+                        updateOrderStatus(userOrderRef, null, 6, view, "User send Rate", null);
+                    } else if (state == 6) {
+                        // new ref directing to the sellers customer orders
+                        DocumentReference userOrderRef2 = db.collection("users").document(duserID)
+                                .collection("orders_customer").document(reference.getId());
+                        updateOrderStatus(userOrderRef2, null, 7, view, "Delivered", null);
                     }
                 }
             });
@@ -378,7 +390,7 @@ public class OrdersList extends Fragment {
 
             textView.setText(product);
             textView4.setText(R.string.no_location);
-            if (location != null) {
+            if (location != null && !location.equals("")) {
                 textView4.setText(location);
             }
 

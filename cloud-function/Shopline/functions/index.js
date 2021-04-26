@@ -534,4 +534,31 @@ var date = d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear(); // da
 		};
 		return transporter.sendMail(mailUser);
     });
-						
+    
+    // user reviews counter
+    exports.Reviews = functions.firestore.document('reviews/{userID}/reviews/{reviewUserID}')
+	.onCreate((snap, context) => {
+		const userID = context.params.userID;
+		const rating = snap.data().rating;
+		var mField = null;
+		
+		if (rating == 1) {
+			mField = 'one';
+		} else if (rating == 2) {
+			mField = 'two';
+		} else if (rating == 3) {
+			mField = 'three';
+		} else if (rating == 4) {
+			mField = 'four';
+		} else if (rating == 5) {
+			mField = 'five';
+		}
+		
+		const userReviews = db.doc(`reviews/${userID}`);
+			// setting reviews
+			return userReviews.set({
+				// pass variable to field [var]
+				[mField]: admin.firestore.FieldValue.increment(1),
+				total: admin.firestore.FieldValue.increment(1),
+			}, { merge: true });	
+	});					

@@ -24,8 +24,8 @@ public class Step1 extends Fragment {
     int Image_Request_Code = 7;
     Uri FilePathUri;
     private EditText etUsername;
+    private EditText etBio;
     private ImageView profileImage;
-    private String username;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -34,6 +34,7 @@ public class Step1 extends Fragment {
                 R.layout.fragment_step1, container, false);
 
         etUsername = rootView.findViewById(R.id.etUsername);
+        etBio = rootView.findViewById(R.id.etBio);
         profileImage = rootView.findViewById(R.id.profile_image);
 
         profileImage.setOnClickListener(new View.OnClickListener() {
@@ -68,9 +69,10 @@ public class Step1 extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        username = etUsername.getText().toString().trim();
-
-        onDataPass(username, FilePathUri);
+        String username = etUsername.getText().toString().trim();
+        String bio = etBio.getText().toString().trim();
+        String[] data = {username, bio};
+        onDataPass(data, FilePathUri);
     }
 
     @Override
@@ -79,7 +81,7 @@ public class Step1 extends Fragment {
         dataPass = (OnDataPass) context;
     }
 
-    public void onDataPass(String data, Uri uri) {
+    public void onDataPass(String[] data, Uri uri) {
         dataPass.DataStep1(data, uri);
     }
 

@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 
 import com.matt.shopline.fragments.profile.Catalog;
+import com.matt.shopline.fragments.profile.Reviews;
 
 
 /**
@@ -26,7 +27,7 @@ public class TabAdapter extends FragmentStatePagerAdapter {
     private final boolean b;
     int totalTabs;
     private Context myContext;
-    private String userID; // added to constructor to get data from parent Activity
+    private final String userID; // added to constructor to get data from parent Activity
 
     public TabAdapter(Context context, FragmentManager fm, int totalTabs, String userID, boolean b) {
         super(fm);
@@ -39,20 +40,21 @@ public class TabAdapter extends FragmentStatePagerAdapter {
     // this is for fragment tabs
     @Override
     public Fragment getItem(int position) {
+        Bundle bundle = new Bundle();
+        bundle.putString("userID", userID);
+
         switch (position) {
             case 0:
                 Catalog catalog = new Catalog();
-
                 // pass userID String from parent activity(UserProfile)
                 // to the Catalog fragment through tabAdapter
-                Bundle bundle = new Bundle();
-                bundle.putString("userID", userID);
                 catalog.setArguments(bundle);
-
                 return catalog;
             case 1:
-                return new Fragment();
-
+                // open reviews
+                Reviews reviews = new Reviews();
+                reviews.setArguments(bundle);
+                return reviews;
             case 2:
                 // if boolean is true
                 if (b) {
@@ -62,7 +64,6 @@ public class TabAdapter extends FragmentStatePagerAdapter {
                 } else {
                     return new Fragment();
                 }
-
             default:
                 return null;
         }

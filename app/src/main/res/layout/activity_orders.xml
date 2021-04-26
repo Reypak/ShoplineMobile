@@ -1,33 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingTop="10dp"
-    tools:context=".screens.orders.Orders">
+    android:paddingTop="10dp">
 
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="10dp"
-        app:cardCornerRadius="30dp"
-        app:contentPadding="5dp"
-        app:contentPaddingLeft="10dp"
-        app:contentPaddingRight="10dp">
-
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/tabLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:tabIndicator="@drawable/card_background"
-            app:tabIndicatorColor="@color/colorHighlight"
-            app:tabIndicatorGravity="center"
-            app:tabIndicatorHeight="40dp"
-            app:tabRippleColor="@android:color/transparent"
-            app:tabTextAppearance="@android:style/TextAppearance.Widget.TabWidget" />
-    </androidx.cardview.widget.CardView>
+    <include layout="@layout/tab_layout" />
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -41,6 +20,5 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </androidx.cardview.widget.CardView>
-
 
 </LinearLayout>

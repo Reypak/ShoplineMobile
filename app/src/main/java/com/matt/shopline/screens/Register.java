@@ -40,19 +40,18 @@ import com.matt.shopline.fragments.register.OnDataPass;
 import com.matt.shopline.fragments.register.Step1;
 import com.matt.shopline.fragments.register.Step2;
 import com.matt.shopline.fragments.register.Step3;
-import com.matt.shopline.fragments.register.Step4;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
 import static androidx.fragment.app.FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT;
 
 public class Register extends FragmentActivity implements OnDataPass {
-    private static final int NUM_PAGES = 4;
+    private static final int NUM_PAGES = 3;
     private ViewPager mPager;
-    private PagerAdapter pagerAdapter;
     private TextView stepNumber;
     private Button btnNext;
     private String email;
@@ -61,7 +60,7 @@ public class Register extends FragmentActivity implements OnDataPass {
     private Uri profileUri;
     private String phone;
     private String location;
-    private String category;
+    //    private String category;
     private String bio;
     private FirebaseAuth mAuth;
     private FirebaseUser user;
@@ -76,9 +75,9 @@ public class Register extends FragmentActivity implements OnDataPass {
         // Instantiate a ViewPager and a PagerAdapter.
         mPager = findViewById(R.id.pager);
         // BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT pauses the fragment as soon as it is changed
-        pagerAdapter = new PagerAdapter(getSupportFragmentManager(), BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+        PagerAdapter pagerAdapter = new PagerAdapter(getSupportFragmentManager(), BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         mPager.setAdapter(pagerAdapter);
-        mPager.setOffscreenPageLimit(3); // keeps the fragment alive up to 3 pages away
+        mPager.setOffscreenPageLimit(2); // keeps the fragment alive up to 3 pages away
         btnNext = findViewById(R.id.btnNext);
         stepNumber = findViewById(R.id.stepNumber);
 
@@ -88,7 +87,7 @@ public class Register extends FragmentActivity implements OnDataPass {
                 if (btnNext.getText().equals(getString(R.string.sign_up))) {
 
                     register();
-//                        Toast.makeText(RegisterStepper.this, dataStep2[0] + "\n" + dataStep2[1], Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(getApplicationContext(), username + bio + email + password + location + phone, Toast.LENGTH_LONG).show();
 
                 } else {
                     // go to next page
@@ -108,7 +107,7 @@ public class Register extends FragmentActivity implements OnDataPass {
             public void onPageSelected(int position) {
                 // setting the step number
                 stepNumber(position);
-                if (position == 3) {
+                if (position == 2) {
                     btnNext.setText(getString(R.string.sign_up));
 
                 } else {
@@ -160,7 +159,7 @@ public class Register extends FragmentActivity implements OnDataPass {
                             userdata.put("userID", user.getUid());
                             userdata.put("phone", phone);
                             userdata.put("location", location);
-                            userdata.put("category", category);
+//                            userdata.put("category", category);
                             userdata.put("bio", bio);
 
                             // Add a new document with user ID
@@ -169,7 +168,12 @@ public class Register extends FragmentActivity implements OnDataPass {
                                 @Override
                                 public void onSuccess(Void aVoid) {
                                     dialog.dismiss();
-                                    openMain();
+
+                                    // send broadcast to Landing page
+                                    Intent intent = new Intent("finish");
+                                    sendBroadcast(intent);
+
+                                    openMain(); // go to main
                                     setToken(user.getUid());
                                     // subscribe to notify
                                     FirebaseMessaging.getInstance().subscribeToTopic(mAuth.getCurrentUser().getUid() + "_notifications");
@@ -183,8 +187,9 @@ public class Register extends FragmentActivity implements OnDataPass {
                                     .apply();
                         } else {
                             dialog.dismiss();
+                            String msg = task.getException().getMessage();
                             // If sign in fails, display a message to the user.
-                            Toast.makeText(Register.this, "Register failed.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(Register.this, msg, Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -195,7 +200,9 @@ public class Register extends FragmentActivity implements OnDataPass {
             }
 
         } else {
-            mPager.setCurrentItem(1, true);
+            // go step behind
+            stepBack(null);
+//            mPager.setCurrentItem(1, true);
             Toast.makeText(Register.this, "Fill in details.", Toast.LENGTH_SHORT).show();
         }
 
@@ -286,7 +293,7 @@ public class Register extends FragmentActivity implements OnDataPass {
     }
 
     private void stepNumber(int item) {
-        stepNumber.setText(item + 1 + " of " + NUM_PAGES);
+        stepNumber.setText(MessageFormat.format("{0} of {1}", item + 1, NUM_PAGES));
     }
 
     public void stepBack(View view) {
@@ -294,8 +301,9 @@ public class Register extends FragmentActivity implements OnDataPass {
     }
 
     @Override
-    public void DataStep1(String data, Uri uri) {
-        username = data;
+    public void DataStep1(String[] data, Uri uri) {
+        username = data[0];
+        bio = data[1];
         profileUri = uri;
     }
 
@@ -311,20 +319,10 @@ public class Register extends FragmentActivity implements OnDataPass {
         location = data[1];
     }
 
-    @Override
-    public void DataStep4(String[] data) {
-        category = data[0];
-        bio = data[1];
-    }
-
     private void openMain() {
         Intent intent = new Intent(this, NavigationActivity.class);
         startActivity(intent);
         finish();
-
-        // send broadcast to Landing page
-        intent = new Intent("finish");
-        sendBroadcast(intent);
     }
 
     private static class PagerAdapter extends FragmentStatePagerAdapter {
@@ -342,8 +340,6 @@ public class Register extends FragmentActivity implements OnDataPass {
                     return new Step2();
                 case 2:
                     return new Step3();
-                case 3:
-                    return new Step4();
                 default:
                     return null;
             }
