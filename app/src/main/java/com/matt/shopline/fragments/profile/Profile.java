@@ -2,7 +2,10 @@ package com.matt.shopline.fragments.profile;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -53,6 +56,7 @@ import com.matt.shopline.R;
 import com.matt.shopline.adapters.TabAdapter;
 import com.matt.shopline.screens.LandingPage;
 import com.matt.shopline.screens.follow.FollowView;
+import com.matt.shopline.screens.orders.RatingView;
 import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
@@ -189,6 +193,25 @@ public class Profile extends Fragment {
         return rootView;
     }
 
+    private void listenRating() {
+        BroadcastReceiver receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if (action.equals("rating")) {
+                    View ratingView = rootView.findViewById(R.id.ratingView);
+                    TextView textView3 = rootView.findViewById(R.id.tvRating);
+                    View iconRating = rootView.findViewById(R.id.iconRating);
+
+                    ratingView.setVisibility(View.VISIBLE);
+                    int rating = intent.getIntExtra("rating", 0);
+                    new RatingView().setView(rating, textView3, iconRating);
+                }
+            }
+        };
+        getActivity().registerReceiver(receiver, new IntentFilter("rating"));
+    }
+
     private void getUserData() {
         DocumentReference userRef = null;
 
@@ -254,6 +277,7 @@ public class Profile extends Fragment {
                     tvEmail.setText(email);
                     tvPhone.setText(phone);
 
+                    listenRating(); // listen for rating value
                 }
             }
         });

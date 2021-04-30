@@ -69,6 +69,7 @@
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="5dp"
                     android:gravity="center"
                     android:orientation="horizontal"
                     android:translationX="-3dp">
@@ -88,29 +89,7 @@
                         android:textSize="13sp" />
                 </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:padding="5dp"
-                    android:translationX="-3dp">
-
-                    <FrameLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="5dp"
-                        android:background="@drawable/ic_mood_neutral"
-                        android:backgroundTint="@android:color/holo_red_dark" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="No Rating"
-                        android:textColor="@android:color/holo_red_dark"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
+                <include layout="@layout/rating_view" />
 
                 <LinearLayout
                     android:layout_width="match_parent"

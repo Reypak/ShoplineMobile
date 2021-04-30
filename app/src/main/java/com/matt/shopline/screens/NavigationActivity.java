@@ -1,6 +1,9 @@
 package com.matt.shopline.screens;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.MenuItem;
@@ -11,6 +14,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import com.getkeepsafe.taptargetview.TapTarget;
+import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -52,7 +57,49 @@ public class NavigationActivity extends AppCompatActivity implements BottomNavig
         navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(this);
 
+        startShowcase();
+    }
 
+    private void startShowcase() {
+        BroadcastReceiver receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if (action.equals("show2")) {
+
+                    TapTargetSequence sequence = new TapTargetSequence(NavigationActivity.this)
+                            .targets(
+                                    TapTarget.forView(navigation.findViewById(R.id.navigation_profile),
+                                            "Profile", "View and edit your profile details \n Catalog, Reviews and Wishlist")
+                                            .descriptionTextSize(15)
+                                            .cancelable(false),
+
+                                    TapTarget.forView(navigation.findViewById(R.id.navigation_notifications),
+                                            "Notifications", "Check your notifications and updates here")
+                                            .descriptionTextSize(15)
+                                            .tintTarget(false)
+                            ).listener(new TapTargetSequence.Listener() {
+                                @Override
+                                public void onSequenceFinish() {
+                                    Intent intent = new Intent("show");
+                                    sendBroadcast(intent);
+                                }
+
+                                @Override
+                                public void onSequenceStep(TapTarget lastTarget, boolean targetClicked) {
+
+                                }
+
+                                @Override
+                                public void onSequenceCanceled(TapTarget lastTarget) {
+                                    onSequenceFinish();
+                                }
+                            });
+                    sequence.start();
+                }
+            }
+        };
+        registerReceiver(receiver, new IntentFilter("show2"));
     }
 
     private void notificationCounter() {

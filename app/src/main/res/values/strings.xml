@@ -40,6 +40,11 @@
     <string name="title_discover">Discover</string>
     <string name="edit">Edit</string>
     <string name="errorText">Nothing To Show</string>
+    <string name="great">Great</string>
+    <string name="okay">Okay</string>
+    <string name="good">Good</string>
+    <string name="bad">Bad</string>
+    <string name="terrible">Terrible</string>
 
     <string-array name="category">
         <item>-- Select --</item>

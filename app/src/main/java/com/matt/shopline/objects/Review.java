@@ -6,12 +6,11 @@ public class Review {
     int three;
     int two;
     int one;
+    int total;
 
     public int getTotal() {
         return total;
     }
-
-    int total;
 
     public int getFive() {
         return five;

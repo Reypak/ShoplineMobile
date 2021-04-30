@@ -25,9 +25,9 @@ import com.matt.shopline.fragments.profile.Reviews;
 public class TabAdapter extends FragmentStatePagerAdapter {
 
     private final boolean b;
+    private final String userID; // added to constructor to get data from parent Activity
     int totalTabs;
     private Context myContext;
-    private final String userID; // added to constructor to get data from parent Activity
 
     public TabAdapter(Context context, FragmentManager fm, int totalTabs, String userID, boolean b) {
         super(fm);
@@ -62,7 +62,10 @@ public class TabAdapter extends FragmentStatePagerAdapter {
                     wishList = new Catalog();
                     return wishList;
                 } else {
-                    return new Fragment();
+                    Catalog offers = new Catalog();
+                    bundle.putString("offers", "1");
+                    offers.setArguments(bundle);
+                    return offers;
                 }
             default:
                 return null;

@@ -33,6 +33,7 @@ import com.matt.shopline.objects.Review;
 import com.matt.shopline.objects.ReviewComment;
 import com.matt.shopline.objects.User;
 import com.matt.shopline.screens.FeedUserProfile;
+import com.matt.shopline.screens.orders.RatingView;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -63,8 +64,8 @@ public class Reviews extends Fragment {
         db = FirebaseFirestore.getInstance();
 //        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
+        rootView.findViewById(R.id.progressView).setVisibility(View.INVISIBLE);
         tvTotal = rootView.findViewById(R.id.tvTotal);
-        tvTotal.setVisibility(View.GONE);
         RecyclerView mProgressList = rootView.findViewById(R.id.recView);
         mReviewsList = rootView.findViewById(R.id.recView2);
 
@@ -101,7 +102,30 @@ public class Reviews extends Fragment {
 //                    Collections.reverse(mData);
                             progressAdapter.notifyDataSetChanged();
                             tvTotal.setText(String.valueOf(review.getTotal()));
-                            tvTotal.setVisibility(View.VISIBLE);
+                            rootView.findViewById(R.id.progressView).setVisibility(View.VISIBLE);
+
+                            // calculate the rating
+                            float i = review.getFive() * 5 + review.getFour() * 4 + review.getThree() * 3 + review.getTwo() * 2 + review.getOne();
+                            float total = review.getTotal() * 5;
+                            float rate = i / total * 5;
+
+                            TextView tvRating = rootView.findViewById(R.id.tvRating);
+                            if (rate >= 5) {
+                                tvRating.setText(R.string.great);
+                            } else if (rate >= 4) {
+                                tvRating.setText(R.string.good);
+                            } else if (rate >= 3) {
+                                tvRating.setText(R.string.okay);
+                            } else if (rate >= 2) {
+                                tvRating.setText(R.string.bad);
+                            } else {
+                                tvRating.setText(R.string.terrible);
+                            }
+
+                            // send result to profile
+                            Intent intent = new Intent("rating");
+                            intent.putExtra("rating", (int) rate);
+                            requireActivity().sendBroadcast(intent);
                         }
                     }
                 }
@@ -197,76 +221,6 @@ public class Reviews extends Fragment {
         mReviewsList.setAdapter(adapter);
     }
 
-    public class BlogViewHolder extends RecyclerView.ViewHolder {
-        View mView;
-
-        public BlogViewHolder(final View itemView) {
-            super(itemView);
-            mView = itemView;
-        }
-
-        public void setCommentData(String comment, Date timestamp, int rating) {
-            TextView textView = mView.findViewById(R.id.tvComment);
-            TextView textView2 = mView.findViewById(R.id.tvTime);
-            View ratingView = mView.findViewById(R.id.ratingView);
-            TextView textView3 = mView.findViewById(R.id.tvRating);
-            View iconRating = mView.findViewById(R.id.iconRating);
-
-            textView.setText(comment);
-            textView2.setText(durationFromNow(timestamp));
-
-            ratingView.setVisibility(View.VISIBLE);
-            if (rating == 1) {
-                setItem(textView3, iconRating, "Terrible", android.R.color.holo_red_light, R.drawable.ic_mood_sad);
-            } else if (rating == 2) {
-                setItem(textView3, iconRating, "Bad", android.R.color.holo_red_light, R.drawable.ic_mood_sad);
-            } else if (rating == 3) {
-                setItem(textView3, iconRating, "Okay", R.color.colorHighlight, R.drawable.ic_mood_neutral);
-            } else if (rating == 4) {
-                setItem(textView3, iconRating, "Good", R.color.colorGreen, R.drawable.ic_mood_smile);
-            } else if (rating == 5) {
-                setItem(textView3, iconRating, "Great", R.color.colorGreen, R.drawable.ic_mood_smile);
-            }
-        }
-
-        private void setItem(TextView textView, View iconRating, String s, int color, int image) {
-            textView.setText(s);
-            textView.setTextColor(itemView.getResources().getColor(color));
-            iconRating.setBackground(ContextCompat.getDrawable(itemView.getContext(), image));
-            iconRating.getBackground().setColorFilter(itemView.getResources().getColor(color), PorterDuff.Mode.SRC_IN);
-        }
-
-        public void setUserData(String username, String occupation, String imageURL, final String userID) {
-            final TextView textView = mView.findViewById(R.id.tvUsername);
-            TextView textView2 = mView.findViewById(R.id.tvOccupation);
-            ImageView img = mView.findViewById(R.id.profile_image);
-
-            textView.setText(username);
-            if (occupation.isEmpty()) {
-                textView2.setVisibility(View.GONE);
-            } else {
-                textView2.setText(occupation);
-            }
-
-            Picasso.with(itemView.getContext())
-                    .load(imageURL)
-                    .fit()
-                    .centerCrop()
-                    .placeholder(R.drawable.ic_launcher_foreground)
-                    .into(img);
-
-            img.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    // open profile
-                    Intent intent = new Intent(mView.getContext(), FeedUserProfile.class);
-                    intent.putExtra("userID", userID);
-                    startActivity(intent);
-                }
-            });
-        }
-    }
-
     public static class MyProgressAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
         private final ArrayList<Integer> mData;
 
@@ -327,6 +281,84 @@ public class Reviews extends Fragment {
             icon.setBackground(ContextCompat.getDrawable(itemView.getContext(), image));
             icon.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
             tvValue.setTextColor(color);
+        }
+    }
+
+    public class BlogViewHolder extends RecyclerView.ViewHolder {
+        View mView;
+
+        public BlogViewHolder(final View itemView) {
+            super(itemView);
+            mView = itemView;
+        }
+
+        public void setCommentData(String comment, Date timestamp, int rating) {
+            TextView textView = mView.findViewById(R.id.tvComment);
+            TextView textView2 = mView.findViewById(R.id.tvTime);
+            View ratingView = mView.findViewById(R.id.ratingView);
+            TextView textView3 = mView.findViewById(R.id.tvRating);
+            View iconRating = mView.findViewById(R.id.iconRating);
+
+            if (!comment.isEmpty()) {
+                textView.setText(comment);
+                textView.setPadding(20, 5, 5, 5);
+            } else {
+                textView.setVisibility(View.GONE);
+            }
+
+            textView2.setText(durationFromNow(timestamp));
+
+            ratingView.setVisibility(View.VISIBLE);
+            new RatingView().setView(rating, textView3, iconRating);
+
+           /* if (rating == 1) {
+                setItem(textView3, iconRating, getString(R.string.terrible), android.R.color.holo_red_light, R.drawable.ic_mood_sad);
+            } else if (rating == 2) {
+                setItem(textView3, iconRating, getString(R.string.bad), android.R.color.holo_red_light, R.drawable.ic_mood_sad);
+            } else if (rating == 3) {
+                setItem(textView3, iconRating, getString(R.string.okay), R.color.colorHighlight, R.drawable.ic_mood_neutral);
+            } else if (rating == 4) {
+                setItem(textView3, iconRating, getString(R.string.good), R.color.colorGreen, R.drawable.ic_mood_smile);
+            } else if (rating == 5) {
+                setItem(textView3, iconRating, getString(R.string.great), R.color.colorGreen, R.drawable.ic_mood_smile);
+            }*/
+        }
+
+     /*   private void setItem(TextView textView, View iconRating, String s, int color, int image) {
+            textView.setText(s);
+            textView.setTextColor(itemView.getResources().getColor(color));
+            iconRating.setBackground(ContextCompat.getDrawable(itemView.getContext(), image));
+            iconRating.getBackground().setColorFilter(itemView.getResources().getColor(color), PorterDuff.Mode.SRC_IN);
+        }*/
+
+        public void setUserData(String username, String occupation, String imageURL, final String userID) {
+            final TextView textView = mView.findViewById(R.id.tvUsername);
+            TextView textView2 = mView.findViewById(R.id.tvOccupation);
+            ImageView img = mView.findViewById(R.id.profile_image);
+
+            textView.setText(username);
+            if (occupation.isEmpty()) {
+                textView2.setVisibility(View.GONE);
+            } else {
+                textView2.setText(occupation);
+            }
+
+            Picasso.with(itemView.getContext())
+                    .load(imageURL)
+                    .fit()
+                    .centerCrop()
+                    .placeholder(R.drawable.ic_launcher_foreground)
+                    .into(img);
+
+            img.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // open profile
+                    Intent intent = new Intent(mView.getContext(), FeedUserProfile.class);
+                    intent.putExtra("userID", userID);
+                    startActivity(intent);
+                }
+            });
         }
     }
 }

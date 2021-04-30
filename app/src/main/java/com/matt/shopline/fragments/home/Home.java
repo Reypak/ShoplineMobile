@@ -15,11 +15,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -29,8 +27,6 @@ import androidx.fragment.app.Fragment;
 
 import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetSequence;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -39,10 +35,7 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.matt.shopline.R;
-import com.matt.shopline.objects.ReviewComment;
 import com.matt.shopline.screens.orders.Orders;
-
-import java.util.Date;
 
 public class Home extends Fragment {
     private FirebaseFirestore db;
@@ -77,8 +70,6 @@ public class Home extends Fragment {
             loadFragment(new Suggestions());
         }
 
-        ratingDialog(user.getUid());
-
         /*// broadcast receiver to receive intent data from login activity
         BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override
@@ -94,31 +85,6 @@ public class Home extends Fragment {
         return rootView;
     }
 
-    private void ratingDialog(final String userID) {
-        final Dialog d = new Dialog(getActivity());
-        d.setContentView(R.layout.rating_dialog);
-        final EditText editText = d.findViewById(R.id.etReview);
-        Button btnSubmit = d.findViewById(R.id.btnSubmit);
-        btnSubmit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(final View view) {
-                // create comment object
-                ReviewComment reviewComment = new ReviewComment(4, editText.getText().toString().trim(), new Date());
-                // ref to user reviews
-                DocumentReference reviewComments = db.collection("reviews").document(userID)
-                        .collection("reviews").document(user.getUid());
-
-                reviewComments.set(reviewComment).addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        Toast.makeText(view.getContext(), "Done", Toast.LENGTH_SHORT).show();
-                    }
-                });
-                d.dismiss();
-            }
-        });
-        d.show();
-    }
 
     private void startShowcase() {
         new Handler().postDelayed(new Runnable() {
@@ -136,7 +102,7 @@ public class Home extends Fragment {
                                     TapTarget.forToolbarMenuItem(toolbar, 1,
                                             "Show Orders", "Track your Shopline orders")
                                             .descriptionTextSize(15)
-                                            .tintTarget(true)
+                                            .tintTarget(false)
 
                                    /* TapTarget.forBounds(rickTarget, "Down", ":^)")
                                             .cancelable(false)
@@ -147,7 +113,7 @@ public class Home extends Fragment {
                                 // to the sequence
                                 @Override
                                 public void onSequenceFinish() {
-                                    Intent intent = new Intent("show");
+                                    Intent intent = new Intent("show2");
                                     requireActivity().sendBroadcast(intent);
                                     // Yay
                                 }

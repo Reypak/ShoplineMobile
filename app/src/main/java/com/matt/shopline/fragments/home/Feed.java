@@ -122,7 +122,6 @@ public class Feed extends Fragment {
                                             TapTarget.forView(itemView.findViewById(R.id.btnRepost),
                                                     "Repost", "Add product to your feed, for your followers to view")
                                                     .descriptionTextSize(15)
-                                                    .cancelable(false)
                                                     .outerCircleColor(R.color.colorHighlight)
                                                     .tintTarget(true)
                                     )

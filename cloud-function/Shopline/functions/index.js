@@ -31,7 +31,7 @@ var date = d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear(); // da
 		const catalogRef = db.doc(`users/${userID}/data/catalog`);
 		
 		if (!change.after.data()) {
-
+			const ruserID = change.before.data().ruserID; // repost userID
 			const snapshot = followersRef.get().then(snapshot => {
 					snapshot.forEach(doc => {
 						const id = doc.id;
@@ -44,14 +44,16 @@ var date = d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear(); // da
 					});
 				});
 
-			// decrement catalog counter
-			catalogRef.update({
-				catalog : admin.firestore.FieldValue.increment(-1)
-			});
+			if (ruserID == null) {
+				// decrement catalog counter
+				catalogRef.update({
+					catalog : admin.firestore.FieldValue.increment(-1)
+				});
+			}
 
 		} else if (change.after.data()) {
+				const ruserID = change.after.data().ruserID; // repost userID
 				// get username
-				const ruserID = change.after.data().ruserID; 
 				const userRef = db.doc(`users/${userID}`).get().then(doc => {
 					username = doc.data().username;
 					
@@ -93,18 +95,13 @@ var date = d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear(); // da
 						// console.log(doc.id);
 					});
 				});
-				// add increment to user catalog
-				catalogRef.get().then((docSnapshot) => {
-					 if (docSnapshot.exists) {
-						catalogRef.update({
-							catalog : admin.firestore.FieldValue.increment(1)
-						});
-					 } else {
-					 	catalogRef.set({
-							catalog : admin.firestore.FieldValue.increment(1)
-						});
-					 }
-				});		
+				
+				if (ruserID == null) {
+					// add increment to user catalog
+					catalogRef.set({
+						catalog : admin.firestore.FieldValue.increment(1)
+					}, { merge: true });
+				}		
 		}
 
 		/*

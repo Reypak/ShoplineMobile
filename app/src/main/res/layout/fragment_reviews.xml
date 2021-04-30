@@ -19,32 +19,62 @@
             <include layout="@layout/error_text" />
 
             <LinearLayout
+                android:id="@+id/progressView"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
                 android:padding="10dp">
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recView"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="15dp"
-                    android:layout_weight="1" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center">
 
-                <TextView
-                    android:id="@+id/tvTotal"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:layout_gravity="center"
-                    android:background="@drawable/design_fab_background"
-                    android:backgroundTint="#265458F7"
-                    android:fontFamily="@font/montserrat_bold"
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recView"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="15dp"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:id="@+id/tvTotal"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/design_fab_background"
+                        android:backgroundTint="#265458F7"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:gravity="center"
+                        android:text="0"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="20sp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="0"
-                    android:textColor="@color/colorPrimary"
-                    android:textSize="20sp" />
+                    android:padding="5dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Rating: " />
+
+                    <TextView
+                        android:id="@+id/tvRating"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/montserrat_bold"
+                        android:text="Great"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="17sp" />
+                </LinearLayout>
 
             </LinearLayout>
+
 
         </androidx.cardview.widget.CardView>
 

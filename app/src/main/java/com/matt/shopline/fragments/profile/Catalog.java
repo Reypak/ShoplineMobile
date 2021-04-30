@@ -41,10 +41,19 @@ public class Catalog extends Fragment {
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         // catalog
+
         if (userID != null) {
-            userCatalog = db.collection(getString(R.string.users))
-                    .document(userID)
-                    .collection(getString(R.string.catalog).toLowerCase()).orderBy(getString(R.string.timestamp), Query.Direction.DESCENDING);
+            if (bundle.containsKey("offers")) {
+                // user offers only
+                userCatalog = db.collection(getString(R.string.users))
+                        .document(userID)
+                        .collection(getString(R.string.catalog).toLowerCase()).orderBy("offers");
+            } else {
+                // normal user Catalog
+                userCatalog = db.collection(getString(R.string.users))
+                        .document(userID)
+                        .collection(getString(R.string.catalog).toLowerCase()).orderBy(getString(R.string.timestamp), Query.Direction.DESCENDING);
+            }
         } else {
             // view user WishList
             userID = user.getUid();
@@ -78,7 +87,7 @@ public class Catalog extends Fragment {
                 .setQuery(userCatalog, config, User.class)
                 .build();
 
-        MyFirestorePagingAdapter adapter = new MyFirestorePagingAdapter(options, getActivity(), rootView,false);
+        MyFirestorePagingAdapter adapter = new MyFirestorePagingAdapter(options, getActivity(), rootView, false);
         mCatalogList.setAdapter(adapter);
     }
 

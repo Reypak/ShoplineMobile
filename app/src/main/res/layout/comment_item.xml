@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:foreground="?attr/selectableItemBackground"
+    android:background="?attr/selectableItemBackground"
     android:orientation="vertical"
     android:padding="10dp">
 
@@ -58,35 +58,14 @@
 
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/ratingView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:padding="10dp"
-        android:visibility="gone">
-
-        <FrameLayout
-            android:id="@+id/iconRating"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/ic_mood_neutral" />
-
-        <TextView
-            android:id="@+id/tvRating"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/montserrat_bold"
-            android:paddingStart="5dp"
-            android:text="Great" />
-    </LinearLayout>
+    <include layout="@layout/rating_view" />
 
     <TextView
         android:id="@+id/tvComment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="55dp"
         android:padding="5dp"
+        android:paddingStart="60dp"
         android:text="@string/load"
         android:textColor="@color/colorTextSecondary" />
 </LinearLayout>

@@ -86,30 +86,32 @@ public class Analytics extends Fragment {
                     String currentDate = format.format(new Date());
 
 //                    String n1 = DateFormat.getDateInstance(DateFormat.DEFAULT).format(new Date());
+                    if (newDates != null) {
+                        for (String s : newDates) {
+                            // create short date format
+                            DateFormat format2 = DateFormat.getDateInstance(DateFormat.DEFAULT);
 
-                    for (String s : newDates) {
-                        // create short date format
-                        DateFormat format2 = DateFormat.getDateInstance(DateFormat.DEFAULT);
+                            Date date2 = null;
+                            try {
+                                // convert to date
+                                date2 = format.parse(s);
+                            } catch (ParseException ignored) {
 
-                        Date date2 = null;
-                        try {
-                            // convert to date
-                            date2 = format.parse(s);
-                        } catch (ParseException ignored) {
+                            }
+                            // date to string using short format
+                            String n1 = format2.format(date2);
 
+                            // remove duplicates and current Date
+                            if (!dates.contains(n1) && !s.contains(currentDate)) {
+                                dates.add(n1);
+                            }
                         }
-                        // date to string using short format
-                        String n1 = format2.format(date2);
-
-                        // remove duplicates and current Date
-                        if (!dates.contains(n1) && !s.contains(currentDate)) {
-                            dates.add(n1);
-                        }
+                        adapter.notifyDataSetChanged();
                     }
-                    adapter.notifyDataSetChanged();
                 }
             }
         };
+
         requireActivity().registerReceiver(receiver, new IntentFilter("finish"));
     }
 

@@ -7,59 +7,38 @@
     android:padding="10dp">
 
     <TextView
+        android:id="@+id/tvMessage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:paddingVertical="10dp"
-        android:text="You ordered for order, how was the service?"
         android:textColor="@color/colorTextOverlay"
         android:textSize="17sp" />
 
     <LinearLayout
-        android:layout_marginVertical="15dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="15dp">
 
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical">
+        <include
+            android:id="@+id/item1"
+            layout="@layout/rating_item" />
 
-            <FrameLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/ic_mood_neutral"
-                android:backgroundTint="@android:color/holo_red_dark" />
+        <include
+            android:id="@+id/item2"
+            layout="@layout/rating_item" />
 
-            <TextView
-                android:paddingVertical="5dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Terrible"
-                android:textColor="@android:color/holo_red_dark" />
-        </LinearLayout>
+        <include
+            android:id="@+id/item3"
+            layout="@layout/rating_item" />
 
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical">
+        <include
+            android:id="@+id/item4"
+            layout="@layout/rating_item" />
 
-            <FrameLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/ic_mood_neutral"
-                android:backgroundTint="@android:color/holo_red_dark" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Terrible"
-                android:textColor="@android:color/holo_red_dark" />
-        </LinearLayout>
+        <include
+            android:id="@+id/item5"
+            layout="@layout/rating_item" />
     </LinearLayout>
 
     <TextView
@@ -69,7 +48,7 @@
         android:paddingStart="5dp"
         android:text="Write a review"
         android:textColor="@color/colorPrimary" />
-    
+
     <EditText
         android:id="@+id/etReview"
         style="@style/TextBoxRound"
@@ -86,6 +65,6 @@
         android:layout_gravity="center"
         android:layout_marginVertical="10dp"
         android:minWidth="130dp"
-        android:textSize="16dp"
-        android:text="Submit" />
+        android:text="Submit"
+        android:textSize="16dp" />
 </LinearLayout>

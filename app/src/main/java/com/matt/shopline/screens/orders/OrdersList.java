@@ -16,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.Fragment;
 import androidx.paging.PagedList;
@@ -31,7 +32,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.matt.shopline.R;
 import com.matt.shopline.adapters.MyFirestorePagingAdapter;
@@ -130,16 +133,28 @@ public class OrdersList extends Fragment {
                             product = task.getResult().get("product").toString();
                             price = task.getResult().get("price").toString();
                             imageUrl = task.getResult().get("imageUrl").toString();
-                            String duserID = task.getResult().get("userID").toString();
+                            final String duserID = task.getResult().get("userID").toString();
 
                             offers = null;
                             if (task.getResult().get("offers") != null) {
                                 offers = task.getResult().get("offers").toString();
                             }
 
+                            // active listener for the order status
+                            getItem(position).getReference().addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                                @Override
+                                public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                                    if (error == null) {
+                                        if (value.exists()) {
+                                            Order order = value.toObject(Order.class);
+                                            holder.setAction(order.getStatus(), getItem(position).getReference(), adapter, model.getUserID(), duserID, product);
+                                        }
+                                    }
+                                }
+                            });
+
                             holder.setData(product + quantity, price, offers, location);
                             holder.setImageURL(getActivity(), imageUrl);
-                            holder.setAction(model.getStatus(), getItem(position).getReference(), adapter, model.getUserID(), duserID);
 
                             // get User details
                             if (userID != null) {
@@ -239,6 +254,7 @@ public class OrdersList extends Fragment {
         orders.update("orders", 0);
     }
 
+
     public static class BlogViewHolder extends RecyclerView.ViewHolder {
         View mView;
         DocumentReference userOrderRef;
@@ -248,7 +264,8 @@ public class OrdersList extends Fragment {
             mView = itemView;
         }
 
-        public void setAction(final long state, final DocumentReference reference, final FirestorePagingAdapter adapter, final String userID, final String duserID) {
+        public void setAction(final long state, final DocumentReference reference, final FirestorePagingAdapter adapter,
+                              final String userID, final String duserID, final String product) {
             Button btnAction = mView.findViewById(R.id.btnAction);
             Button btnAccept = mView.findViewById(R.id.btnAccept);
             btnAccept.setVisibility(View.GONE);
@@ -279,9 +296,8 @@ public class OrdersList extends Fragment {
                 btnAccept.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        updateOrderStatus(userOrderRef, reference, 3, view, "Accepted", adapter);
-//                        updateOrderStatus(reference, 4, view, "State 4");
-//                        adapter.refresh();
+                        // send User : Accepted order
+                        updateOrderStatus(userOrderRef, reference, 3, view);
                     }
                 });
             } else if (state == 2) {
@@ -304,13 +320,17 @@ public class OrdersList extends Fragment {
                     if (state == 0 || state == 1 || state == 2) {
                         deleteOrder(reference, view, state, adapter);
                     } else if (state == 4) {
-                        updateOrderStatus(reference, null, 5, view, "Pending", null);
-                        updateOrderStatus(userOrderRef, null, 6, view, "User send Rate", null);
+                        // "Pending approval" status: me
+                        updateOrderStatus(reference, null, 5, view);
+                        // User send Rate option
+                        updateOrderStatus(userOrderRef, null, 6, view);
                     } else if (state == 6) {
                         // new ref directing to the sellers customer orders
-                        DocumentReference userOrderRef2 = db.collection("users").document(duserID)
+                        new RatingDialog().ratingDialog(duserID, product, view.getContext(), reference, db);
+
+                        /*DocumentReference userOrderRef2 = db.collection("users").document(duserID)
                                 .collection("orders_customer").document(reference.getId());
-                        updateOrderStatus(userOrderRef2, null, 7, view, "Delivered", null);
+                        updateOrderStatus(userOrderRef2, null, 7, view, "Delivered", null);*/
                     }
                 }
             });
@@ -334,7 +354,7 @@ public class OrdersList extends Fragment {
 
                     // order declined
                     if (state == 1) {
-                        updateOrderStatus(userOrderRef, null, 2, view, "Declined", null);
+                        updateOrderStatus(userOrderRef, null, 2, view);
                     }
                 }
             });
@@ -347,7 +367,7 @@ public class OrdersList extends Fragment {
             builder.show();
         }
 
-        private void updateOrderStatus(final DocumentReference reference, final DocumentReference reference2, final long state, final View view, final String msg, final FirestorePagingAdapter adapter) {
+        private void updateOrderStatus(final DocumentReference reference, final DocumentReference reference2, final long state, final View view) {
             // update order status
             reference.update("status", state).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
@@ -356,12 +376,9 @@ public class OrdersList extends Fragment {
                         // if order accepted
                         if (state == 3) {
                             // requires 2nd reference for personal customers Orders ref state to 4
-                            updateOrderStatus(reference2, null, 4, view, "State 4", adapter);
-                        } else if (state == 4) {
-                            // refresh adapter
-                            adapter.refresh();
+                            updateOrderStatus(reference2, null, 4, view);
                         }
-                        Toast.makeText(view.getContext(), msg, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(view.getContext(), "Done", Toast.LENGTH_SHORT).show();
                     } else {
                         // else order was canceled
                         Toast.makeText(view.getContext(), "Order was canceled!", Toast.LENGTH_SHORT).show();
@@ -406,7 +423,7 @@ public class OrdersList extends Fragment {
                 formatted = price + "0";
             }
 
-            textView2.setText("UGX " + formatted);
+            textView2.setText(String.format("UGX %s", formatted));
 
             if (offers != null) {
                 textView3.setText(offers);

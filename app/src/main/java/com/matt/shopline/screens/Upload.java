@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -260,6 +261,9 @@ public class Upload extends AppCompatActivity {
 
     private void updateData() {
         collectData();
+        if (!TextUtils.isEmpty(etOffer.getText())) {
+            userCatalog.document(strings[0]).update("offers", true);
+        }
         postRef.document(strings[0]).update(postData).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
@@ -304,6 +308,10 @@ public class Upload extends AppCompatActivity {
                 Map<String, Object> data = new HashMap<>();
                 // server timestamp
                 data.put(getString(R.string.timestamp), new Timestamp(new Date()));
+
+                if (!TextUtils.isEmpty(etOffer.getText())) {
+                    data.put("offers", true);
+                }
 
                 userCatalog.document(postID).set(data);
 
