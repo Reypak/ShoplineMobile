@@ -159,11 +159,11 @@ var date = d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear(); // da
 					});	
 
 					// comments analytics
-					const userAnalyticsRef = db.doc(`analytics/${PostUserID}/comments/${date}`);
+					const userAnalyticsRef = db.doc(`analytics/${PostUserID}/account/${date}`);
 					// setting analytics
 					userAnalyticsRef.set({
 						timestamp : admin.firestore.FieldValue.serverTimestamp(),
-						count: admin.firestore.FieldValue.increment(1),
+						comments: admin.firestore.FieldValue.increment(1),
 					}, { merge: true });
 				}
 				// console.log('Succesful');
@@ -205,11 +205,11 @@ var date = d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear(); // da
 					});	
 
 				// likes analytics
-				const userAnalyticsRef = db.doc(`analytics/${PostUserID}/likes/${date}`);
+				const userAnalyticsRef = db.doc(`analytics/${PostUserID}/account/${date}`);
 					// setting analytics
 					userAnalyticsRef.set({
 						timestamp : admin.firestore.FieldValue.serverTimestamp(),
-						count: admin.firestore.FieldValue.increment(1),
+						likes: admin.firestore.FieldValue.increment(1),
 					}, { merge: true });
 				}
 				/*// send notification to subscribers (Followers)
@@ -240,7 +240,7 @@ var date = d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear(); // da
 
 		const followersRef = db.doc(`users/${userID}/data/followers`);
 
-		const userAnalyticsRef = db.doc(`analytics/${userID}/followers/${date}`);
+		const userAnalyticsRef = db.doc(`analytics/${userID}/account/${date}`);
 
 		if (!change.after.data()) 
 		{
@@ -252,7 +252,7 @@ var date = d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear(); // da
 
 			// decrement analytics
 			userAnalyticsRef.update({
-				count: admin.firestore.FieldValue.increment(-1),
+				followers: admin.firestore.FieldValue.increment(-1),
 			});
 			
 		} else {
@@ -260,7 +260,7 @@ var date = d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear(); // da
 			// setting analytics
 			userAnalyticsRef.set({
 				timestamp : admin.firestore.FieldValue.serverTimestamp(),
-				count: admin.firestore.FieldValue.increment(1),
+				followers: admin.firestore.FieldValue.increment(1),
 			}, { merge: true });
 
 			followersRef.get().then((docSnapshot) => {
@@ -335,11 +335,21 @@ var date = d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear(); // da
 	});
 
 	// send emails of order to buyer and seller
-	exports.sendEmail = functions.firestore.document('users/{userID}/orders_customer/{orderId}')
+	exports.ordersEmail = functions.firestore.document('users/{userID}/orders_customer/{orderId}')
     .onCreate((snap, context) => {
     	const userID = context.params.userID;
     	const postID = snap.data().postID;
     	const customerID = snap.data().userID;
+
+    	// order analytics
+		const userAnalyticsRef = db.doc(`analytics/${userID}/sales/${date}`);
+			// setting analytics
+			userAnalyticsRef.set({
+				timestamp : admin.firestore.FieldValue.serverTimestamp(),
+				orders: admin.firestore.FieldValue.increment(1),
+			}, { merge: true });
+
+
     	// get post product name
     	const postRef = db.doc(`posts/${postID}`).get().then(doc => {
     		product = doc.data().product;
@@ -490,11 +500,11 @@ var date = d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear(); // da
 				});
 				
 				// repost analytics
-				const userAnalyticsRef = db.doc(`analytics/${PostUserID}/reposts/${date}`);
+				const userAnalyticsRef = db.doc(`analytics/${PostUserID}/account/${date}`);
 					// setting analytics
 					userAnalyticsRef.set({
 						timestamp : admin.firestore.FieldValue.serverTimestamp(),
-						count: admin.firestore.FieldValue.increment(1),
+						reposts: admin.firestore.FieldValue.increment(1),
 					}, { merge: true });	
 			});
 		}
@@ -551,6 +561,15 @@ var date = d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear(); // da
 			mField = 'five';
 		}
 		
+		// review analytics
+		const userAnalyticsRef = db.doc(`analytics/${userID}/sales/${date}`);
+			// setting analytics
+			userAnalyticsRef.set({
+				timestamp : admin.firestore.FieldValue.serverTimestamp(),
+				reviews: admin.firestore.FieldValue.increment(1),
+				ratings: admin.firestore.FieldValue.increment(1),
+			}, { merge: true });
+
 		const userReviews = db.doc(`reviews/${userID}`);
 			// setting reviews
 			return userReviews.set({

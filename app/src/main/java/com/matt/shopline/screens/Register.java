@@ -28,14 +28,13 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.matt.shopline.R;
+import com.matt.shopline.fragments.profile.Profile;
 import com.matt.shopline.fragments.register.OnDataPass;
 import com.matt.shopline.fragments.register.Step1;
 import com.matt.shopline.fragments.register.Step2;
@@ -169,18 +168,18 @@ public class Register extends FragmentActivity implements OnDataPass {
                                 public void onSuccess(Void aVoid) {
                                     dialog.dismiss();
 
-                                    // send broadcast to Landing page
-                                    Intent intent = new Intent("finish");
-                                    sendBroadcast(intent);
-
                                     openMain(); // go to main
-                                    setToken(user.getUid());
+//                                    setToken(user.getUid());
+
                                     // subscribe to notify
                                     FirebaseMessaging.getInstance().subscribeToTopic(mAuth.getCurrentUser().getUid() + "_notifications");
                                 }
                             });
 
-                            // save to SharedPrefs
+                            // add search keywords
+                            Profile.addSearchData(username, user.getUid(), db, getApplicationContext());
+
+                            // save location to SharedPrefs
                             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                             sharedPreferences.edit()
                                     .putString(getString(R.string.location).toLowerCase(), location)
@@ -208,13 +207,13 @@ public class Register extends FragmentActivity implements OnDataPass {
 
     }
 
-    public void setToken(String userID) {
+ /*   public void setToken(String userID) {
         String device_token = FirebaseInstanceId.getInstance().getToken();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         DocumentReference userRef = db.collection("users")
                 .document(userID);
         userRef.update("token", device_token);
-    }
+    }*/
 
     private void setProfileImage() {
 
@@ -322,6 +321,11 @@ public class Register extends FragmentActivity implements OnDataPass {
     private void openMain() {
         Intent intent = new Intent(this, NavigationActivity.class);
         startActivity(intent);
+
+        // send broadcast to Landing page
+        intent = new Intent("finish");
+        sendBroadcast(intent);
+
         finish();
     }
 

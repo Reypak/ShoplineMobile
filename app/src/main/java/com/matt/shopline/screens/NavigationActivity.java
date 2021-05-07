@@ -70,9 +70,8 @@ public class NavigationActivity extends AppCompatActivity implements BottomNavig
                     TapTargetSequence sequence = new TapTargetSequence(NavigationActivity.this)
                             .targets(
                                     TapTarget.forView(navigation.findViewById(R.id.navigation_profile),
-                                            "Profile", "View and edit your profile details \n Catalog, Reviews and Wishlist")
-                                            .descriptionTextSize(15)
-                                            .cancelable(false),
+                                            "Profile", "View and edit your profile details \nCatalog, Reviews and Wishlist")
+                                            .descriptionTextSize(15),
 
                                     TapTarget.forView(navigation.findViewById(R.id.navigation_notifications),
                                             "Notifications", "Check your notifications and updates here")
@@ -96,6 +95,8 @@ public class NavigationActivity extends AppCompatActivity implements BottomNavig
                                 }
                             });
                     sequence.start();
+                    sequence.continueOnCancel(true);
+                    sequence.considerOuterCircleCanceled(true);
                 }
             }
         };
@@ -150,7 +151,6 @@ public class NavigationActivity extends AppCompatActivity implements BottomNavig
             case R.id.navigation_home:
                 fragment = new Home();
                 break;
-
             case R.id.navigation_search:
                 fragment = new Discover();
                 break;
@@ -163,12 +163,10 @@ public class NavigationActivity extends AppCompatActivity implements BottomNavig
                 // reset counter
                 notifications.update(getString(R.string.title_notifications).toLowerCase(), 0);
                 break;
-
             case R.id.navigation_profile:
                 fragment = new Profile();
                 break;
         }
-
         return loadFragment(fragment);
     }
 

@@ -57,11 +57,12 @@
 
         <include layout="@layout/error_text" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recView"
+        <include
+            layout="@layout/recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginBottom="60dp" />
+
     </androidx.cardview.widget.CardView>
 
     <View

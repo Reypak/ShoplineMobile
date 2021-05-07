@@ -116,7 +116,6 @@ public class Feed extends Fragment {
                                             TapTarget.forView(itemView.findViewById(R.id.btnOrder),
                                                     "Place Order", "Make your order for any product you like")
                                                     .descriptionTextSize(15)
-                                                    .cancelable(false)
                                                     .tintTarget(false),
 
                                             TapTarget.forView(itemView.findViewById(R.id.btnRepost),
@@ -139,6 +138,8 @@ public class Feed extends Fragment {
                                         }
                                     });
                             sequence.start();
+                            sequence.considerOuterCircleCanceled(true);
+                            sequence.continueOnCancel(true);
                         }
                     }
                 }

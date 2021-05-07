@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.RecyclerView;
@@ -40,25 +41,12 @@ public class Discover extends Fragment {
     private ViewGroup rootView;
     private CollectionReference discoverRef;
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        rootView = (ViewGroup) inflater.inflate(R.layout.fragment_discover, container, false);
-        Toolbar toolbar = rootView.findViewById(R.id.toolbar1);
-        ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
-        toolbar.setTitle(R.string.title_discover);
-        setHasOptionsMenu(true);
-
-        db = FirebaseFirestore.getInstance();
-        discoverRef = db.collection("discover");
-
-        recyclerView = rootView.findViewById(R.id.recView);
-
-        getPosts();
-
-//        setDiscover();
-
-        return rootView;
+    public static void loadFragment(FragmentActivity activity, Fragment fragment) {
+        activity.getSupportFragmentManager()
+                .beginTransaction()
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                .replace(R.id.fragment_container, fragment)
+                .commit();
     }
 
     /*private void setDiscover() {
@@ -80,8 +68,28 @@ public class Discover extends Fragment {
         });
     }*/
 
-    private void getPosts() {
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        rootView = (ViewGroup) inflater.inflate(R.layout.fragment_discover, container, false);
+        Toolbar toolbar = rootView.findViewById(R.id.toolbar1);
+        ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
+        toolbar.setTitle(R.string.title_discover);
+        setHasOptionsMenu(true);
 
+        db = FirebaseFirestore.getInstance();
+        discoverRef = db.collection("discover");
+
+        recyclerView = rootView.findViewById(R.id.recView);
+
+        getPosts();
+
+//        setDiscover();
+
+        return rootView;
+    }
+
+    private void getPosts() {
 
         PagedList.Config config = new PagedList.Config.Builder()
                 .setEnablePlaceholders(false)
@@ -147,11 +155,7 @@ public class Discover extends Fragment {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == 0) {
             // open Search
-            getActivity().getSupportFragmentManager()
-                    .beginTransaction()
-                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                    .replace(R.id.fragment_container, new Search())
-                    .commit();
+            loadFragment(requireActivity(), new Search());
         }
         return super.onOptionsItemSelected(item);
     }

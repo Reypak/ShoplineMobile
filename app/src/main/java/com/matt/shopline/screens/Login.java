@@ -62,7 +62,7 @@ public class Login extends AppCompatActivity {
                                 // Sign in success, update UI with the signed-in user's information
                                 openMain();
                                 Register register = new Register();
-                                register.setToken(mAuth.getCurrentUser().getUid());
+//                                register.setToken(mAuth.getCurrentUser().getUid());
 
                                 // subscribe Notifications
                                 // TODO : Change to Register Window

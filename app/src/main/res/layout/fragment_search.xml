@@ -11,22 +11,36 @@
         android:layout_height="wrap_content"
         android:background="@drawable/card_background">
 
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="42dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="5dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/quantum_ic_arrow_back_grey600_24"
+            android:tint="@android:color/background_dark" />
+
         <EditText
             android:id="@+id/etSearch"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="50dp"
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:inputType="textFilter"
             android:maxLines="1"
-            android:paddingStart="15dp" />
+            android:textSize="16sp" />
 
         <ImageButton
-            android:id="@+id/btnSearch"
-            android:layout_width="50dp"
+            android:id="@+id/btnClear"
+            android:layout_width="42dp"
             android:layout_height="match_parent"
+            android:layout_marginEnd="5dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_search" />
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/quantum_ic_clear_grey600_24" />
     </LinearLayout>
 
     <androidx.cardview.widget.CardView
@@ -35,6 +49,10 @@
         android:layout_marginTop="10dp"
         app:cardCornerRadius="20dp"
         app:cardElevation="0dp">
+
+        <include layout="@layout/error_text" />
+
+        <include layout="@layout/recycler_view" />
 
     </androidx.cardview.widget.CardView>
 

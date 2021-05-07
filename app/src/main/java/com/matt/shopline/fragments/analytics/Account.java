@@ -47,6 +47,14 @@ public class Account extends Fragment {
                              Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_account, container, false);
 
+        RecyclerView recyclerView = rootView.findViewById(R.id.recView);
+        GridLayoutManager mLayoutManager = new GridLayoutManager(requireActivity(), 2);
+        recyclerView.setLayoutManager(mLayoutManager);
+        mUploads = new ArrayList<>();
+
+        adapter = new MyAnalyticsAdapter(requireActivity(), mUploads);
+        recyclerView.setAdapter(adapter);
+
         db = FirebaseFirestore.getInstance();
         user = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -57,27 +65,29 @@ public class Account extends Fragment {
         if (bundle != null) {
             // get date string
             date = bundle.getString("date");
-            try {
-                Date date1 = DateFormat.getDateInstance(DateFormat.DEFAULT).parse(date);
-                // format short date to Date main format
-                date = format.format(date1);
-            } catch (ParseException ignored) {
+            if (date != null) {
+                try {
+                    Date date1 = DateFormat.getDateInstance(DateFormat.DEFAULT).parse(date);
+                    // format short date to Date main format
+                    date = format.format(date1);
+                } catch (ParseException ignored) {
 
+                }
             }
         }
 
-        RecyclerView recyclerView = rootView.findViewById(R.id.recView);
-        GridLayoutManager mLayoutManager = new GridLayoutManager(requireActivity(), 2);
-        recyclerView.setLayoutManager(mLayoutManager);
-        mUploads = new ArrayList<>();
-
-        addData(getString(R.string.followers));
-        addData("Likes");
-        addData(getString(R.string.comments));
-        addData("Reposts");
-
-        adapter = new MyAnalyticsAdapter(requireActivity(), mUploads);
-        recyclerView.setAdapter(adapter);
+        if (bundle != null) {
+            if (bundle.containsKey("sales")) {
+                addData2("Catalog Visits", 1);
+                addData2("Ratings", 1);
+                addData2("Reviews", 1);
+                addData2(getString(R.string.title_orders), 1);
+            } else {
+                getAccount();
+            }
+        } else {
+            getAccount();
+        }
 
         return rootView;
 
@@ -92,8 +102,6 @@ public class Account extends Fragment {
         } catch (ParseException e) {
             e.printStackTrace();
         }*/
-
-
 
        /* reference.document(dd).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
@@ -132,7 +140,89 @@ public class Account extends Fragment {
 
     }
 
-    private void addData(final String path) {
+    private void getAccount() {
+        addData2(getString(R.string.followers), 0);
+        addData2("Likes", 0);
+        addData2(getString(R.string.comments), 0);
+        addData2("Reposts", 0);
+    }
+
+    private void addData2(final String path, int i) {
+        Query reference;
+        if (i == 0) {
+            // state 0 account
+            reference = db.collection("analytics")
+                    .document(user.getUid())
+                    .collection("account");
+        } else {
+            // state 1 sales
+            reference = db.collection("analytics")
+                    .document(user.getUid())
+                    .collection("sales");
+        }
+
+        reference.orderBy("timestamp", Query.Direction.DESCENDING).limit(4)
+                .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    List<Float> floats = new ArrayList<>();
+                    // collect dates for spinner
+                    ArrayList<String> dates = new ArrayList<>();
+
+                    floats.add(0, (float) 0); // set default to 0
+
+                    for (DocumentSnapshot snapshot : task.getResult().getDocuments()) {
+                        float count;
+                        if (snapshot.get(path.toLowerCase()) != null) {
+                            count = Float.parseFloat(snapshot.get(path.toLowerCase()).toString());
+                        } else {
+                            count = (float) 0;
+                        }
+
+                        // current Date
+                        if (snapshot.getId().equals(date)) {
+                            floats.set(0, count);
+                        } else {
+                            floats.add(count);
+                        }
+                        dates.add(snapshot.getId()); // get ID
+                    }
+
+                    if (floats.size() <= 1) {
+                        // add second value
+                        floats.add((float) 0);
+                    }
+
+                    String currentCount = String.valueOf(floats.get(0).intValue());
+                    // calculate percent
+                    int percent = 0;
+                    String inc = "▲ ";
+
+                    if (floats.size() >= 1) {
+                        if (floats.get(1).intValue() != 0) {
+                            float value = (floats.get(0) / floats.get(1));
+                            if (value < 1) {
+                                inc = "▼ ";
+                            }
+                            percent = (int) (value * 100);
+                        }
+                    }
+
+                    // send broadcast
+                    Intent intent = new Intent("finish");
+                    intent.putStringArrayListExtra("dates", dates);
+                    requireActivity().sendBroadcast(intent);
+
+                    analytics = new Analytics(path, floats, currentCount, inc + percent);
+                    mUploads.add(analytics);
+                    adapter.notifyDataSetChanged();
+                }
+            }
+        });
+    }
+
+    /*private void addData(final String path) {
         Query reference = db.collection("analytics")
                 .document(user.getUid())
                 .collection(path.toLowerCase());
@@ -196,7 +286,7 @@ public class Account extends Fragment {
                         }
                     }
                 });
-    }
+    }*/
 
     private static class MyAnalyticsAdapter extends RecyclerView.Adapter<AnalyticsViewHolder> {
         private final Context mContext;
@@ -240,6 +330,9 @@ public class Account extends Fragment {
             TextView tvPercent = itemView.findViewById(R.id.tvPercent);
 
             titleText.setText(title);
+            if (title.contains(context.getString(R.string.title_orders))) {
+                titleText.setText("Highest Sales");
+            }
             tvCount.setText(count);
             tvPercent.setText(String.format("%s%%", percent));
 

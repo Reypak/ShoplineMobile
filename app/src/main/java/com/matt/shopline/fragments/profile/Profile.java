@@ -62,9 +62,11 @@ import com.squareup.picasso.Picasso;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static android.app.Activity.RESULT_OK;
+import static com.matt.shopline.fragments.home.Home.generateSearchKeyword;
 
 public class Profile extends Fragment {
     int Image_Request_Code = 7;
@@ -85,6 +87,15 @@ public class Profile extends Fragment {
     private String userID;
     private TabLayout tabLayout;
     private ViewPager viewPager;
+
+    public static void addSearchData(String inputText, String userID, FirebaseFirestore db, Context context) {
+        // generate search keywords, store in List
+        List<String> searchKeywords = generateSearchKeyword(inputText);
+
+        // update user ref
+        DocumentReference reference = db.collection(context.getString(R.string.users)).document(userID);
+        reference.update("search_keywords", searchKeywords);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -209,7 +220,7 @@ public class Profile extends Fragment {
                 }
             }
         };
-        getActivity().registerReceiver(receiver, new IntentFilter("rating"));
+        rootView.getContext().registerReceiver(receiver, new IntentFilter("rating"));
     }
 
     private void getUserData() {
@@ -562,6 +573,9 @@ public class Profile extends Fragment {
                         }
                     });
                 }
+
+                // create keywords
+                addSearchData(username, user.getUid(), db, requireContext());
 
                 // Add a new document with user ID
                 db.collection(getString(R.string.users)).document(user.getUid())

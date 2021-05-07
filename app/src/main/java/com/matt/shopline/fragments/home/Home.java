@@ -1,7 +1,6 @@
 package com.matt.shopline.fragments.home;
 
 import android.annotation.SuppressLint;
-import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -15,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -37,6 +35,10 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.matt.shopline.R;
 import com.matt.shopline.screens.orders.Orders;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+
 public class Home extends Fragment {
     private FirebaseFirestore db;
     private FirebaseUser user;
@@ -44,6 +46,46 @@ public class Home extends Fragment {
     private TextView itemCount;
     private Toolbar toolbar;
     private ViewGroup rootView;
+    private SharedPreferences sharedPreferences;
+    private int day;
+
+    public static List<String> generateSearchKeyword(String inputText) {
+        // text to lowercase
+        String inputString = inputText.toLowerCase();
+        List<String> keywords = new ArrayList<>();
+        // split the words in string
+        String[] words = inputString.split(" ");
+        // for each word
+        for (String word : words) {
+            StringBuilder appendString = new StringBuilder();
+            // append string with each character
+            for (int i = 0; i <= inputString.length() - 1; i++) {
+                // add new character to appended string
+                appendString.append(inputString.charAt(i));
+                // store to list
+                keywords.add(appendString.toString());
+            }
+            // remove first word
+            inputString = inputString.replace(word + " ", "");
+        }
+        return keywords;
+    }
+
+  /*  private void addData(String inputText) {
+        List<String> searchKeywords = generateSearchKeyword(inputText);
+        Map<String, Object> map = new HashMap<>();
+        map.put("title", inputText);
+        map.put("search_keywords", searchKeywords);
+
+        CollectionReference reference = db.collection("search");
+        reference.add(map).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentReference> task) {
+                Toast.makeText(requireActivity(), "Done", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+*/
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -56,14 +98,25 @@ public class Home extends Fragment {
         user = FirebaseAuth.getInstance().getCurrentUser();
         db = FirebaseFirestore.getInstance();
 
+        day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+
         // get shared prefs
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 //        sharedPreferences.edit().putString(getString(R.string.title_home), null).apply();
+//        sharedPreferences.edit().putInt("day", 0).apply();
+
         final String location = sharedPreferences.getString(getString(R.string.title_home), null);
         if (location != null) {
             // load Feed Fragment
             loadFragment(new Feed());
-//            startShowcase();
+
+            // get day value
+            int first_day = sharedPreferences.getInt("day", 0);
+            // check if same day
+            if (first_day != day) {
+                startShowcase();
+            }
+
         } else {
             View fab = rootView.findViewById(R.id.fab);
             fab.setVisibility(View.GONE);
@@ -81,22 +134,25 @@ public class Home extends Fragment {
             }
         };
         getActivity().registerReceiver(receiver, new IntentFilter("finish"));*/
+//        addData("Sample Book Title");
+
 
         return rootView;
     }
-
 
     private void startShowcase() {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (getActivity() != null) {
-                    @SuppressLint("ResourceType") TapTargetSequence sequence = new TapTargetSequence(requireActivity())
+                    // save current day value
+                    sharedPreferences.edit().putInt("day", day).apply();
+
+                    @SuppressLint("ResourceType") final TapTargetSequence sequence = new TapTargetSequence(requireActivity())
                             .targets(
                                     TapTarget.forView(rootView.findViewById(R.id.fab),
                                             "Create Post", "Upload your new products here")
                                             .descriptionTextSize(15)
-                                            .cancelable(false)
                                             .tintTarget(false)
                                     ,
                                     TapTarget.forToolbarMenuItem(toolbar, 1,
@@ -125,11 +181,14 @@ public class Home extends Fragment {
 
                                 @Override
                                 public void onSequenceCanceled(TapTarget lastTarget) {
-                                    onSequenceFinish();
+//                                    onSequenceFinish();
                                     // Boo
                                 }
                             });
                     sequence.start();
+                    sequence.continueOnCancel(true);
+                    sequence.considerOuterCircleCanceled(true);
+
                     /*TapTargetView.showFor(requireActivity(), TapTarget.forToolbarMenuItem(toolbar, 2,
 //                            TapTarget.forView(rootView.findViewById(R.id.fab)TapTarget.forView(rootView.findViewById(R.id.fab)
                             "Create Post", "Upload your new products here")

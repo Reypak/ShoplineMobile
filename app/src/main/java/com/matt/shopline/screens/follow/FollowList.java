@@ -35,8 +35,6 @@ public class FollowList extends Fragment {
     private Query userFollowers;
     private FirebaseFirestore db;
     private RecyclerView mList;
-    private Bundle bundle;
-    private String userID, You;
     private ViewGroup rootView;
 
     @Override
@@ -57,11 +55,11 @@ public class FollowList extends Fragment {
     }
 
     private void initialize() {
-        bundle = getArguments();
-        userID = bundle.getString("userID");
-        You = bundle.getString("You");
+        Bundle bundle = getArguments();
+        String userID = bundle.getString("userID");
+        String you = bundle.getString("You");
 
-        if (You == null) {
+        if (you == null) {
             // load followers
             userFollowers = db.collection(getString(R.string.users)).document(userID)
                     .collection(getString(R.string.followers).toLowerCase());
@@ -108,7 +106,7 @@ public class FollowList extends Fragment {
                             String username = user.getUsername();
                             String occupation = user.getOccupation();
 
-                            holder.setUserData(username, occupation, getActivity(), profileUrl, model.getUserID());
+                            holder.setUserData(username, occupation, getActivity(), profileUrl);
 
                         } else {
                             // delete void field
@@ -152,7 +150,7 @@ public class FollowList extends Fragment {
             mView = itemView;
         }
 
-        public void setUserData(String username, String occupation, final Context ctx, String imageURL, final String userID) {
+        public void setUserData(String username, String occupation, final Context ctx, String imageURL) {
             final TextView textView = mView.findViewById(R.id.tvUsername);
             TextView textView2 = mView.findViewById(R.id.tvOccupation);
             ImageView img = mView.findViewById(R.id.profile_image);

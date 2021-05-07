@@ -24,17 +24,21 @@ public class AnalyticsAdapter extends FragmentStatePagerAdapter {
     @NonNull
     @Override
     public Fragment getItem(int position) {
+        Account account = new Account();
+        Bundle bundle = new Bundle();
+        bundle.putString("date", date);
+
         switch (position) {
             case 0:
-                Account account = new Account();
                 if (date != null) {
-                    Bundle bundle = new Bundle();
-                    bundle.putString("date", date);
                     account.setArguments(bundle);
                 }
                 return account;
             case 1:
-                return new Fragment();
+                // put sales
+                bundle.putBoolean("sales", true);
+                account.setArguments(bundle);
+                return account;
             default:
                 return null;
         }
