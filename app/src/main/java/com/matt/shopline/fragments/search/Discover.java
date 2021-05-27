@@ -1,7 +1,6 @@
 package com.matt.shopline.fragments.search;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -131,9 +130,7 @@ public class Discover extends Fragment {
                     @Override
                     public void onClick(View view) {
                         // open post
-                        Intent intent = new Intent(getActivity(), PostView.class);
-                        intent.putExtra("postID", getItem(position).getId()); // send intent to load You Tab
-                        startActivity(intent);
+                        Search.openActivity(PostView.class, requireContext(), "postID", getItem(position).getId());
                     }
                 });
 

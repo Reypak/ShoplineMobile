@@ -1,7 +1,6 @@
 package com.matt.shopline.screens.follow;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +25,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.matt.shopline.R;
 import com.matt.shopline.adapters.MyFirestorePagingAdapter;
+import com.matt.shopline.fragments.search.Search;
 import com.matt.shopline.objects.User;
 import com.matt.shopline.screens.FeedUserProfile;
 import com.squareup.picasso.Picasso;
@@ -120,9 +120,7 @@ public class FollowList extends Fragment {
                     @Override
                     public void onClick(View view) {
                         // open profile
-                        Intent intent = new Intent(getActivity(), FeedUserProfile.class);
-                        intent.putExtra("userID", getItem(position).getId());
-                        startActivity(intent);
+                        Search.openActivity(FeedUserProfile.class, requireContext(), "userID", getItem(position).getId());
                     }
                 });
             }

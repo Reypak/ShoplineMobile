@@ -12,21 +12,22 @@
         android:clipToPadding="true"
         android:elevation="5dp">
 
-        <FrameLayout
+        <ImageButton
             android:id="@+id/btnClose"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:layout_gravity="center|start"
-            android:layout_marginStart="10dp"
-            android:background="@drawable/ic_arrow_down"
-            android:backgroundTint="@color/colorTextOverlay"
-            android:rotation="90" />
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="5dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/quantum_ic_arrow_back_grey600_24"
+            android:tint="@color/colorTextOverlay" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center|start"
-            android:layout_marginStart="55dp"
+            android:layout_marginStart="60dp"
             android:text="@string/edit_profile"
             android:textColor="@color/colorTextOverlay"
             android:textSize="18sp"
@@ -38,8 +39,8 @@
             android:layout_height="match_parent"
             android:layout_gravity="center|end"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_check"
-            android:tooltipText="Save" />
+            android:contentDescription="Save"
+            android:src="@drawable/ic_check" />
     </FrameLayout>
 
     <ScrollView

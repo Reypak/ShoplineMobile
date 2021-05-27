@@ -52,6 +52,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.matt.shopline.BuildConfig;
 import com.matt.shopline.R;
 import com.matt.shopline.adapters.TabAdapter;
 import com.matt.shopline.screens.LandingPage;
@@ -136,6 +137,9 @@ public class Profile extends Fragment {
         user = FirebaseAuth.getInstance().getCurrentUser();
         db = FirebaseFirestore.getInstance();
 
+        String versionName = BuildConfig.VERSION_NAME;
+        TextView appVersion = drawer.findViewWithTag(getString(R.string.app_name));
+        appVersion.setText(String.format("Version %s", versionName));
 
         getUserData();
         getProfileImage();
@@ -147,13 +151,6 @@ public class Profile extends Fragment {
             // for currentUser
             getTabs("Posts", "Wishlist", user.getUid(), true);
         }
-
-        btnEdit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                EditProfile();
-            }
-        });
 
         downArrow.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -289,6 +286,14 @@ public class Profile extends Fragment {
                     tvPhone.setText(phone);
 
                     listenRating(); // listen for rating value
+
+                    // edit button only load dialog after getting
+                    btnEdit.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            EditProfile();
+                        }
+                    });
                 }
             }
         });

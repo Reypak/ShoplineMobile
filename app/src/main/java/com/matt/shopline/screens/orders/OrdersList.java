@@ -3,7 +3,6 @@ package com.matt.shopline.screens.orders;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -45,6 +44,8 @@ import com.squareup.picasso.Picasso;
 
 import java.text.DecimalFormat;
 
+import static com.matt.shopline.fragments.search.Search.openActivity;
+
 public class OrdersList extends Fragment {
 
     private Query userOrders;
@@ -72,7 +73,7 @@ public class OrdersList extends Fragment {
         mOrdersList = rootView.findViewById(R.id.recView);
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mOrdersList.setLayoutManager(mLayoutManager);
-        mOrdersList.setHasFixedSize(true);
+//        mOrdersList.setHasFixedSize(true);
 
         getOrders();
 
@@ -170,9 +171,7 @@ public class OrdersList extends Fragment {
                                             img.setOnClickListener(new View.OnClickListener() {
                                                 @Override
                                                 public void onClick(View view) {
-                                                    Intent intent = new Intent(getActivity(), FeedUserProfile.class);
-                                                    intent.putExtra("userID", userID);
-                                                    startActivity(intent);
+                                                    openActivity(FeedUserProfile.class, requireContext(), "userID", userID);
                                                 }
                                             });
                                         } else {
@@ -199,9 +198,7 @@ public class OrdersList extends Fragment {
                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Intent intent = new Intent(getActivity(), PostView.class);
-                        intent.putExtra("postID", model.getPostID()); // send intent to load You Tab
-                        startActivity(intent);
+                        openActivity(PostView.class, requireContext(), "postID", model.getPostID());
                     }
                 });
 

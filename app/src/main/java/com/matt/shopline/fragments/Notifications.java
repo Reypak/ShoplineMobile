@@ -43,7 +43,6 @@ import java.util.Date;
 
 import static com.matt.shopline.adapters.MyFirestorePagingAdapter.durationFromNow;
 
-
 public class Notifications extends Fragment {
     private RecyclerView mList;
     private Query userNotify;
@@ -78,7 +77,7 @@ public class Notifications extends Fragment {
                 adapter.refresh();
             }
         });
-        mList.setHasFixedSize(true);
+//        mList.setHasFixedSize(true);
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mList.setLayoutManager(mLayoutManager);
 

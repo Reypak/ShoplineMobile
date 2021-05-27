@@ -29,6 +29,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.matt.shopline.R;
 import com.matt.shopline.adapters.MyFirestorePagingAdapter;
+import com.matt.shopline.fragments.search.Search;
 import com.matt.shopline.objects.Review;
 import com.matt.shopline.objects.ReviewComment;
 import com.matt.shopline.objects.User;
@@ -354,9 +355,7 @@ public class Reviews extends Fragment {
                 @Override
                 public void onClick(View view) {
                     // open profile
-                    Intent intent = new Intent(mView.getContext(), FeedUserProfile.class);
-                    intent.putExtra("userID", userID);
-                    startActivity(intent);
+                    Search.openActivity(FeedUserProfile.class, requireContext(), "userID", userID);
                 }
             });
         }

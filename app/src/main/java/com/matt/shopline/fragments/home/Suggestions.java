@@ -73,7 +73,7 @@ public class Suggestions extends Fragment {
         mSuggestionList = rootView.findViewById(R.id.recView);
         mLayoutManager = new GridLayoutManager(getActivity(), 2);
         mSuggestionList.setLayoutManager(mLayoutManager);
-        mSuggestionList.setHasFixedSize(true);
+//        mSuggestionList.setHasFixedSize(true);
 
         checkSuggestions();
         getSuggestions();

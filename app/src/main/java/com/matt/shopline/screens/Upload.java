@@ -45,6 +45,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.matt.shopline.fragments.home.Home.generateSearchKeyword;
+
 public class Upload extends AppCompatActivity {
     private final int Image_Request_Code = 7;
     private ImageView imageView;
@@ -274,10 +276,12 @@ public class Upload extends AppCompatActivity {
     }
 
     private void collectData() {
+        String product = etProduct.getText().toString().trim();
         postData = new HashMap<>();
-        postData.put("product", etProduct.getText().toString().trim());
+        postData.put("product", product);
         postData.put("price", etPrice.getText().toString().trim());
         postData.put("description", etDesc.getText().toString().trim());
+        postData.put("search_keywords", generateSearchKeyword(product));
         // if view is visible
         String offers = etOffer.getText().toString().trim();
         if (viewOffers.getVisibility() == View.VISIBLE && !offers.isEmpty()) {
@@ -341,12 +345,21 @@ public class Upload extends AppCompatActivity {
             Bitmap bitmap = null;
             try {
                 Bitmap b = MediaStore.Images.Media.getBitmap(getContentResolver(), FilePathUri);
-                bitmap = Bitmap.createScaledBitmap(b, (int) (b.getWidth() * 0.5), (int) (b.getHeight() * 0.5), false);
+                /*int newWidth = (int) (b.getWidth() * 0.5);
+                int newHeight = (int) (b.getHeight() * 0.5);*/
+
+                int actualWidth = b.getWidth();
+                int actualHeight = b.getHeight();
+
+                int newWidth = 600;
+                int newHeight = (actualHeight * newWidth) / actualWidth;
+
+                bitmap = Bitmap.createScaledBitmap(b, newWidth, newHeight, false);
             } catch (IOException e) {
                 e.printStackTrace();
             }
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 40, outputStream);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream);
             byte[] compressedData = outputStream.toByteArray();
             bitmap.recycle(); // free up memory
 //            FilePathUri = null; // clear FilePathUrl to refresh

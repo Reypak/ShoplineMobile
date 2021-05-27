@@ -36,6 +36,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:labelFor="@id/etEmail"
                     android:paddingStart="5dp"
                     android:text="@string/email"
                     android:textColor="@color/colorPrimary" />
@@ -52,6 +53,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
+                    android:labelFor="@id/etPwrd"
                     android:paddingStart="5dp"
                     android:text="@string/password"
                     android:textColor="@color/colorPrimary" />
@@ -65,6 +67,8 @@
                         style="@style/TextBoxRound"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:contentDescription="@string/password"
+                        android:importantForAutofill="no"
                         android:inputType="textPassword" />
 
                     <ImageButton
@@ -72,8 +76,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center|end"
-                        android:layout_marginEnd="15dp"
+                        android:layout_marginEnd="10dp"
                         android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/password"
+                        android:padding="10dp"
                         android:src="@drawable/ic_eye_off"
                         android:tint="#6468FF" />
 
@@ -83,7 +89,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:onClick="resetPassword"
-                    android:paddingVertical="5dp"
+                    android:paddingVertical="10dp"
                     android:paddingEnd="5dp"
                     android:text="Forgot password?"
                     android:textAlignment="viewEnd"
@@ -117,7 +123,7 @@
                     android:layout_height="wrap_content"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:onClick="openRegister"
-                    android:paddingHorizontal="10dp"
+                    android:padding="10dp"
                     android:text="@string/sign_up"
                     android:textColor="@color/colorHighlight"
                     android:textStyle="bold" />

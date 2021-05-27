@@ -270,7 +270,7 @@ public class PostView extends AppCompatActivity {
             ImageView img = mView.findViewById(R.id.profile_image);
 
             textView.setText(username);
-            if (occupation.isEmpty()) {
+            if (occupation == null || occupation.equals("")) {
                 textView2.setVisibility(View.GONE);
             } else {
                 textView2.setText(occupation);

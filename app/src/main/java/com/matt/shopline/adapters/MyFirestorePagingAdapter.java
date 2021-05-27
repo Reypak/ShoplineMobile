@@ -457,7 +457,7 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
                         // display popup
                         showPopup(view);
                     }
-                }, 200);
+                }, 300);
             }
         });
 
@@ -515,6 +515,11 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
         if (b) {
             final Map<String, Object> data = new HashMap<>();
             data.put("exists", true);
+
+            /*if () {
+                data.put("mine", true);
+            }*/
+
             // send currentUserID to re-post collection
             reposts.document(user.getUid()).set(data)
                     .addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -536,7 +541,24 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
                     });
         } else {
             reposts.document(user.getUid()).delete();
-            userCatalog.document(postID).delete();
+            // check repost data
+            userCatalog.document(postID).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if (task.getResult().exists()) {
+                        DocumentReference delRef = task.getResult().getReference();
+
+                        // check if has mine value
+                        if (task.getResult().get("mine") != null) {
+                            // only remove ruserID
+                            delRef.update("ruserID", FieldValue.delete());
+                        } else {
+                            // remove whole document
+                            delRef.delete();
+                        }
+                    }
+                }
+            });
         }
 
     }
@@ -728,6 +750,14 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
             mView = itemView;
             img = mView.findViewById(R.id.imageView);
 
+            img.post(new Runnable() {
+                @Override
+                public void run() {
+                    // set view height same as width
+                    img.getLayoutParams().height = img.getMeasuredWidth();
+                    img.requestLayout();
+                }
+            });
         }
 
         public void showRepostUser(final String ruserID) {
@@ -952,13 +982,19 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
                     .into(img);
         }
 
-        public void setImageURL(final Context ctx, String imageURL) {
-            Picasso.with(ctx)
-                    .load(imageURL)
-                    .fit()
-                    .centerCrop()
-                    .placeholder(R.drawable.ic_launcher_foreground)
-                    .into(img);
+        public void setImageURL(final Context ctx, final String imageURL) {
+            img.post(new Runnable() {
+                @Override
+                public void run() {
+
+                    Picasso.with(ctx)
+                            .load(imageURL)
+                            .fit()
+                            .centerCrop()
+                            .placeholder(R.drawable.ic_launcher_foreground)
+                            .into(img);
+                }
+            });
         }
     }
 }

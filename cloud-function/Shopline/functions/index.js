@@ -317,12 +317,20 @@ var date = d.getDate() + '-' + (d.getMonth() + 1) + '-' + d.getFullYear(); // da
 							snapshot.forEach(doc => {
 								const postID = doc.id;
 								const timestamp = doc.data().timestamp;
+								const ruserID = doc.data().ruserID;
 
 								// set post id to user timeline
-								const userFeed = db.doc(`users/${userID}/feed/${postID}`)
-								.set({
+								const userFeed = db.doc(`users/${userID}/feed/${postID}`);
+								userFeed.set({
 									timestamp : timestamp
 								});
+
+								// check if post is reposted by user
+								if (ruserID != null) {
+									userFeed.set({
+										ruserID : ruserID
+									}, { merge: true });
+								}
 
 								// console.log('Added: ', postID);
 							});

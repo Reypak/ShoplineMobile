@@ -65,7 +65,7 @@ public class Catalog extends Fragment {
 
         mCatalogList = rootView.findViewById(R.id.recView);
 //        refreshLayout = rootView.findViewById(R.id.swipeRefresh);
-        mCatalogList.setHasFixedSize(true);
+//        mCatalogList.setHasFixedSize(true);
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mCatalogList.setLayoutManager(mLayoutManager);
 

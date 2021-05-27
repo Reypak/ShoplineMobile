@@ -188,7 +188,7 @@
 
                 <ImageButton
                     android:id="@+id/btnLike"
-                    android:layout_width="wrap_content"
+                    android:layout_width="48dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
@@ -205,7 +205,7 @@
 
                 <ImageButton
                     android:id="@+id/btnComment"
-                    android:layout_width="wrap_content"
+                    android:layout_width="48dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
@@ -223,7 +223,7 @@
 
                 <ImageButton
                     android:id="@+id/btnRepost"
-                    android:layout_width="wrap_content"
+                    android:layout_width="48dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
