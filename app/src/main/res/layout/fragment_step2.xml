@@ -8,6 +8,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
         android:layout_gravity="center"
         android:orientation="vertical"
         android:padding="10dp">
@@ -17,7 +18,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
             android:paddingStart="5dp"
-            android:text="* This is to enable you recover your account incase you forget your password."
+            android:text="* This is to enable you recover your account in case you forget your password."
             android:textColor="@color/colorTextPrimary"
             android:textStyle="bold" />
 
@@ -50,9 +51,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
-            android:paddingStart="5dp"
+            android:paddingHorizontal="5dp"
             android:text="@string/password"
             android:textColor="@color/colorPrimary" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:paddingHorizontal="5dp"
+            android:tag="@string/password"
+            android:text="Too short!"
+            android:textColor="@android:color/holo_red_light"
+            android:visibility="gone" />
 
         <FrameLayout
             android:layout_width="match_parent"

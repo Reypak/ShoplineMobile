@@ -10,7 +10,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -103,7 +102,7 @@ public class Login extends AppCompatActivity {
         }
     }
 
-    public void togglePassword(Context context, TextView etPwrd, ImageButton btnToggle) {
+    public void togglePassword(Context context, EditText etPwrd, ImageButton btnToggle) {
         // change password box and icon
         if (etPwrd.getTransformationMethod() == null) {
             // hide
@@ -114,6 +113,7 @@ public class Login extends AppCompatActivity {
             btnToggle.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_eye));
             etPwrd.setTransformationMethod(null);
         }
+        etPwrd.setSelection(etPwrd.length()); // set cursor to end
     }
 
     private void openMain() {

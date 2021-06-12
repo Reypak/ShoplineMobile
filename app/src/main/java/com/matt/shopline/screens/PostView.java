@@ -62,6 +62,8 @@ public class PostView extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post_view);
+        // set tag for rootView to uniquely identify
+        getWindow().getDecorView().setTag(1);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 

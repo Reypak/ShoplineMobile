@@ -17,6 +17,7 @@ import androidx.fragment.app.Fragment;
 import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -47,7 +48,8 @@ public class NavigationActivity extends AppCompatActivity implements BottomNavig
             public void run() {
                 if (user != null) {
                     //loading the default fragment
-                    loadFragment(new Home());
+                    navigation.setSelectedItemId(R.id.navigation_home);
+//                    loadFragment(new Home());
                     notificationCounter();
                 }
             }

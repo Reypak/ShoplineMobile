@@ -37,6 +37,7 @@ import androidx.viewpager.widget.ViewPager;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
@@ -72,10 +73,12 @@ import static com.matt.shopline.fragments.home.Home.generateSearchKeyword;
 public class Profile extends Fragment {
     int Image_Request_Code = 7;
     private ImageView profileImage;
-    private TextView tvUsername, tvLocation, tvBio, tvEmail, tvPhone, tvOccupation, tvWebsite, tvFollowers, tvCatalog;
+    private TextView tvUsername, tvLocation, tvBio, tvEmail, tvPhone, tvOccupation, tvWebsite, tvFollowers, tvCatalog, tvRef;
     private String phone, location, bio, email, username, occupation, website;
     private FirebaseUser user;
-    private View downArrow, expandedView, viewFollow, viewFollowers;
+    private View downArrow;
+    private View expandedView;
+    private View viewFollow;
     private Button btnEdit, btnFollow;
     private EditText etUsername, etBio, etPhone, etLocation, etOccupation, etWebsite;
     private Uri FilePathUri;
@@ -88,6 +91,7 @@ public class Profile extends Fragment {
     private String userID;
     private TabLayout tabLayout;
     private ViewPager viewPager;
+    private Button btnRef;
 
     public static void addSearchData(String inputText, String userID, FirebaseFirestore db, Context context) {
         // generate search keywords, store in List
@@ -124,13 +128,15 @@ public class Profile extends Fragment {
         tvWebsite = rootView.findViewById(R.id.tvWebsite);
         tvFollowers = rootView.findViewById(R.id.tvFollowers);
         tvCatalog = rootView.findViewById(R.id.tvCatalog);
+        tvRef = rootView.findViewById(R.id.tvReferrals);
         tvOccupation = rootView.findViewById(R.id.tvOccupation);
         tvOccupation.setVisibility(View.GONE);
         btnEdit = rootView.findViewById(R.id.btnEdit);
         btnFollow = rootView.findViewById(R.id.btnFollow);
+        btnRef = rootView.findViewById(R.id.btnRef);
         viewFollow = rootView.findViewById(R.id.viewFollow);
         downArrow = rootView.findViewById(R.id.downArrow);
-        viewFollowers = rootView.findViewById(R.id.btnFollowers);
+        View viewFollowers = rootView.findViewById(R.id.btnFollowers);
         expandedView = rootView.findViewById(R.id.expandedView);
         expandedView.setVisibility(View.GONE);
 
@@ -177,6 +183,10 @@ public class Profile extends Fragment {
                     Intent intent = new Intent(getActivity(), LandingPage.class);
                     startActivity(intent);
                     requireActivity().finish();
+                } else if (menuItem.getItemId() == R.id.invite) {
+                    shareIntent();
+                } else if (menuItem.getItemId() == R.id.feedback) {
+                    composeEmail();
                 }
                 drawer.closeDrawer(GravityCompat.END);
                 return false;
@@ -198,7 +208,20 @@ public class Profile extends Fragment {
             }
         });
 
+        btnRef.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showReferrals();
+            }
+        });
+
         return rootView;
+    }
+
+    private void showReferrals() {
+        BottomSheetDialog dialog = new BottomSheetDialog(rootView.getContext(), R.style.BottomSheetDialog);
+        dialog.setContentView(R.layout.referral_sheet);
+        dialog.show();
     }
 
     private void listenRating() {
@@ -230,7 +253,8 @@ public class Profile extends Fragment {
             userRef = db.collection("users").document(userID);
 
             getFollowers(userID);
-            getCatalog(userID);
+            getCatalog(userID, "catalog", tvCatalog);
+            getCatalog(userID, "referrals", tvRef);
 
         } else {
             // Current User
@@ -242,7 +266,8 @@ public class Profile extends Fragment {
                 userRef = db.collection("users").document(user.getUid());
 
                 getFollowers(user.getUid());
-                getCatalog(user.getUid());
+                getCatalog(user.getUid(), "catalog", tvCatalog);
+                getCatalog(user.getUid(), "referrals", tvRef);
             }
         }
 
@@ -299,16 +324,16 @@ public class Profile extends Fragment {
         });
     }
 
-    private void getCatalog(String userID) {
+    private void getCatalog(String userID, final String path, final TextView tv) {
         // user catalog count number of docs
         DocumentReference userCatalog = db.collection("users").document(userID)
-                .collection("data").document("catalog");
+                .collection("data").document(path);
         userCatalog.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 if (documentSnapshot.exists()) {
-                    String catalog = documentSnapshot.get("catalog").toString();
-                    tvCatalog.setText(catalog);
+                    String catalog = documentSnapshot.get(path).toString();
+                    tv.setText(catalog);
                 }
             }
         });
@@ -745,4 +770,21 @@ public class Profile extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
+    private void shareIntent() {
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TITLE, "Tell your friends about " + getString(R.string.app_name));
+        sendIntent.putExtra(Intent.EXTRA_TEXT, "Check out " + getString(R.string.app_name) + " and access all the best deals, offers and promos. " +
+                "Available on Google Play https://play.google.com/store/apps/details?id=com.matt.shopline");
+        sendIntent.setType("text/plain");
+
+        Intent shareIntent = Intent.createChooser(sendIntent, null);
+        startActivity(shareIntent);
+    }
+
+    public void composeEmail() {
+        Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+        emailIntent.setData(Uri.parse("mailto:" + getString(R.string.app_email)));
+        startActivity(emailIntent);
+    }
 }

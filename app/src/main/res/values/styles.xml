@@ -110,7 +110,7 @@
     </style>
 
     <style name="SplashScreen" parent="AppTheme.NoActionBar">
-        <item name="android:background">@drawable/bg_gradient</item>
+        <item name="android:windowBackground">@drawable/bg_gradient</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <!--        <item name="statusBarBackground">@android:color/transparent</item>-->
     </style>

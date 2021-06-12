@@ -157,6 +157,7 @@
                         android:orientation="vertical">
 
                         <TextView
+                            android:id="@+id/tvReferrals"
                             style="@style/TextTitle2"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -205,23 +206,33 @@
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
-                    <androidx.cardview.widget.CardView
-                        android:layout_width="wrap_content"
-                        android:layout_height="44dp"
-                        android:clickable="true"
-                        android:foreground="?attr/selectableItemBackground"
-                        app:cardBackgroundColor="@color/colorPrimary"
-                        app:cardCornerRadius="22dp"
-                        app:cardElevation="0dp">
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnRef"
+                        style="@style/ButtonMain"
+                        android:layout_width="65dp"
+                        android:layout_height="55dp"
+                        android:elevation="0dp"
+                        android:paddingStart="20dp"
+                        app:icon="@drawable/ic_users"
+                        app:iconGravity="textStart" />
 
-                        <FrameLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:layout_marginHorizontal="20dp"
-                            android:background="@drawable/ic_users"
-                            android:backgroundTint="@android:color/white" />
-                    </androidx.cardview.widget.CardView>
+                    <!--   <androidx.cardview.widget.CardView
+                           android:layout_width="wrap_content"
+                           android:layout_height="44dp"
+                           android:clickable="true"
+                           android:foreground="?attr/selectableItemBackground"
+                           app:cardBackgroundColor="@color/colorPrimary"
+                           app:cardCornerRadius="22dp"
+                           app:cardElevation="0dp">
+
+                           <FrameLayout
+                               android:layout_width="wrap_content"
+                               android:layout_height="wrap_content"
+                               android:layout_gravity="center"
+                               android:layout_marginHorizontal="20dp"
+                               android:background="@drawable/ic_users"
+                               android:backgroundTint="@android:color/white" />
+                       </androidx.cardview.widget.CardView>-->
 
                 </LinearLayout>
 

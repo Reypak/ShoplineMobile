@@ -24,7 +24,7 @@ public class Step2 extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        ViewGroup rootView = (ViewGroup) inflater.inflate(
+        final ViewGroup rootView = (ViewGroup) inflater.inflate(
                 R.layout.fragment_step2, container, false);
 
         etEmail = rootView.findViewById(R.id.etEmail);
@@ -53,8 +53,11 @@ public class Step2 extends Fragment {
             @Override
             public void afterTextChanged(Editable editable) {
                 pwrd = etPwrd.getText().toString();
+                View errorText = rootView.findViewWithTag(getString(R.string.password));
                 if (!pwrd.isEmpty() && pwrd.length() < 6) {
-                    etPwrd.setError(getString(R.string.password) + " too short!");
+                    errorText.setVisibility(View.VISIBLE);
+                } else {
+                    errorText.setVisibility(View.GONE);
                 }
             }
         });

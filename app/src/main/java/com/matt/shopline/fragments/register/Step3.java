@@ -18,13 +18,12 @@ import androidx.fragment.app.Fragment;
 import com.google.android.gms.common.api.Status;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
-import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.matt.shopline.R;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static android.app.Activity.RESULT_CANCELED;
@@ -65,15 +64,15 @@ public class Step3 extends Fragment {
         etPhone.addTextChangedListener(watcher);
         etLocation.addTextChangedListener(watcher);
 
-        /* initializePlaces();
-       etLocation.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        initializePlaces();
+        etLocation.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
                 if (b) {
                     onSearchCalled();
                 }
             }
-        });*/
+        });
 
         return rootView;
     }
@@ -90,13 +89,16 @@ public class Step3 extends Fragment {
         if (requestCode == AUTOCOMPLETE_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
                 Place place = Autocomplete.getPlaceFromIntent(data);
+                etLocation.setText(place.getName());
+                etLocation.clearFocus();
+
 //                Log.i(TAG, "Place: " + place.getName() + ", " + place.getId() + ", " + place.getAddress());
-                Toast.makeText(getActivity(), "ID: " + place.getId()
+              /*  Toast.makeText(getActivity(), "ID: " + place.getId()
                                 + "address:" + place.getAddress()
                                 + "Name:" + place.getName()
                                 + " latlong: " + place.getLatLng(),
                         Toast.LENGTH_LONG).show();
-                String address = place.getAddress();
+                String address = place.getAddress();*/
                 // do query with address
 
             } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
@@ -113,7 +115,9 @@ public class Step3 extends Fragment {
 
     public void onSearchCalled() {
         // Set the fields to specify which types of place data to return.
-        List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS, Place.Field.LAT_LNG);
+//        List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS, Place.Field.LAT_LNG);
+
+        List<Place.Field> fields = Collections.singletonList(Place.Field.NAME);
         // Start the autocomplete intent.
         Intent intent = new Autocomplete.IntentBuilder(
                 AutocompleteActivityMode.FULLSCREEN, fields).setCountry("UG") //Uganda
@@ -155,7 +159,7 @@ public class Step3 extends Fragment {
         }
 
         // Create a new Places client instance.
-        PlacesClient placesClient = Places.createClient(getActivity());
+//        PlacesClient placesClient = Places.createClient(getActivity());
 
     }
 

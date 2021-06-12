@@ -178,6 +178,7 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
         ImageButton imageButton = holder.mView.findViewById(R.id.btnOptions);
         View btnOrder = holder.mView.findViewById(R.id.btnOrder);
         ImageView img = holder.mView.findViewById(R.id.profile_image);
+        TextView tvUsername = holder.mView.findViewById(R.id.tvUsername);
         final ImageButton btnLike = holder.mView.findViewById(R.id.btnLike);
         final TextView tvLikes = holder.mView.findViewById(R.id.tvLikes);
 
@@ -353,8 +354,7 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
             public void onSuccess(final DocumentSnapshot documentSnapshot) {
                 if (documentSnapshot.exists()) {
                     // show post liked
-                    btnLike.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_favorite));
-                    tvLikes.setTextColor(Color.RED);
+                    holder.stateLiked(true);
                 }
             }
         });
@@ -371,12 +371,14 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
                             unlikePost();
 
                             // back to default
-                            btnLike.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_favorite_border));
-                            tvLikes.setTextColor(context.getResources().getColor(R.color.colorTextSecondary));
+                            holder.stateLiked(false);
                         } else {
                             // liked state
-                            btnLike.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_favorite));
-                            tvLikes.setTextColor(Color.RED);
+                            holder.stateLiked(true);
+
+                            // increase value instantly
+                            int v = Integer.parseInt(tvLikes.getText().toString());
+                            tvLikes.setText(String.valueOf(v + 1));
 
                             // bounce animation
                             ScaleAnimation animation = new ScaleAnimation(1, (float) 0.7, 1, (float) 0.7,
@@ -400,7 +402,6 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
                                     public void onClick(View view) {
                                     }
                                 });
-
                         snackbar.show();
                     }
                 });
@@ -429,21 +430,20 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
         });
 
         // profile image click
-        img.setOnClickListener(new View.OnClickListener() {
+        View.OnClickListener listener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 onBindViewHolder(holder, position, model);
-
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         loadActivity(FeedUserProfile.class, "userID", duserID);
                     }
                 }, 200);
-
             }
-        });
+        };
+        img.setOnClickListener(listener);
+        tvUsername.setOnClickListener(listener);
 
         imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -477,6 +477,7 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
     public void onViewRecycled(@NonNull BlogViewHolder holder) {
         holder.setImageURL(context, null);
         holder.showRepostUser(null);
+        holder.stateLiked(false);
     }
 
     @Override
@@ -820,8 +821,11 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
             View.OnClickListener listener = new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    // open PostView
-                    loadActivity(PostView.class, "postID", postID);
+                    // open PostView if not loaded
+                    if (rootView.getTag() == null) {
+                        loadActivity(PostView.class, "postID", postID);
+//                        Toast.makeText(context, String.valueOf(rootView.getTag()), Toast.LENGTH_SHORT).show();
+                    }
                 }
             };
 
@@ -995,6 +999,18 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
                             .into(img);
                 }
             });
+        }
+
+        public void stateLiked(boolean b) {
+            ImageButton btnLike = mView.findViewById(R.id.btnLike);
+            TextView tvLikes = mView.findViewById(R.id.tvLikes);
+            if (b) {
+                btnLike.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_favorite));
+                tvLikes.setTextColor(Color.RED);
+            } else {
+                btnLike.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_favorite_border));
+                tvLikes.setTextColor(context.getResources().getColor(R.color.colorTextSecondary));
+            }
         }
     }
 }

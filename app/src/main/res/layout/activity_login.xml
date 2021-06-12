@@ -28,8 +28,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/montserrat_bold"
+                    android:paddingHorizontal="5dp"
                     android:paddingVertical="15dp"
-                    android:paddingStart="5dp"
                     android:text="Welcome Back!"
                     android:textSize="21sp" />
 
@@ -86,13 +86,13 @@
                 </FrameLayout>
 
                 <TextView
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="end"
                     android:onClick="resetPassword"
                     android:paddingVertical="10dp"
                     android:paddingEnd="5dp"
                     android:text="Forgot password?"
-                    android:textAlignment="viewEnd"
                     android:textColor="@color/colorPrimary" />
             </LinearLayout>
 

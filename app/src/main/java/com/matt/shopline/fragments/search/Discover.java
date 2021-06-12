@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,15 +25,21 @@ import com.firebase.ui.firestore.paging.FirestorePagingAdapter;
 import com.firebase.ui.firestore.paging.FirestorePagingOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.matt.shopline.R;
 import com.matt.shopline.adapters.MyFirestorePagingAdapter;
 import com.matt.shopline.objects.User;
 import com.matt.shopline.screens.PostView;
 import com.squareup.picasso.Picasso;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Discover extends Fragment {
     FirebaseFirestore db;
@@ -50,7 +57,7 @@ public class Discover extends Fragment {
 
     /*private void setDiscover() {
         CollectionReference postRef = db.collection("posts");
-        postRef.limit(5).whereGreaterThan("likes", 0)
+        postRef.limit(10).whereGreaterThan("likes", 0)
                 .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -61,7 +68,7 @@ public class Discover extends Fragment {
                     map.put("timestamp", new Timestamp(new Date()));
 
                     discoverRef.document(id).set(map);
-                    Toast.makeText(requireActivity(), id, Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(requireActivity(), id, Toast.LENGTH_SHORT).show();
                 }
             }
         });
