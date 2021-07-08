@@ -55,7 +55,7 @@
                     android:id="@+id/imageView"
                     android:layout_width="match_parent"
                     android:layout_height="300dp"
-                    android:background="?attr/selectableItemBackground"
+                    android:foreground="?attr/selectableItemBackground"
                     android:scaleType="centerCrop" />
 
                 <FrameLayout

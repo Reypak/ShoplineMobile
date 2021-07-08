@@ -14,7 +14,7 @@ android {
         versionCode 2
         versionName "1.0-demo"
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+//        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -40,6 +40,9 @@ dependencies {
 
     // picasso
     implementation 'com.squareup.picasso:picasso:2.5.2'
+
+    // Loader View
+    implementation 'io.github.elye:loaderviewlibrary:3.0.0'
 
     //Circle Image
     implementation 'de.hdodenhof:circleimageview:3.1.0'

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:animateLayoutChanges="true"
-    android:foreground="?attr/selectableItemBackground">
+    android:background="?attr/selectableItemBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -34,27 +34,48 @@
             android:paddingStart="15dp"
             android:paddingEnd="5dp">
 
-            <TextView
+            <com.elyeproj.loaderviewlibrary.LoaderTextView
                 android:id="@+id/tvProduct"
                 style="@style/TextTitle2"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:ellipsize="middle"
                 android:gravity="center|start"
                 android:singleLine="true"
-                android:text="@string/load"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                app:corners="5"
+                app:height_weight="0.5"
+                app:use_gradient="true"
+                app:width_weight="0.8" />
 
-            <TextView
+            <!-- <TextView
+
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+
+                 android:text="@string/load"
+                 />-->
+
+            <com.elyeproj.loaderviewlibrary.LoaderTextView
                 android:id="@+id/tvPrice"
                 style="@style/TextTitle"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:fontFamily="@font/montserrat_bold"
-                android:gravity="center"
-                android:text="@string/load" />
+                android:gravity="center|start"
+                app:corners="5"
+                app:height_weight="0.6"
+                app:use_gradient="true"
+                app:width_weight="0.5" />
+
+            <!-- <TextView
+
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+
+                 android:text="@string/load" />-->
 
             <LinearLayout
                 android:id="@+id/viewOffers"
@@ -83,7 +104,7 @@
 
             <LinearLayout
                 android:id="@+id/viewLocation"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="center">
@@ -94,12 +115,22 @@
                     android:layout_marginEnd="5dp"
                     android:background="@drawable/ic_map_pin" />
 
-                <TextView
+                <com.elyeproj.loaderviewlibrary.LoaderTextView
                     android:id="@+id/tvLocation"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/load"
-                    android:textColor="@color/colorTextSecondary" />
+                    android:textColor="@color/colorTextSecondary"
+                    app:corners="5"
+                    app:height_weight="0.8"
+                    app:use_gradient="true"
+                    app:width_weight="0.8" />
+
+                <!-- <TextView
+
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:text="@string/load"
+                     />-->
             </LinearLayout>
 
             <LinearLayout
@@ -146,6 +177,5 @@
         android:visibility="gone"
         app:civ_border_color="@android:color/white"
         app:civ_border_width="2dp" />
-
 
 </FrameLayout>

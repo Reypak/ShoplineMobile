@@ -68,7 +68,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/montserrat_bold"
-                        android:text="Great"
                         android:textColor="@color/colorPrimary"
                         android:textSize="17sp" />
                 </LinearLayout>
@@ -83,6 +82,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginHorizontal="10dp"
+            android:layout_marginBottom="10dp"
             android:background="@drawable/card_background"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
     </LinearLayout>

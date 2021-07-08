@@ -271,7 +271,7 @@ public class Profile extends Fragment {
             }
         }
 
-        userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+        userRef.get().addOnCompleteListener(requireActivity(), new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.getResult().exists()) {

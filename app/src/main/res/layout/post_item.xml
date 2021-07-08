@@ -66,25 +66,33 @@
                     android:paddingHorizontal="10dp"
                     android:weightSum="1">
 
-                    <TextView
+                    <com.elyeproj.loaderviewlibrary.LoaderTextView
                         android:id="@+id/tvUsername"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:ellipsize="end"
                         android:fontFamily="@font/montserrat_bold"
                         android:maxLines="1"
-                        android:text="@string/load"
                         android:textColor="@color/colorTextPrimary"
                         android:textSize="14sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        app:corners="5"
+                        app:height_weight="0.8"
+                        app:use_gradient="true"
+                        app:width_weight="0.6" />
 
-                    <TextView
+                    <com.elyeproj.loaderviewlibrary.LoaderTextView
                         android:id="@+id/tvOccupation"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:paddingTop="5dp"
+                        android:layout_marginTop="5dp"
                         android:textColor="@color/colorTextPrimary"
-                        android:textSize="12sp" />
+                        android:textSize="12sp"
+                        app:corners="5"
+                        app:height_weight="0.8"
+                        app:use_gradient="true"
+                        app:width_weight="0.4" />
+
                 </LinearLayout>
 
                 <LinearLayout
@@ -129,8 +137,8 @@
                     android:layout_height="40dp"
                     android:layout_gravity="bottom|start"
                     android:layout_margin="10dp"
+                    android:contentDescription="@string/offers"
                     android:foreground="?attr/selectableItemBackground"
-                    android:tooltipText="View Offers"
                     android:visibility="gone"
                     app:cardBackgroundColor="#CCFFFFFF"
                     app:cardCornerRadius="20dp"
@@ -271,27 +279,42 @@
                     android:backgroundTint="@color/colorPrimary"
                     android:gravity="center"
                     android:paddingHorizontal="10dp"
-                    android:text="XL"
                     android:textColor="@android:color/white"
                     android:textSize="12sp"
                     android:visibility="gone" />
             </LinearLayout>
 
-            <TextView
+            <com.elyeproj.loaderviewlibrary.LoaderTextView
                 android:id="@+id/tvPrice"
                 style="@style/TextTitle"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginVertical="5dp"
                 android:fontFamily="@font/montserrat_bold"
-                android:paddingVertical="5dp"
-                android:text="@string/load" />
+                app:corners="5"
+                app:height_weight="0.9"
+                app:use_gradient="true"
+                app:width_weight="0.4" />
 
-            <TextView
+            <!-- <TextView
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:text="@string/load" />-->
+
+            <com.elyeproj.loaderviewlibrary.LoaderTextView
                 android:id="@+id/tvDesc"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/load"
-                android:textColor="@color/colorTextSecondary" />
+                android:textColor="@color/colorTextSecondary"
+                app:corners="5"
+                app:height_weight="0.8"
+                app:use_gradient="true"
+                app:width_weight="0.6" />
+
+            <!-- <TextView
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:text="@string/load" />-->
         </LinearLayout>
     </LinearLayout>
 

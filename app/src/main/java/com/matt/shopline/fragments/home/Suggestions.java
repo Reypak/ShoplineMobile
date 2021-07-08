@@ -49,7 +49,6 @@ public class Suggestions extends Fragment {
     private FirebaseFirestore db;
     private FirebaseUser user;
     private RecyclerView mSuggestionList;
-    private GridLayoutManager mLayoutManager;
     private CollectionReference userSuggestions, userFollowers, userFollowing, userFeed;
     private FirestoreRecyclerAdapter<User, BlogViewHolder> adapter;
     private String username;
@@ -71,7 +70,7 @@ public class Suggestions extends Fragment {
                 .collection("suggestions");
 
         mSuggestionList = rootView.findViewById(R.id.recView);
-        mLayoutManager = new GridLayoutManager(getActivity(), 2);
+        GridLayoutManager mLayoutManager = new GridLayoutManager(getActivity(), 2);
         mSuggestionList.setLayoutManager(mLayoutManager);
 //        mSuggestionList.setHasFixedSize(true);
 
