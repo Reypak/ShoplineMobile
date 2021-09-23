@@ -1,8 +1,10 @@
 package com.matt.shopline.fragments.home;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -14,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -25,6 +28,8 @@ import androidx.fragment.app.Fragment;
 
 import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetSequence;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -32,11 +37,16 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.matt.shopline.BuildConfig;
 import com.matt.shopline.R;
-import com.matt.shopline.screens.orders.Orders;
+import com.matt.shopline.objects.Util;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 
 public class Home extends Fragment {
@@ -48,6 +58,7 @@ public class Home extends Fragment {
     private ViewGroup rootView;
     private SharedPreferences sharedPreferences;
     private int day;
+    private int count;
 
     public static List<String> generateSearchKeyword(String inputText) {
         // text to lowercase
@@ -95,8 +106,11 @@ public class Home extends Fragment {
         ((AppCompatActivity) requireActivity()).setSupportActionBar(toolbar);
         setHasOptionsMenu(true);
 
+
         user = FirebaseAuth.getInstance().getCurrentUser();
         db = FirebaseFirestore.getInstance();
+
+//        cleanUp();
 
         day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
 
@@ -106,22 +120,53 @@ public class Home extends Fragment {
 //        sharedPreferences.edit().putInt("day", 0).apply();
 
         final String location = sharedPreferences.getString(getString(R.string.title_home), null);
+        count = sharedPreferences.getInt("count", 0);
+
         if (location != null) {
             // load Feed Fragment
             loadFragment(new Feed());
 
-            // get day value
-            int first_day = sharedPreferences.getInt("day", 0);
-            // check if same day
-            if (first_day != day) {
-                startShowcase();
+            // showcase has been run less than 3 times
+            if (count <= 2) {
+                // get day value
+                int first_day = sharedPreferences.getInt("day", 0);
+                // check if same day
+                if (first_day != day) {
+                    startShowcase();
+                }
             }
 
         } else {
-            View fab = rootView.findViewById(R.id.fab);
-            fab.setVisibility(View.GONE);
+            // TODO: hide the upload option
+           /* View fab = rootView.findViewById(R.id.fab);
+            fab.setVisibility(View.GONE);*/
+
             loadFragment(new Suggestions());
+
+           /* db.collection(getString(R.string.users))
+                    .document(user.getUid())
+                    .collection("data")
+                    .document("feed").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if (task.getResult().exists()) {
+                        String d = task.getResult().get("value").toString();
+                        if (d.equals("1")) {
+                            loadFragment(new Feed());
+                            // set home to 1
+                            if (getActivity() != null) {
+                                sharedPreferences.edit().putString(getString(R.string.title_home), "1").apply();
+                            }
+                        } else {
+                            loadFragment(new Suggestions());
+                        }
+                    } else {
+                        loadFragment(new Suggestions());
+                    }
+                }
+            });*/
         }
+
 
         /*// broadcast receiver to receive intent data from login activity
         BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -134,11 +179,96 @@ public class Home extends Fragment {
             }
         };
         getActivity().registerReceiver(receiver, new IntentFilter("finish"));*/
-//        addData("Sample Book Title");
 
 
+        checkUpdate();
         return rootView;
     }
+
+    private void checkUpdate() {
+        final String v = BuildConfig.VERSION_NAME;
+
+        db.collection("update")
+                .document("data")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        String v1 = task.getResult().get("v").toString();
+
+                        // version does not match current
+                        if (!v1.equals(v)) {
+
+                            Dialog d = new Dialog(requireContext());
+                            d.setContentView(R.layout.update_dialog);
+                            TextView view = d.findViewById(R.id.tvVersion);
+                            view.setText(String.format("New Version %s", v1));
+                            Button update = d.findViewById(R.id.btnUpdate);
+                            update.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    // load url
+                                    Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.app_url)));
+                                    startActivity(i);
+                                }
+                            });
+                            d.show();
+                        }
+                    }
+                });
+    }
+
+    /*private void setDiscover() {
+        Query query = db.collection("posts").orderBy("timestamp");
+        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                for (QueryDocumentSnapshot snapshot : task.getResult()) {
+                    HashMap<String, Object> map = new HashMap<>();
+                    db.collection("discover").document(snapshot.getId()).set(map);
+                }
+            }
+        });
+    }*/
+
+/*
+    private void cleanUp() {
+        Query query = db.collection("posts").orderBy("timestamp");
+        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                final List<String> list = new ArrayList<>();
+
+                for (QueryDocumentSnapshot snapshot : task.getResult()) {
+                    list.add(snapshot.getId());
+                }
+
+                final List<String> users = new ArrayList<>();
+                Query usersRef = db.collection("users");
+                usersRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        for (QueryDocumentSnapshot snapshot : task.getResult()) {
+                            users.add(snapshot.getId());
+                        }
+
+                        for (String s : users) {
+                            for (String s1 : list) {
+                                Map<String, Object> map = new HashMap<>();
+                                map.put("timestamp", new Date());
+                                db.collection("users").document(s).collection("feed").document(s1).set(map);
+                            }
+                            Toast.makeText(requireContext(), "Done", Toast.LENGTH_SHORT).show();
+                        }
+
+                    }
+                });
+
+
+            }
+        });
+    }
+*/
 
     private void startShowcase() {
         new Handler().postDelayed(new Runnable() {
@@ -147,6 +277,8 @@ public class Home extends Fragment {
                 if (getActivity() != null) {
                     // save current day value
                     sharedPreferences.edit().putInt("day", day).apply();
+                    // set count number of showcase
+                    sharedPreferences.edit().putInt("count", count + 1).apply();
 
                     @SuppressLint("ResourceType") final TapTargetSequence sequence = new TapTargetSequence(requireActivity())
                             .targets(
@@ -215,7 +347,7 @@ public class Home extends Fragment {
 
     private void loadFragment(Fragment fragment) {
         //switching fragment
-        if (fragment != null) {
+        if (fragment != null && getActivity() != null) {
             getChildFragmentManager()
                     .beginTransaction()
                     .replace(R.id.fragment_container, fragment)
@@ -237,7 +369,7 @@ public class Home extends Fragment {
         frameLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Orders();
+                Util.Loader(getContext());
             }
         });
 
@@ -279,11 +411,6 @@ public class Home extends Fragment {
                 }
             }
         });
-    }
-
-    public void Orders() {
-        Intent intent = new Intent(getActivity(), Orders.class);
-        startActivity(intent);
     }
 
 }

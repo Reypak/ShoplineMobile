@@ -232,7 +232,7 @@ public class Upload extends AppCompatActivity {
 //            Compression(FilePathUri);
 
         // puts file into image view
-        Picasso.with(this).load(FilePathUri)
+        Picasso.get().load(FilePathUri)
                 /*.fit()
                 .centerCrop()*/
                 .into(imageView);
@@ -297,7 +297,7 @@ public class Upload extends AppCompatActivity {
         collectData();
 
         // add fields to the map
-        postData.put("timestamp", System.currentTimeMillis());
+        postData.put("timestamp", new Date());
         postData.put("userID", user.getUid());
 
         if (imageUrl != null) {
@@ -359,7 +359,7 @@ public class Upload extends AppCompatActivity {
                 e.printStackTrace();
             }
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 70, outputStream);
             byte[] compressedData = outputStream.toByteArray();
             bitmap.recycle(); // free up memory
 //            FilePathUri = null; // clear FilePathUrl to refresh

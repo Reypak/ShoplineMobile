@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -27,7 +28,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -54,8 +54,11 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.matt.shopline.R;
 import com.matt.shopline.fragments.home.Home;
+import com.matt.shopline.fragments.home.Suggestions;
 import com.matt.shopline.objects.Post;
 import com.matt.shopline.objects.User;
+import com.matt.shopline.objects.Util;
+import com.matt.shopline.objects.Value;
 import com.matt.shopline.screens.FeedUserProfile;
 import com.matt.shopline.screens.PostView;
 import com.matt.shopline.screens.Upload;
@@ -63,8 +66,6 @@ import com.matt.shopline.screens.orders.Orders;
 import com.squareup.picasso.Picasso;
 
 import java.text.DecimalFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -264,7 +265,7 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
                         imageUrl = post.getImageUrl();
                         duserID = post.getUserID();
                         size = post.getSize();
-                        long timestamp = post.getTimestamp();
+                        Date timestamp = post.getTimestamp();
 
                         // check if offers field exists
                         offers = null; // set offers value to null
@@ -294,7 +295,7 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
                         }
 
                         holder.setData(product, price, description, timestamp);
-                        holder.setImageURL(context, imageUrl);
+                        holder.setImageURL(imageUrl);
 
                         DocumentReference userRef = db.collection("users").document(duserID);
                         userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -475,7 +476,7 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
 
     @Override
     public void onViewRecycled(@NonNull BlogViewHolder holder) {
-        holder.setImageURL(context, null);
+        holder.setImageURL(null);
         holder.showRepostUser(null);
         holder.stateLiked(false);
     }
@@ -489,16 +490,50 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
                 hideSwipe(rootView);
 
                 if (b) {
-                    // reset shared prefs
-                    SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-                    sharedPreferences.edit().putString(context.getString(R.string.title_home), null).apply();
-                    // reload home activity
-                    ((FragmentActivity) context)
-                            .getSupportFragmentManager()
-                            .beginTransaction()
-                            .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                            .replace(R.id.fragment_container, new Home())
-                            .commit();
+
+                    // check if feedValue exists
+                    db.collection(context.getString(R.string.users))
+                            .document(user.getUid())
+                            .collection("data")
+                            .document("feed").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            if (task.getResult().exists()) {
+                                Value value = task.getResult().toObject(Value.class);
+                                if (value.getV() != 0) {
+
+                                    TextView errorText = rootView.findViewById(R.id.errorText);
+                                    errorText.setVisibility(View.VISIBLE);
+                                    errorText.setText("Your feed is empty! \nFollow a few accounts to load more posts");
+
+                                    Button btnAction = rootView.findViewById(R.id.btnAction);
+                                    btnAction.setVisibility(View.VISIBLE);
+
+                                    btnAction.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+                                            Util.loadFragment((FragmentActivity) context, new Suggestions());
+                                        }
+                                    });
+                                }
+                            } else {
+
+                                // reset shared prefs
+                                Util.setPrefs(context.getString(R.string.title_home), null, context);
+                                // reload home activity
+                                Util.loadFragment((FragmentActivity) context, new Home());
+
+                               /* ((FragmentActivity) context)
+                                        .getSupportFragmentManager()
+                                        .beginTransaction()
+                                        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                                        .replace(R.id.fragment_container, new Home())
+                                        .commit();*/
+                            }
+                        }
+                    });
+
+
                 }
             }
         }
@@ -751,6 +786,10 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
             mView = itemView;
             img = mView.findViewById(R.id.imageView);
 
+            resize();
+        }
+
+        public void resize() {
             img.post(new Runnable() {
                 @Override
                 public void run() {
@@ -769,15 +808,16 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
                 viewRepostUser.setVisibility(View.VISIBLE);
 
                 DocumentReference userRef = db.collection("users").document(ruserID);
-                userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                userRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.getResult().exists()) {
-                            User user = task.getResult().toObject(User.class);
+                    public void onSuccess(DocumentSnapshot task) {
+                        if (task.exists()) {
+                            User user = task.toObject(User.class);
                             tvRepostUser.setText(user.getUsername() + " reposted");
                         }
                     }
                 });
+
                 // open profile
                 viewRepostUser.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -922,7 +962,7 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
             dialog.show();
         }
 
-        public void setData(String product, String price, String description, long timestamp) {
+        public void setData(String product, String price, String description, Date timestamp) {
             textView = mView.findViewById(R.id.tvProduct);
             textView2 = mView.findViewById(R.id.tvPrice);
             TextView textView3 = mView.findViewById(R.id.tvDesc);
@@ -941,9 +981,16 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
             }
             textView.setText(product);
             textView2.setText(String.format("UGX %s", formatted));
-            textView3.setText(description);
 
-            SimpleDateFormat sdf = new SimpleDateFormat();
+            if (!description.isEmpty()) {
+                textView3.setText(description);
+            } else {
+                textView3.setVisibility(View.GONE);
+            }
+
+
+            textView4.setText(durationFromNow(timestamp));
+           /* SimpleDateFormat sdf = new SimpleDateFormat();
             // cast timestamp String to long
 //            long date = Long.parseLong(timestamp);
             // format the long value to sdf String
@@ -954,7 +1001,7 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
                 textView4.setText(durationFromNow(d));
             } catch (ParseException e) {
                 e.printStackTrace();
-            }
+            }*/
 
              /* // date converter
             SimpleDateFormat sdf = new SimpleDateFormat();
@@ -972,13 +1019,17 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
             ImageView img = mView.findViewById(R.id.profile_image);
 
             textView.setText(username);
-            if (occupation.isEmpty()) {
-                textView2.setVisibility(View.GONE);
+            if (occupation != null) {
+                if (occupation.isEmpty()) {
+                    textView2.setVisibility(View.GONE);
+                } else {
+                    textView2.setText(occupation);
+                }
             } else {
-                textView2.setText(occupation);
+                textView2.setVisibility(View.GONE);
             }
 
-            Picasso.with(ctx)
+            Picasso.get()
                     .load(imageURL)
                     .fit()
                     .centerCrop()
@@ -986,12 +1037,11 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
                     .into(img);
         }
 
-        public void setImageURL(final Context ctx, final String imageURL) {
+        public void setImageURL(final String imageURL) {
             img.post(new Runnable() {
                 @Override
                 public void run() {
-
-                    Picasso.with(ctx)
+                    Picasso.get()
                             .load(imageURL)
                             .fit()
                             .centerCrop()
@@ -1012,5 +1062,7 @@ public class MyFirestorePagingAdapter extends FirestorePagingAdapter<User, MyFir
                 tvLikes.setTextColor(context.getResources().getColor(R.color.colorTextSecondary));
             }
         }
+
+
     }
 }

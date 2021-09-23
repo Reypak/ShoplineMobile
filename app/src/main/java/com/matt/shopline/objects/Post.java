@@ -1,12 +1,14 @@
 package com.matt.shopline.objects;
 
+import java.util.Date;
+
 public class Post {
     String product;
     String price;
     String description;
     String imageUrl;
     String userID;
-    long timestamp;
+    Date timestamp;
     String offers;
     String size;
    /* long comments;
@@ -36,7 +38,7 @@ public class Post {
         return userID;
     }
 
-    public long getTimestamp() {
+    public Date getTimestamp() {
         return timestamp;
     }
 

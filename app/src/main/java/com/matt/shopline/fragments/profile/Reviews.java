@@ -344,7 +344,7 @@ public class Reviews extends Fragment {
                 textView2.setText(occupation);
             }
 
-            Picasso.with(itemView.getContext())
+            Picasso.get()
                     .load(imageURL)
                     .fit()
                     .centerCrop()

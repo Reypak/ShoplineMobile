@@ -46,6 +46,11 @@
     <string name="bad">Bad</string>
     <string name="terrible">Terrible</string>
     <string name="app_email">shoplineuganda@gmail.com</string>
+    <string name="msg_suggestions">Your feed is empty\nFollow at least two accounts to get started</string>
+    <string name="actSuggestions">Show Suggestions</string>
+    <string name="msg_update">New version of <b>Shopline</b> \nIs Now Available!</string>
+    <string name="app_url">https://play.google.com/store/apps/details?id=com.matt.shopline</string>
+    <string name="msg_c_orders">Orders from Your <b>Customers</b> will appear here</string>
 
     <string-array name="category">
         <item>-- Select --</item>

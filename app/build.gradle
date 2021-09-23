@@ -11,8 +11,8 @@ android {
         applicationId "com.matt.shopline"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 2
-        versionName "1.0-demo"
+        versionCode 8
+        versionName "1.1.0"
 
 //        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -39,7 +39,8 @@ dependencies {
     implementation 'com.google.android.libraries.places:places:1.1.0'
 
     // picasso
-    implementation 'com.squareup.picasso:picasso:2.5.2'
+//    implementation 'com.squareup.picasso:picasso:2.5.2'
+    implementation 'com.squareup.picasso:picasso:2.71828'
 
     // Loader View
     implementation 'io.github.elye:loaderviewlibrary:3.0.0'
@@ -60,6 +61,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-storage:19.2.0'
     implementation 'com.firebaseui:firebase-ui-firestore:7.0.0'
     implementation 'com.google.firebase:firebase-messaging:20.2.4'
+//    implementation 'com.google.firebase:firebase-inappmessaging-display:20.1.0'
 
     // crashlytics
     implementation 'com.google.firebase:firebase-crashlytics:17.0.0'

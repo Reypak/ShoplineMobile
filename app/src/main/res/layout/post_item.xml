@@ -126,10 +126,11 @@
                 app:cardElevation="0dp">
 
                 <ImageView
+                    android:foreground="?attr/selectableItemBackground"
                     android:id="@+id/imageView"
                     android:layout_width="match_parent"
                     android:layout_height="300dp"
-                    android:foreground="?attr/selectableItemBackground" />
+                    android:scaleType="centerCrop" />
 
                 <androidx.cardview.widget.CardView
                     android:id="@+id/btnOffers"

@@ -17,7 +17,6 @@ import androidx.fragment.app.Fragment;
 import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetSequence;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -32,6 +31,7 @@ import com.matt.shopline.fragments.home.Home;
 import com.matt.shopline.fragments.profile.Profile;
 import com.matt.shopline.fragments.search.Discover;
 import com.matt.shopline.objects.BottomMenuHelper;
+import com.matt.shopline.objects.Util;
 
 public class NavigationActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
     private static FirebaseUser user;
@@ -169,7 +169,8 @@ public class NavigationActivity extends AppCompatActivity implements BottomNavig
                 fragment = new Profile();
                 break;
         }
-        return loadFragment(fragment);
+        Util.loadFragment(this, fragment);
+        return true;
     }
 
     @Override
@@ -183,7 +184,7 @@ public class NavigationActivity extends AppCompatActivity implements BottomNavig
         }
     }
 
-    private boolean loadFragment(Fragment fragment) {
+   /* private boolean loadFragment(Fragment fragment) {
         //switching fragment
         if (fragment != null) {
             getSupportFragmentManager()
@@ -193,7 +194,7 @@ public class NavigationActivity extends AppCompatActivity implements BottomNavig
             return true;
         }
         return false;
-    }
+    }*/
 
     public void Upload(View view) {
         Intent intent = new Intent(this, Upload.class);

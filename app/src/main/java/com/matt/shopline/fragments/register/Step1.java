@@ -59,7 +59,7 @@ public class Step1 extends Fragment {
 //            Compression(FilePathUri);
 
             // puts file into image view
-            Picasso.with(getActivity()).load(FilePathUri)
+            Picasso.get().load(FilePathUri)
                     .fit()
                     .centerCrop()
                     .into(profileImage);

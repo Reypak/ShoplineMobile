@@ -539,7 +539,7 @@ public class Profile extends Fragment {
                 }
             });
         }
-        Picasso.with(getActivity()).load(profileUri)
+        Picasso.get().load(profileUri)
                 .fit()
                 .placeholder(R.drawable.ic_launcher_foreground)
                 .centerCrop()
@@ -730,7 +730,7 @@ public class Profile extends Fragment {
 //            Compression(FilePathUri);
 
             // puts file into image view
-            Picasso.with(getActivity()).load(FilePathUri)
+            Picasso.get().load(FilePathUri)
                     .fit()
                     .centerCrop()
                     .into(profileImage);
@@ -775,7 +775,7 @@ public class Profile extends Fragment {
         sendIntent.setAction(Intent.ACTION_SEND);
         sendIntent.putExtra(Intent.EXTRA_TITLE, "Tell your friends about " + getString(R.string.app_name));
         sendIntent.putExtra(Intent.EXTRA_TEXT, "Check out " + getString(R.string.app_name) + " and access all the best deals, offers and promos. " +
-                "Available on Google Play https://play.google.com/store/apps/details?id=com.matt.shopline");
+                "Available on Google Play " + getString(R.string.app_url));
         sendIntent.setType("text/plain");
 
         Intent shareIntent = Intent.createChooser(sendIntent, null);

@@ -278,7 +278,7 @@ public class PostView extends AppCompatActivity {
                 textView2.setText(occupation);
             }
 
-            Picasso.with(ctx)
+            Picasso.get()
                     .load(imageURL)
                     .fit()
                     .centerCrop()

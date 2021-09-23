@@ -162,7 +162,7 @@ public class FollowList extends Fragment {
                 }
             }
 
-            Picasso.with(ctx)
+            Picasso.get()
                     .load(imageURL)
                     .fit()
                     .centerCrop()

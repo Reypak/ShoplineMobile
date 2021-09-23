@@ -32,6 +32,7 @@ import com.google.firebase.firestore.Query;
 import com.matt.shopline.R;
 import com.matt.shopline.adapters.MyFirestorePagingAdapter;
 import com.matt.shopline.objects.User;
+import com.matt.shopline.objects.Util;
 import com.matt.shopline.screens.FeedUserProfile;
 import com.matt.shopline.screens.PostView;
 import com.matt.shopline.screens.follow.FollowList;
@@ -117,7 +118,7 @@ public class Search extends Fragment {
             @Override
             public void onClick(View view) {
                 // load discover
-                Discover.loadFragment(requireActivity(), new Discover());
+                Util.loadFragment(requireActivity(), new Discover());
             }
         });
 
@@ -322,7 +323,7 @@ public class Search extends Fragment {
         }
 
         public void setImageURL(final Context ctx, String imageURL) {
-            Picasso.with(ctx)
+            Picasso.get()
                     .load(imageURL)
                     .fit()
                     .centerCrop()

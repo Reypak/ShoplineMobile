@@ -1,6 +1,5 @@
 package com.matt.shopline.fragments.search;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -10,36 +9,30 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.paging.PagedList;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.paging.FirestorePagingAdapter;
 import com.firebase.ui.firestore.paging.FirestorePagingOptions;
+import com.firebase.ui.firestore.paging.LoadingState;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.matt.shopline.R;
 import com.matt.shopline.adapters.MyFirestorePagingAdapter;
 import com.matt.shopline.objects.User;
+import com.matt.shopline.objects.Util;
 import com.matt.shopline.screens.PostView;
 import com.squareup.picasso.Picasso;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 public class Discover extends Fragment {
     FirebaseFirestore db;
@@ -47,13 +40,7 @@ public class Discover extends Fragment {
     private ViewGroup rootView;
     private CollectionReference discoverRef;
 
-    public static void loadFragment(FragmentActivity activity, Fragment fragment) {
-        activity.getSupportFragmentManager()
-                .beginTransaction()
-                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                .replace(R.id.fragment_container, fragment)
-                .commit();
-    }
+
 
     /*private void setDiscover() {
         CollectionReference postRef = db.collection("posts");
@@ -128,7 +115,7 @@ public class Discover extends Fragment {
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         if (task.getResult().exists()) {
                             String imageURL = task.getResult().getString("imageUrl");
-                            holder.setData(rootView.getContext(), imageURL);
+                            holder.setData(imageURL);
                         }
                     }
                 });
@@ -143,6 +130,24 @@ public class Discover extends Fragment {
 
             }
 
+            @Override
+            public void onViewRecycled(@NonNull Discover.BlogViewHolder holder) {
+                holder.setData(null);
+                super.onViewRecycled(holder);
+            }
+
+            @Override
+            protected void onLoadingStateChanged(@NonNull LoadingState state) {
+                if (state == LoadingState.FINISHED) {
+                    TextView errorText = rootView.findViewById(R.id.errorText);
+                    if (getItemCount() == 0) {
+                        MyFirestorePagingAdapter.hideProgress(rootView);
+                        errorText.setVisibility(View.VISIBLE);
+                    } else {
+                        errorText.setVisibility(View.GONE);
+                    }
+                }
+            }
         };
         recyclerView.setAdapter(adapter);
     }
@@ -159,7 +164,7 @@ public class Discover extends Fragment {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == 0) {
             // open Search
-            loadFragment(requireActivity(), new Search());
+            Util.loadFragment(requireActivity(), new Search());
         }
         return super.onOptionsItemSelected(item);
     }
@@ -170,9 +175,9 @@ public class Discover extends Fragment {
             itemView.startAnimation(AnimationUtils.loadAnimation(itemView.getContext(), R.anim.float_in));
         }
 
-        public void setData(Context ctx, String imageURL) {
+        public void setData(String imageURL) {
             ImageView img = itemView.findViewById(R.id.imageView);
-            Picasso.with(ctx)
+            Picasso.get()
                     .load(imageURL)
                     .fit()
                     .centerCrop()

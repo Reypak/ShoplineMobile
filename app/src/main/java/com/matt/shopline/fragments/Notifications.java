@@ -223,7 +223,7 @@ public class Notifications extends Fragment {
                     textView2.setText(durationFromNow(timestamp));
                 }
 
-                Picasso.with(ctx)
+                Picasso.get()
                         .load(imageURL)
                         .fit()
                         .centerCrop()

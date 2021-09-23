@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:animateLayoutChanges="true">
+    android:animateLayoutChanges="true"
+    android:gravity="center"
+    android:orientation="vertical">
 
     <ProgressBar
         android:id="@+id/progressBar"
@@ -14,11 +16,20 @@
         android:id="@+id/errorText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
         android:gravity="center"
         android:padding="50dp"
         android:text="@string/errorText"
         android:textColor="@color/colorTextOverlay"
         android:textSize="16sp"
         android:visibility="gone" />
-</FrameLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAction"
+        style="@style/ButtonMain"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="20dp"
+        android:text="@string/actSuggestions"
+        android:textSize="16sp" />
+</LinearLayout>

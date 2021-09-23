@@ -231,7 +231,7 @@ public class OrdersList extends Fragment {
                         MyFirestorePagingAdapter.hideProgress(rootView);
                         TextView errorText = rootView.findViewById(R.id.errorText);
                         errorText.setVisibility(View.VISIBLE);
-                        String msg = "Orders from Your Customers will appear here";
+                        String msg = getString(R.string.msg_c_orders);
                         if (bundle != null) {
                             msg = msg.replace("Your Customers", "You");
                         }
@@ -387,7 +387,7 @@ public class OrdersList extends Fragment {
         public void setUserData(final Context ctx, String imageURL) {
             ImageView img = mView.findViewById(R.id.profile_image);
             img.setVisibility(View.VISIBLE);
-            Picasso.with(ctx)
+            Picasso.get()
                     .load(imageURL)
                     .fit()
                     .centerCrop()
@@ -431,7 +431,7 @@ public class OrdersList extends Fragment {
 
         public void setImageURL(final Context ctx, String imageURL) {
             ImageView img = mView.findViewById(R.id.imageView);
-            Picasso.with(ctx)
+            Picasso.get()
                     .load(imageURL)
                     .fit()
                     .centerCrop()

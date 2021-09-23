@@ -2,19 +2,19 @@ package com.matt.shopline.fragments.home;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -45,6 +45,9 @@ import com.squareup.picasso.Picasso;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.matt.shopline.objects.Util.loadFragment;
+import static com.matt.shopline.objects.Util.setPrefs;
+
 public class Suggestions extends Fragment {
     private FirebaseFirestore db;
     private FirebaseUser user;
@@ -55,6 +58,7 @@ public class Suggestions extends Fragment {
     private Button btnStart;
     private int followCount;
     private ViewGroup rootView;
+    private DocumentReference feedValueRef;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -72,8 +76,9 @@ public class Suggestions extends Fragment {
         mSuggestionList = rootView.findViewById(R.id.recView);
         GridLayoutManager mLayoutManager = new GridLayoutManager(getActivity(), 2);
         mSuggestionList.setLayoutManager(mLayoutManager);
-//        mSuggestionList.setHasFixedSize(true);
+        mSuggestionList.setHasFixedSize(true);
 
+        checkFeedStatus();
         checkSuggestions();
         getSuggestions();
 
@@ -81,17 +86,27 @@ public class Suggestions extends Fragment {
         btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                btnStart.setVisibility(View.GONE);
                 final ProgressDialog dialog = ProgressDialog.show(getActivity(), "",
                         "Getting things ready" + getString(R.string.load), true);
                 dialog.show();
+
+                dialog.setCancelable(true);
+                dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialogInterface) {
+                        Toast.makeText(requireContext(), "Your feed will be loaded when everything is ready", Toast.LENGTH_LONG).show();
+                    }
+                });
+
                 // save prefs
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-                sharedPreferences.edit().putString(getString(R.string.title_home), "1").apply();
+                setPrefs(getString(R.string.title_home), "1", requireContext());
 
                 // listen until feed is created
                 userFeed = db.collection("users")
                         .document(user.getUid())
                         .collection("feed");
+
                 userFeed.addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -125,6 +140,29 @@ public class Suggestions extends Fragment {
         return rootView;
     }
 
+    private void checkFeedStatus() {
+
+        feedValueRef = db.collection(getString(R.string.users))
+                .document(user.getUid())
+                .collection("data")
+                .document("feed");
+
+        feedValueRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.getResult().exists()) {
+                    String v = task.getResult().get("v").toString();
+                    if (v.equals("1")) {
+                        btnStart.setVisibility(View.VISIBLE);
+                    } else if (v.equals("2")) {
+                        setPrefs(getString(R.string.title_home), "1", requireContext());
+                        loadFragment(requireActivity(), new Home());
+                    }
+                }
+            }
+        });
+    }
+
     private void getSuggestions() {
         FirestoreRecyclerOptions<User> options = new FirestoreRecyclerOptions.Builder<User>()
                 .setQuery(userSuggestions, User.class)
@@ -152,6 +190,10 @@ public class Suggestions extends Fragment {
                         String userID = getSnapshots().getSnapshot(position).getId();
                         // follow user
                         followUser(userID);
+
+                        Map<String, Object> map = new HashMap<>();
+                        map.put("v", 1);
+                        feedValueRef.set(map);
                     }
 
                     private void followUser(String userID) {
@@ -254,7 +296,7 @@ public class Suggestions extends Fragment {
                 if (task.getResult().isEmpty()) {
                     // snapshot of users
                     Query userRef = db.collection("users")
-                            .limit(10); // limit number of users
+                            .limit(20); // limit number of users
                     userRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
                         @Override
                         public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -323,7 +365,7 @@ public class Suggestions extends Fragment {
         public void setImageURL(final Context ctx, String imageURL) {
             ImageView img = mView.findViewById(R.id.profile_image);
             if (ctx != null) {
-                Picasso.with(ctx)
+                Picasso.get()
                         .load(imageURL)
                         .fit()
                         .centerCrop()
